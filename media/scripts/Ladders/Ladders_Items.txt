@@ -1,0 +1,33 @@
+module Base {
+
+  item WoodenLadder {
+    DisplayCategory = Furniture,
+    Type = Moveable,
+    Icon = WoodenLadder,
+    Weight = 10,
+    DisplayName = Wooden Ladder,
+    WorldObjectSprite = industry_railroad_05_20
+  }
+  
+  item MetalLadder {
+    DisplayCategory = Furniture,
+    Type = Moveable,
+    Icon = MetalLadder,
+    Weight = 20,
+    DisplayName = Metal Ladder,
+    WorldObjectSprite = industry_railroad_05_36
+  }
+
+  item LaddersMagazine {
+    DisplayCategory = SkillBook,
+    Weight = 0.1,
+    Type = Literature,
+    DisplayName = Homemade Ladders,
+    Icon = MagazineWelding1,
+    TeachedRecipes = Make Wooden Ladder; Make Metal Ladder,
+    ReplaceOnUse = LaddersMagazine,
+    StaticModel = Magazine,
+    WorldStaticModel = MagazineMetal1Ground
+  }
+  
+}

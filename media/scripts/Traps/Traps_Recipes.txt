@@ -1,0 +1,69 @@
+module Base {
+
+  recipe Set Trap {
+    keep SpikeTrap/BearTrap/PropaneTrap,
+    Result: Nothing,
+    Category: Trapper,
+    OnCreate: setTrapDown,
+    Time: 10.0,
+  }
+  
+  recipe Open BearTrap {
+    BearTrapClosed,
+    Result: BearTrap,
+    Category: Trapper,
+    CanBeDoneFromFloor: true,
+    Time: 10.0,
+  }
+  
+  recipe Make Spike Trap {
+    Nails = 4,
+    Plank = 5,
+    keep [Recipe.GetItemTypes.Hammer],
+    keep [Recipe.GetItemTypes.Saw],
+    Result: SpikeTrap,
+    SkillRequired: Woodwork=3;Trapping=2;,
+    Category: Trapper,
+    Sound: PZ_Hammer,
+    CanBeDoneFromFloor: true,
+    Time: 200.0,
+  }
+  
+  recipe Add Nails to Spike Trap {
+    SpikeTrapClosed,
+    Nails = 3,
+    keep [Recipe.GetItemTypes.Hammer],
+    Result: SpikeTrap,
+    Category: Trapper,
+    CanBeDoneFromFloor: true,
+    Time: 100.0,
+  }
+  
+  recipe Add Nails to Spike Trap {
+    keep [Recipe.GetItemTypes.Hammer],
+    SpikeTrapClosed,
+    Nails = 3,
+    Result: SpikeTrap,
+    Category: Trapper,
+    CanBeDoneFromFloor: true,
+    Sound: PZ_Hammer,
+    Time: 100.0,
+  }
+  
+  recipe Craft Propane Bomb Trap {
+    keep [Recipe.GetItemTypes.Hammer],
+    PropaneTank=8,
+    Pistol,
+    Nails,
+    Bullets9mm,
+    Plank = 3,
+    Thread/String/Rope/[Recipe.GetItemTypes.RipSheets]/Yarn,
+    Result: PropaneTrap,
+    SkillRequired: MetalWelding=3;Trapping=2;,
+    Category: Trapper,
+    CanBeDoneFromFloor: true,
+    Sound: PZ_Hammer,
+    Time: 100.0,
+  }
+
+}

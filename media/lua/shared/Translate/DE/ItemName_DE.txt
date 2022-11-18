@@ -1,0 +1,30 @@
+ItemName_DE = {
+
+  /** Ladders **/
+  Base.MetalLadder = "Metalleiter",
+  Base.WoodenLadder = "Holzleiter",
+  Base.LaddersMagazine = "Marke Eigenbau - Leitern",
+  
+  /** SprayPaint **/
+  Base.SpraycanWhite = "Sprühflasche (Weiß)",
+  Base.SpraycanRed = "Sprühflasche (Rot)",
+  Base.SpraycanBlue = "Sprühflasche (Blau)",
+  Base.SpraycanGreen = "Sprühflasche (Grün)",
+  Base.SpraycanOrange = "Sprühflasche (Orange)",
+  Base.SpraycanYellow = "Sprühflasche (Gelb)",
+  Base.SpraycanViolet = "Sprühflasche (Violett)",
+  Base.SpraycanBlack = "Sprühflasche (Schwarz)",
+  Base.SpraycanCyan = "Sprühflasche (Cyan)",
+  Base.ChalkWhite = "Kreide (Weiß)",
+  Base.ChalkRed = "Kreide (Rot)",
+  Base.ChalkBlue = "Kreide (Blau)",
+  Base.ChalkGreen = "Kreide (Grün)",
+  Base.ChalkOrange = "Kreide (Orange)",
+  Base.ChalkYellow = "Kreide (Gelb)",
+  Base.ChalkViolet = "Kreide (Violett)",
+  Base.ChalkBlack = "Kreide (Schwarz)",
+  Base.ChalkCyan = "Kreide (Cyan)",
+  
+  /** Gate **/
+  Gate.GateKey = "Torschlüssel",
+}

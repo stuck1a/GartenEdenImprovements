@@ -1,0 +1,224 @@
+module MoreTraits {
+  imports {Base}
+
+  recipe Improvise Bandage {
+    [Recipe.GetItemTypes.RipSheets]=10,
+    Result: Bandage,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 50.0
+  }
+  
+  recipe Improvise Splint {
+    [Recipe.GetItemTypes.RipSheets]=10,
+    Result: Splint,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 200.0
+  }
+  
+  recipe Improvise Suture {
+    [Recipe.GetItemTypes.RipSheets]/Twine/Thread,
+    Nails/Screws/Paperclip/[Recipe.GetItemTypes.SewingNeedle]/KnittingNeedles,
+    Result: SutureNeedle,
+    SkillRequired: Doctor=2,
+    CanBeDoneFromFloor: false,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 100.0
+  }
+  
+  recipe Improvise Suture Holder {
+    Tweezers/KnittingNeedles,
+    Result: SutureNeedleHolder,
+    SkillRequired: Doctor=2,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 100.0
+  }
+  
+  recipe Improvise Disinfectant {
+    CleaningLiquid2/Vinegar/GardeningSprayCigarettes/GardeningSprayMilk/Fertilizer/[Recipe.GetItemTypes.Petrol],
+    Water,
+    Result: Disinfectant;3,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 50.0
+  }
+  
+  recipe Improvise Disinfectant {
+    Bleach,
+    Water=10,
+    Result: Disinfectant;60,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 200.0
+  }
+  
+  recipe Improvise Disinfectant {
+    [Recipe.GetItemTypes.Milk],
+    Water=5,
+    Result: Disinfectant;9,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 100.0
+  }
+  
+  recipe Improvise Painkillers {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    Plantain/PlantainCataplasm/Charcoal/[Recipe.GetItemTypes.Petrol],
+    Water=2,
+    [Recipe.GetItemTypes.Flour]/BucketConcreteFull/BucketPlasterFull/Dirtbag/Gravelbag/Sandbag,
+    Result: Pills;8,
+    SkillRequired: Doctor=2,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 250.0
+  }
+  
+  recipe Improvise Antibiotics {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    WildGarlic/WildGarlicCataplasm/Honey,
+    Water=2,
+    [Recipe.GetItemTypes.Flour]/BucketConcreteFull/BucketPlasterFull/Dirtbag/Gravelbag/Sandbag,Charcoal,
+    Result: Antibiotics,
+    SkillRequired: Doctor=3,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 250.0
+  }
+  
+  recipe Improvise Betablockers {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    Comfrey/ComfreyCataplasm/PropaneTank/BlowTorch/PaintBlack/PaintBlue/PaintBrown/PaintCyan/PaintGreen/PaintGrey/PaintLightBlue/PaintLightBrown/PaintOrange/PaintPink/PaintPurple/PaintRed/PaintTurquoise/PaintWhite/PaintYellow,
+    Water=2,[Recipe.GetItemTypes.Flour]/BucketConcreteFull/BucketPlasterFull/Dirtbag/Gravelbag/Sandbag,
+    Result: PillsBeta;4,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 250.0
+  }
+  
+  recipe Improvise Antidepressants {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    LemonGrass/[Recipe.GetItemTypes.Liquor]/BeerCan/Wine/Wine2,
+    Water=2,[Recipe.GetItemTypes.Sugar],[Recipe.GetItemTypes.Flour]/BucketConcreteFull/BucketPlasterFull/Dirtbag/Gravelbag/Sandbag,
+    Result: PillsAntiDep;4,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 250.0
+  }
+  
+  recipe Improvise Sleeping Pills {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    [Recipe.GetItemTypes.Liquor]/BeerCan/Wine/Wine2=2,
+    Water=1,[Recipe.GetItemTypes.Flour]/BucketConcreteFull/BucketPlasterFull/Dirtbag/Gravelbag/Sandbag,
+    Result: PillsSleepingTablets;2,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    NeedToBeLearn: true,
+    Time: 250.0
+  }
+  
+  recipe Inject Zombification Cure {
+    MoreTraits.ZombificationCure,
+    Result: SmashedBottle,
+    SkillRequired: Doctor=1,
+    CanBeDoneFromFloor: true,
+    Category: Health,
+    OnCreate: ZombificationCure_OnCreate,
+    NeedToBeLearn: false,
+    Time: 200.0
+  }
+  
+  recipe Mince Corpse into Fertilizer {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    keep HuntingKnife/KitchenKnife/[Recipe.GetItemTypes.Saw]/Axe/HandAxe/AxeStone/WoodAxe/[Recipe.GetItemTypes.SharpKnife],
+    CorpseMale/CorpseFemale,EmptySandbag/FertilizerEmpty,
+    Result: CompostBag,
+    Sound: MaleZombieEating,
+    CanBeDoneFromFloor: true,
+    Category: Farming,
+    NeedToBeLearn: true,
+    Time: 250.0
+  }
+  
+  recipe Make Papier Mache {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    [Recipe.GetItemTypes.Flour]/[Recipe.GetItemTypes.Glue],
+    Water=1,
+    SheetPaper2,
+    Result: MoreTraits.PapierMache,
+    CanBeDoneFromFloor: true,
+    Sound: AddItemInRecipe,
+    Category: Carpentry,
+    NeedToBeLearn: true,
+    Time: 50.0
+  }
+  
+  recipe Make Papier Mache Sword {
+    MoreTraits.PapierMache,
+    Water=1,
+    Plank,
+    Result: MoreTraits.PapierMacheSword,
+    CanBeDoneFromFloor: true,
+    Sound: SliceMeat,
+    Category: Carpentry,
+    NeedToBeLearn: true,
+    Time: 100.0
+  }
+  
+  recipe Make Wood Glue {
+    keep [Recipe.GetItemTypes.MortarPestle],
+    Water=2,
+    MoreTraits.PapierMache,
+    UnusableWood/Twigs/TreeBranch/Plank,
+    Result: Woodglue;6,
+    CanBeDoneFromFloor: true,
+    Category: Carpentry,
+    Sound: SliceBread,
+    NeedToBeLearn: true,
+    Time: 50.0
+  }
+  
+  recipe Make Duct Tape {
+    [Recipe.GetItemTypes.Glue],
+    MoreTraits.PapierMache,
+    Result: DuctTape;4,
+    CanBeDoneFromFloor: true,
+    Sound: FixWithTape,
+    Category: Carpentry,
+    NeedToBeLearn: true,
+    Time: 50.0
+  }
+  
+  recipe Strip Meat from Corpse {
+    keep [Recipe.GetItemTypes.Saw]/Axe/HandAxe/AxeStone/WoodAxe/[Recipe.GetItemTypes.SharpKnife],
+    CorpseMale/CorpseFemale,
+    Result: MoreTraits.ZombPatty,
+    CanBeDoneFromFloor: true,
+    Sound: SliceMeat,
+    Category: Cooking,
+    NeedToBeLearn: true,
+    OnGiveXP: Recipe.OnGiveXP.Cooking3,
+    OnCreate: ZombPatty_OnCreate,
+    Time: 20.0
+  }
+}

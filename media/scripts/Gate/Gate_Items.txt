@@ -1,0 +1,10 @@
+module Base {
+
+  item GateKey {
+    Weight = 0.1,
+    Type = Normal,
+    DisplayName = Gate Key,
+    Icon = Key1
+  }
+  
+}

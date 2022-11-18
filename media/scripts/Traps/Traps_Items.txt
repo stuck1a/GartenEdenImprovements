@@ -1,0 +1,45 @@
+module Base {
+
+  item Nothing {
+    Weight = 0.1,
+    Type = Normal,
+    DisplayName = No Result,
+    Icon = Nothing,
+  }
+  
+  item PropaneTrap {
+    Weight = 25.0,
+    Type = Normal,
+    DisplayName = Propane Trap (Set),
+    Icon = Propanetrap,
+  }
+  
+  item BearTrap {
+    Weight = 2.0,
+    Type = Normal,
+    DisplayName = Bear Trap (Set),
+    Icon = Beartrap,
+  }
+  
+  item BearTrapClosed {
+    Weight = 2.0,
+    Type = Normal,
+    DisplayName = Bear Trap (Closed),
+    Icon = Beartrapclosed,
+  }
+  
+  item SpikeTrap {
+    Weight = 3.0,
+    Type = Normal,
+    DisplayName = Spike Trap (Set),
+    Icon = Spiketrap,
+  }
+  
+  item SpikeTrapClosed {
+    Weight = 3.0,
+    Type = Normal,
+    DisplayName = Spike Trap (Worn Out),
+    Icon = Spiketrapclosed,
+  }
+
+}

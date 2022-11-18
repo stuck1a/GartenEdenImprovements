@@ -1,0 +1,30 @@
+ItemName_EN = {
+
+  /** Ladders **/
+  Base.MetalLadder = "Metal Ladder",
+  Base.WoodenLadder = "Wooden Ladder",
+  Base.LaddersMagazine = "Homemade Ladders",
+  
+  /** SprayPaint **/
+  Base.SpraycanWhite = "Spraycan (White)",
+  Base.SpraycanRed = "Spraycan (Red)",
+  Base.SpraycanBlue = "Spraycan (Blue)",
+  Base.SpraycanGreen = "Spraycan (Green)",
+  Base.SpraycanOrange = "Spraycan (Orange)",
+  Base.SpraycanYellow = "Spraycan (Yellow)",
+  Base.SpraycanViolet = "Spraycan (Violet)",
+  Base.SpraycanBlack = "Spraycan (Black)",
+  Base.SpraycanCyan = "Spraycan (Cyan)",
+  Base.ChalkWhite = "Chalk (White)",
+  Base.ChalkRed = "Chalk (Red)",
+  Base.ChalkBlue = "Chalk (Blue)",
+  Base.ChalkGreen = "Chalk (Green)",
+  Base.ChalkOrange = "Chalk (Orange)",
+  Base.ChalkYellow = "Chalk (Yellow)",
+  Base.ChalkViolet = "Chalk (Violet)",
+  Base.ChalkBlack = "Chalk (Black)",
+  Base.ChalkCyan = "Chalk (Cyan)",
+  
+  /** Gate **/
+  Gate.GateKey = "Gate Key",
+}
