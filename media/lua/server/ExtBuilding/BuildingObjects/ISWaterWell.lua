@@ -1,4 +1,4 @@
-require 'ISExtBuildingObject'
+if not 'ISExtBuildingObject' then require 'ExtBuilding/BuildingObjects/ISExtBuildingObject' end
 
 
 --- @class ISWaterWell : ISExtBuildingObject
@@ -8,6 +8,7 @@ ISWaterWell = ISExtBuildingObject:derive('ISWaterWell')
 ISWaterWell._buildTime = 500
 ISWaterWell._baseHealth = 600
 ISWaterWell._mainMaterial = 'stone'
+ISWaterWell._hasSpecialTooltip = true
 ISWaterWell._breakSound = 'BreakObject'
 ISWaterWell._tooltipDesc = 'Tooltip_ExtBuilding__WaterWell'
 ISWaterWell._sprites = {
@@ -15,10 +16,10 @@ ISWaterWell._sprites = {
   north = 'garteneden_tech_01_1'
 }
 
-ISWaterWell._properties = {
-  waterMax = 3000,
-  waterAmount = 50
-}
+--ISWaterWell._properties = {
+--  waterMax = 3000,
+--  waterAmount = 50
+--}
 
 ISWaterWell._modData = {
   ['keep:' .. UtilsSrv.ConcatItemTypes({'Hammer'})] = 'Base.Hammer',
@@ -47,10 +48,11 @@ ISWaterWell._modData = {
 ---
 function ISWaterWell:create(x, y, z, north, sprite)
   ISExtBuildingObject.create(self, x, y, z, north, sprite)
+  self.javaObject:setName(self.name)
   self.javaObject:getModData()['waterMax'] = self.waterMax
-  self.javaObject:getModData()['waterAmount'] = self.waterAmount
+  self.javaObject:getModData()['waterAmount'] = 50
   self.javaObject:transmitCompleteItemToServer()
-  triggerEvent('OnObjectAdded', self.javaObject)
+  -- triggerEvent('OnObjectAdded', self.javaObject)
 end
 
 
@@ -65,6 +67,8 @@ function ISWaterWell:new(player, recipe)
   local o = ISExtBuildingObject.new(self, player, recipe)
   setmetatable(o, self)
   self.__index = self
+  o.name = 'Water Well'
+  o.waterMax = 5000
   return o
 end
 
@@ -94,25 +98,25 @@ function ISWaterWell:isValid(square)
 end
 
 
---[[
+
 ---
 --- DoSpecialTooltip-EventListener
 --- Creates global context menu entries for global objects of type waterwell
 --- @param tooltipUI UIElement Java tooltip factory
 --- @param square IsoGridSquare Clicked square
 ---
-function ISWaterWell.DoSpecialTooltip(tooltipUI, square)
-  local playerObj = getSpecificPlayer(0)
-  if not playerObj or playerObj:getZ() ~= square:getZ() or playerObj:DistToSquared(square:getX() + 0.5, square:getY() + 0.5) > 2 * 2 then return end
+local function DoSpecialTooltip(tooltipUI, square)
+  local oPlayer = getSpecificPlayer(0)
+  if not oPlayer or oPlayer:getZ() ~= square:getZ() or oPlayer:DistToSquared(square:getX() + 0.5, square:getY() + 0.5) > 2 * 2 then return end
   local oIsoWell = CWaterWellSystem.instance:getIsoObjectOnSquare(square)
   if not oIsoWell or not oIsoWell:getModData()['waterMax'] then return end
   local font = UIFont.Small
-  local smallFontHgt = getTextManager():getFontFromEnum(font):getLineHeight()
-  tooltipUI:setHeight(6 + smallFontHgt + 6 + smallFontHgt + 12)
-  local textX, textY = 12, 6 + smallFontHgt + 6
+  local fontHeight = getTextManager():getFontFromEnum(font):getLineHeight()
+  tooltipUI:setHeight(6 + fontHeight + 6 + fontHeight + 12)
+  local textX, textY = 12, 6 + fontHeight + 6
   local barWid, barHgt = 80, 4
   local barX = textX + getTextManager():MeasureStringX(font, getText('IGUI_invpanel_Remaining')) + 12
-  local barY = textY + (smallFontHgt - barHgt) / 2 + 2
+  local barY = textY + (fontHeight - barHgt) / 2 + 2
   tooltipUI:setWidth(barX + barWid + 12)
   tooltipUI:DrawTextureScaledColor(nil, 0, 0, tooltipUI:getWidth(), tooltipUI:getHeight(), 0, 0, 0, 0.75)
   tooltipUI:DrawTextCentre(getText('ContextMenu_ExtBuilding_Obj__WaterWell'), tooltipUI:getWidth() / 2, 6, 1, 1, 1, 1)
@@ -120,11 +124,11 @@ function ISWaterWell.DoSpecialTooltip(tooltipUI, square)
   local percent = oIsoWell:getWaterAmount() / oIsoWell:getModData()['waterMax']
   if percent < 0 then percent = 0 end
   if percent > 1 then percent = 1 end
-  local done = math.floor(barWid * percent)
-  if percent > 0 then done = math.max(done, 1) end
-  tooltipUI:DrawTextureScaledColor(nil, barX, barY, done, barHgt, 0, 0.6, 0, 0.7)
-  tooltipUI:DrawTextureScaledColor(nil, barX + done, barY, barWid - done, barHgt, 0.15, 0.15, 0.15, 1)
+  local amountWidth = math.floor(barWid * percent)
+  if percent > 0 then amountWidth = math.max(amountWidth, 1) end
+  tooltipUI:DrawTextureScaledColor(nil, barX, barY, amountWidth, barHgt, 0, 0.6, 0, 0.7)
+  tooltipUI:DrawTextureScaledColor(nil, barX + amountWidth, barY, barWid - amountWidth, barHgt, 0.15, 0.15, 0.15, 1)
 end
 
-Events.DoSpecialTooltip.Add(ISWaterWell.DoSpecialTooltip)
---]]
+
+Events.DoSpecialTooltip.Add(DoSpecialTooltip)

@@ -1,8 +1,7 @@
-if isServer() then return end
-
 require 'Map/CGlobalObjectSystem'
 
----@class CWaterWellSystem : CGlobalObjectSystem
+
+--- @class CWaterWellSystem : CGlobalObjectSystem
 CWaterWellSystem = CGlobalObjectSystem:derive('CWaterWellSystem')
 
 
@@ -13,7 +12,7 @@ end
 
 
 function CWaterWellSystem:isValidIsoObject(isoObject)
-  return instanceof(isoObject, 'IsoThumpable') and isoObject:getName() == 'waterwell'
+  return instanceof(isoObject, 'IsoThumpable') and isoObject:getName() == 'Water Well'
 end
 
 

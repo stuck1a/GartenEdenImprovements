@@ -25,14 +25,10 @@ function ISExtBuildingObject:create(x, y, z, north, sprite)
   end
   buildUtil.setInfo(self.javaObject, self)
   buildUtil.consumeMaterial(self)
-  self.javaObject:setName(self.name)
-  self.javaObject:setModData(self.modData)
   self.javaObject:setMaxHealth(self:getHealth())
   self.javaObject:setHealth(self.javaObject:getMaxHealth())
-  if self.breakSound then self.javaObject:setBreakSound(self.breakSound) end
-  if self.DoSpecialTooltip ~= nil and type(self.DoSpecialTooltip) == 'function' then
-    self.javaObject:setSpecialTooltip(true)
-  end
+  self.javaObject:setBreakSound(self.breakSound)
+  self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
   self.sq:AddSpecialObject(self.javaObject)
 end
 
@@ -48,9 +44,11 @@ function ISExtBuildingObject:new(player, recipe)
   setmetatable(o, self)
   self.__index = self
   o:init()
-  o.name = getText(recipe.name) or self._name
-  o.breakSound = recipe.breakSound or self._breakSound or 'BreakObject'
   o.player = player
+  o.name = 'Water Well'
+  o.breakSound = recipe.breakSound or self._breakSound or 'BreakObject'
+  o.mainMaterial = recipe.mainMaterial or self._mainMaterial or 'wood'
+  o.hasSpecialTooltip = recipe.hasSpecialTooltip or self._hasSpecialTooltip or false
   if recipe.sprites ~= nil then
     o:setSprite(recipe.sprites.sprite or self._sprites.sprite or '')
     if recipe.sprites.north ~= nil then o:setNorthSprite(recipe.sprites.north) else o:setNorthSprite(recipe.sprites.sprite or self._sprites.sprite or '') end
@@ -68,7 +66,7 @@ function ISExtBuildingObject:new(player, recipe)
   end
   if self._properties ~= nil then for k,v in pairs(self._properties) do o[k] = v end end
   if recipe.properties ~= nil then for k,v in pairs(recipe.properties) do o[k] = v end end
-  o.modData = recipe.modData or self._modData or {}
+  o.modData = copyTable(recipe.modData or self._modData or {})
   o.isoType = recipe._isoType or self._isoType or 'IsoThumpable'
   return o
 end
@@ -80,18 +78,13 @@ end
 --- @return int Max health of the building
 ---
 function ISExtBuildingObject:getHealth()
-  local perk
-  if self._mainMaterial ~= nil then
-    if     self._mainMaterial == 'wood'  then perk = Perks.Woodwork
-    elseif self._mainMaterial == 'metal' then perk = Perks.MetalWelding
-    elseif self._mainMaterial == 'stone' then perk = Perks.Strength
-    elseif self._mainMaterial == 'glass' then perk = Perks.Woodwork
-    end
-  else
-    perk = Perks.Woodwork
+  local plr, perk = getSpecificPlayer(self.player)
+  if     self.mainMaterial == 'wood'  then perk = Perks.Woodwork
+  elseif self.mainMaterial == 'metal' then perk = Perks.MetalWelding
+  elseif self.mainMaterial == 'stone' then perk = Perks.Strength
+  elseif self.mainMaterial == 'glass' then perk = Perks.Woodwork
   end
-  local plr = getSpecificPlayer(self.player)
-  local health = plr:getPerkLevel(Perks.Woodwork) * 50
+  local health = 50 + plr:getPerkLevel(perk) * 50
   if plr:HasTrait('Handy') then health = health + 100 end
   return health
 end
@@ -107,6 +100,7 @@ end
 ---
 --- Extension of the ghost tile placement validation
 --- @param square IsoGridSquare Clicked square object
+--- @return boolean If the hovered cell has space for the target construction
 ---
 function ISExtBuildingObject:isValid(square)
   -- base rules (valid, walkable, free space, reachable, etc)
@@ -125,15 +119,16 @@ end
 
 ---
 --- Render the item on the ground or launch the build
+--- @param draggingItem ISExtBuildingObject
+--- @param isRender boolean
+--- @param x int
+--- @param y int
+--- @param z int
+--- @param square IsoGridSquare
 ---
 function ISExtBuildingObject.DoTileBuilding(draggingItem, isRender, x, y, z, square)
-  local spriteName
-  if not draggingItem.player then print('[ExtBuilding] ERROR: player not set in DoTileBuilding'); draggingItem.player = 0 end
-  -- if the square is nil we have to create it (for example, the 2nd floor square are nil)
-  if square == nil and getWorld():isValidSquare(x, y, z) then
-    square = getCell():createNewGridSquare(x, y, z, true)
-  end
-  -- get the sprite we have to display
+  if not draggingItem.player then draggingItem.player = 0 end
+  if square == nil and getWorld():isValidSquare(x, y, z) then square = getCell():createNewGridSquare(x, y, z, true) end
   if draggingItem.player == 0 and wasMouseActiveMoreRecentlyThanJoypad() then
     local mouseOverUI = isMouseOverUI()
     if Mouse:isLeftDown() then
@@ -152,28 +147,19 @@ function ISExtBuildingObject.DoTileBuilding(draggingItem, isRender, x, y, z, squ
       if mouseOverUI then return end
     end
   end
-  spriteName = draggingItem:getSprite()
-  -- while left mouse down fix square and enable rotation
-  -- so while we have the left button down, we can drag the mouse to change the direction of the item
   if (draggingItem.isLeftDown or draggingItem.build) and draggingItem.square then
     square = draggingItem.square
     x = square:getX()
     y = square:getY()
   else
-    -- the square is the one our mouse is on
     draggingItem.square = square
   end
-  -- there may be no square if we are at the edge of the map
   if not square then
     draggingItem.canBeBuild = false
     return
   end
-  -- render our item on the ground, if it can be placed we render it with a bit of red over it
   if isRender then
-    -- we first call the isValid function of our item
     draggingItem.canBeBuild = draggingItem:isValid(square, draggingItem.north)
-    -- we call the render function of our item, because for stairs (for example), we drag only 1 item : the 1st part of the stairs
-    -- so in the :render function is ISWoodenStair, we gonna display the 2 other part of the stairs, depending on his direction
     draggingItem:render(x, y, z, square)
   end
   -- finally build our item
@@ -191,12 +177,14 @@ end
 ---
 --- Called by ISBuildAction:perform() if the timed action is done.
 --- Will create the specified ISO object and add it to the world.
---- @overload
+--- @param x int
+--- @param y int
+--- @param z int
 ---
 function ISExtBuildingObject:tryBuild(x, y, z)
   local square = getCell():getGridSquare(x, y, z)
   local oPlayer = getSpecificPlayer(self.player)
-  local playerInv = oPlayer:getInventory()
+  local oInv = oPlayer:getInventory()
   local maxTime
   if ISBuildMenu.cheat or self:walkTo(x, y, z) then
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
@@ -221,18 +209,18 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       end
     end
     if self.skipBuildAction then
-      self:create(x, y, z, self.get, self:getSprite())
+      self:create(x, y, z, self.north, self:getSprite())
     else
       -- TODO: Replace with first or first two tools the recipe requires
       if not self.noNeedHammer and not ISBuildMenu.cheat then
-        local hammer = playerInv:getFirstTagEvalRecurse('Hammer', ISExtBuildingObject.predicateNotBroken)
+        local hammer = oInv:getFirstTagEvalRecurse('Hammer', ISExtBuildingObject.predicateNotBroken)
         if hammer then ISInventoryPaneContextMenu.equipWeapon(hammer, true, false, self.player) end
       end
       if not ISBuildMenu.cheat then
         if self.firstItem then
           local item
           if self.firstPredicate then
-            item = playerInv:getFirstTypeEvalArgRecurse(self.firstItem, self.firstPredicate)
+            item = oInv:getFirstTypeEvalArgRecurse(self.firstItem, self.firstPredicate)
             if not item then
               local groundItems = buildUtil.getMaterialOnGround(square)
               for _,item2 in ipairs(groundItems[self.firstItem]) do
@@ -245,7 +233,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
               ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, item:getWorldItem(), time))
             end
           else
-            item = playerInv:getItemFromFullType(self.firstItem, true, true)
+            item = oInv:getItemFromFullType(self.firstItem, true, true)
             if not item then
               local groundItems = buildUtil.getMaterialOnGround(square)
               item = groundItems[self.firstItem][1]
@@ -256,7 +244,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
           ISInventoryPaneContextMenu.equipWeapon(item, true, false, self.player)
         end
         if self.secondItem then
-          local item = playerInv:getItemFromFullType(self.secondItem, true, true)
+          local item = oInv:getItemFromFullType(self.secondItem, true, true)
           if instanceof(item, 'Clothing') then
             if not item:isEquipped() then ISInventoryPaneContextMenu.wearItem(item, self.player) end
           else
@@ -277,6 +265,8 @@ end
 --- Creates the custom tooltip for the building menu entry
 --- @param player number Target player ID
 --- @param option ISContextMenu Build menu entry
+--- @param recipe table Definition table
+--- @param targetClass IsoObject World object type
 --- @return ISToolTip Tooltip panel for the build menu entry
 ---
 function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
@@ -286,7 +276,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   local sPen = sWhite
   local getText,split,getItemName,stringStarts,format = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format
   local oPlayer = getSpecificPlayer(player)
-  local oPlayerInv = oPlayer:getInventory()
+  local oInv = oPlayer:getInventory()
   local modData = recipe.modData or targetClass._modData or nil
   toolTip:initialise()
   toolTip:setName(option.name)
@@ -315,7 +305,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
         local found = false
         for i=1, #toolList do
           if toolList ~= nil and toolList[i] ~= nil then
-            if oPlayerInv:containsTypeRecurse(toolList[i]) then found = true; break end
+            if oInv:containsTypeRecurse(toolList[i]) then found = true; break end
           end
         end
         if found then sPen = sGreen else sPen = sRed; canBuild = false end
@@ -333,7 +323,8 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
         local itemList = split(split(k, ':')[2], '/')
         for i=1, #itemList do
           if itemList ~= nil and itemList[i] ~= nil then
-            sum = sum + oPlayerInv:getCountTypeRecurse(itemList[i]) or 0
+            sum = sum + oInv:getCountTypeRecurse(itemList[i]) or 0
+            if itemList[i] == 'Base.Nails' then sum = oInv:getCountTypeRecurse(itemList[i]) * 100 end
             materialString = materialString .. getItemName(itemList[i])
             if i < #itemList then materialString = materialString .. '/' end
           end
@@ -354,12 +345,12 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
         local itemList = split(split(k, ':')[2], '/')
         for i=1, #itemList do
           if itemList ~= nil and itemList[i] ~= nil then
-            local aItemObjects = oPlayerInv:getAllTypeRecurse(itemList[i])
+            local aItemObjects = oInv:getAllTypeRecurse(itemList[i])
             if itemList ~= nil and itemList[i] ~= nil then
               if aItemObjects ~= nil and aItemObjects:size() > 0 then
                 for j=0, aItemObjects:size()-1 do
                   local oItem = aItemObjects:get(j)
-                  sum = sum + math.floor(oItem:getUsedDelta()/oItem:getUseDelta()) or 1
+                  sum = sum + math.floor(oItem:getUsedDelta() / oItem:getUseDelta()) or 1
                 end
               end
               materialString = materialString .. getItemName(itemList[i])

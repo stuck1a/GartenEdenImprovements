@@ -1,8 +1,7 @@
-if isServer() then return end
-
 require 'Map/CGlobalObject'
 
----@class CWaterWellGlobalObject : CGlobalObject
+
+--- @class CWaterWellGlobalObject : CGlobalObject
 CWaterWellGlobalObject = CGlobalObject:derive('CWaterWellGlobalObject')
 
 

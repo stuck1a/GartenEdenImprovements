@@ -1,9 +1,7 @@
 if isClient() then return end
-
 require 'Map/SGlobalObjectSystem'
 
-
----@class SWaterWellSystem : SGlobalObjectSystem
+--- @class SWaterWellSystem : SGlobalObjectSystem
 SWaterWellSystem = SGlobalObjectSystem:derive('SWaterWellSystem')
 
 
@@ -28,13 +26,19 @@ end
 
 
 
+---
+--- Checks, if a given IsoObject is a water well or not
+--- @param isoObject IsoObject Target object
+--- @return boolean True, if the object belongs to the system "waterwell"
+---
 function SWaterWellSystem:isValidIsoObject(isoObject)
-  return instanceof(isoObject, 'IsoThumpable') and isoObject:getName() == 'waterwell'
+  return instanceof(isoObject, 'IsoThumpable') and isoObject:getName() == 'Water Well'
 end
 
 
+
 ---
---- If the gos_xxx.bin file existed, don't touch GameTime modData
+--- If the gos_xxx.bin file existed, don't touch GameTime modData in case mods are using it
 ---
 function SWaterWellSystem:convertOldModData()
   if self.system:loadedWorldVersion() ~= -1 then return end
@@ -42,11 +46,14 @@ end
 
 
 
+---
+--- Adds 5 units of water to the well
+---
 function SWaterWellSystem:refill()
   for i=1, self:getLuaObjectCount() do
     local luaObject = self:getLuaObjectByIndex(i)
-    if luaObject.waterAmount < luaObject.waterMax then
-      luaObject.waterAmount = math.min(luaObject.waterMax, luaObject.waterAmount + 4)
+    if luaObject and luaObject.waterAmount < luaObject.waterMax then
+      luaObject.waterAmount = math.min(luaObject.waterMax, luaObject.waterAmount + 5)
       local isoObject = luaObject:getIsoObject()
       if isoObject then
         isoObject:setWaterAmount(luaObject.waterAmount)
@@ -56,10 +63,11 @@ function SWaterWellSystem:refill()
   end
 end
 
-SGlobalObjectSystem.RegisterSystemClass(SWaterWellSystem)
 
 
-
+---
+--- Wrapper to invoke the refill method of each water well instance
+---
 local function EveryTenMinutes()
   SWaterWellSystem.instance:refill()
 end
@@ -67,8 +75,8 @@ end
 
 
 ---
---- Event listener
---- @param object
+--- Writes the new water amount from global object to this lua object
+--- @param object IsoObject
 --- @param _ int Previous water amount
 ---
 local function OnWaterAmountChange(object, _)
@@ -78,5 +86,6 @@ local function OnWaterAmountChange(object, _)
 end
 
 
+SGlobalObjectSystem.RegisterSystemClass(SWaterWellSystem)
 Events.EveryTenMinutes.Add(EveryTenMinutes)
 Events.OnWaterAmountChange.Add(OnWaterAmountChange)
