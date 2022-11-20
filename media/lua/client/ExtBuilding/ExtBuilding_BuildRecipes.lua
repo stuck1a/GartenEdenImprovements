@@ -212,7 +212,6 @@ ExtBuildingContextMenu.BuildingRecipes = {
   ContextMenu_ExtBuilding_Cat__Technology = {
     {
       name = 'ContextMenu_ExtBuilding_Obj__WaterWell',
-      desc = 'Tooltip_ExtBuilding__WaterWell',
       targetClass = 'ISWaterWell'
     },
     -- Generator

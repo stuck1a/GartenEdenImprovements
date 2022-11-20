@@ -4,37 +4,38 @@ if not 'ISExtBuildingObject' then require 'ExtBuilding/BuildingObjects/ISExtBuil
 --- @class ISWaterWell : ISExtBuildingObject
 ISWaterWell = ISExtBuildingObject:derive('ISWaterWell')
 
--- default class field values
-ISWaterWell._buildTime = 500
-ISWaterWell._baseHealth = 600
-ISWaterWell._mainMaterial = 'stone'
-ISWaterWell._hasSpecialTooltip = true
-ISWaterWell._breakSound = 'BreakObject'
-ISWaterWell._tooltipDesc = 'Tooltip_ExtBuilding__WaterWell'
-ISWaterWell._sprites = {
-  sprite = 'garteneden_tech_01_0',
-  north = 'garteneden_tech_01_1'
+-- Building type defaults
+ISWaterWell.classDefaults = {
+  displayName = 'ContextMenu_ExtBuilding_Obj__WaterWell',
+  buildTime = 500,
+  baseHealth = 600,
+  mainMaterial = 'stone',
+  hasSpecialTooltip = true,
+  tooltipDesc = 'Tooltip_ExtBuilding__WaterWell',
+  sprites = {
+    sprite = 'garteneden_tech_01_0',
+    north = 'garteneden_tech_01_1'
+  },
+  isoData = {
+    systemName = 'waterwell',
+  },
+  modData = {
+    ['keep:' .. UtilsSrv.ConcatItemTypes({'Hammer'})] = 'Base.Hammer',
+    ['keep:' .. UtilsSrv.ConcatItemTypes({'Saw'})] = 'Base.Saw',
+    ['keep:' .. UtilsSrv.ConcatItemTypes({'DigGrave'})] = 'Base.Shovel',
+    ['need:Base.Rope'] = 5,
+    ['need:Base.Plank'] = 5,
+    ['need:Base.Nails'] = 10,
+    ['use:Base.Gravelbag'] = 8,
+    ['need:Base.BucketEmpty'] = 1,
+    ['requires:Woodwork'] = 7,
+    ['requires:Fitness'] = 5,
+    ['xp:Woodwork'] = 5,
+    ['xp:Fitness'] = 5
+  }
 }
 
---ISWaterWell._properties = {
---  waterMax = 3000,
---  waterAmount = 50
---}
 
-ISWaterWell._modData = {
-  ['keep:' .. UtilsSrv.ConcatItemTypes({'Hammer'})] = 'Base.Hammer',
-  ['keep:' .. UtilsSrv.ConcatItemTypes({'Saw'})] = 'Base.Saw',
-  ['keep:' .. UtilsSrv.ConcatItemTypes({'DigGrave'})] = 'Base.Shovel',
-  ['need:Base.Rope'] = 5,
-  ['need:Base.Plank'] = 5,
-  ['need:Base.Nails'] = 10,
-  ['use:Base.Gravelbag'] = 8,
-  ['need:Base.BucketEmpty'] = 1,
-  ['requires:Woodwork'] = 7,
-  ['requires:Fitness'] = 5,
-  ['xp:Woodwork'] = 5,
-  ['xp:Fitness'] = 5
-}
 
 
 
@@ -52,7 +53,7 @@ function ISWaterWell:create(x, y, z, north, sprite)
   self.javaObject:getModData()['waterMax'] = self.waterMax
   self.javaObject:getModData()['waterAmount'] = 50
   self.javaObject:transmitCompleteItemToServer()
-  -- triggerEvent('OnObjectAdded', self.javaObject)
+  if getCore():getGameMode() ~= 'Multiplayer' then triggerEvent('OnObjectAdded', self.javaObject) end
 end
 
 
@@ -67,7 +68,6 @@ function ISWaterWell:new(player, recipe)
   local o = ISExtBuildingObject.new(self, player, recipe)
   setmetatable(o, self)
   self.__index = self
-  o.name = 'Water Well'
   o.waterMax = 5000
   return o
 end
@@ -131,4 +131,17 @@ local function DoSpecialTooltip(tooltipUI, square)
 end
 
 
+
+
+
+-- TODO: Wenn der Kram hier in ISExtBuildingObject generalisiert wird,
+--       am besten die merged settings auch als Feld speichern,
+--       damit man an stellen wie hier ab der Initialisierung immer darauf zugreifen kann
+local function LoadWaterWell(isoObject)
+  if not instanceof(isoObject, ISWaterWell.classDefaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end
+  SWaterWellSystem.instance:loadIsoObject(isoObject)
+end
+
+
 Events.DoSpecialTooltip.Add(DoSpecialTooltip)
+MapObjects.OnLoadWithSprite(ISWaterWell.classDefaults.sprites.sprite or ISExtBuildingObject.defaults.sprites.sprite, LoadWaterWell, ISWaterWell.classDefaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority)

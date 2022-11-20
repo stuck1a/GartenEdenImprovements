@@ -5,6 +5,76 @@ require 'BuildingObjects/ISBuildingObject'
 ISExtBuildingObject = ISBuildingObject:derive('ISExtBuildingObject')
 
 
+-- Generic defaults
+ISExtBuildingObject.defaults = {
+  buildTime = 200,
+  baseHealth = 200,
+  mainMaterial = 'wood',
+  hasSpecialTooltip = false,
+  breakSound = 'BreakObject',
+  sprites = {
+    sprite = 'invisible_01_0'
+  },
+  isoData = {
+    isoType = 'IsoThumpable',
+    mapObjectPriority = 7
+  }
+}
+
+
+ISExtBuildingObject.merge = function(a, b, recurse)
+  if a == nil then return b end
+  if b == nil then b = {} end
+  if recurse == nil then recurse = {} end
+  for k,v in pairs(a) do
+    if k ~= nil then
+      if type(v) == 'table' then recurse[k] = ISExtBuildingObject.merge(a[k], v, recurse[k]) else recurse[k] = v end
+    end
+  end
+  for k,v in pairs(b) do
+    if k ~= nil then
+      if type(v) == 'table' then recurse[k] = ISExtBuildingObject.merge(b[k], v, recurse[k]) else recurse[k] = v end
+    end
+  end
+  return recurse
+end
+
+
+---
+--- Set up properties the constructors will effectively use
+--- Recipe level values have highest priority, then class defaults
+--- the generic class defaults and finally vanilla defaults
+--- @param recipe table The defined building recipe
+--- @param base ISBuildingObject Type class defaults
+---
+function ISExtBuildingObject:initialise(recipe, base)
+  local active = ISExtBuildingObject.merge(ISExtBuildingObject.merge(ISExtBuildingObject.defaults, base), recipe)
+  self.buildTime = active.buildTime
+  self.baseHealth = active.baseHealth
+  self.mainMaterial = active.mainMaterial
+  self.hasSpecialTooltip = active.hasSpecialTooltip
+  self.breakSound = active.breakSound
+  self:setSprite(active.sprites.sprite)
+  self:setNorthSprite(active.sprites.north or active.sprites.sprite)
+  if active.sprites.east then self:setEastSprite(active.sprites.east) end
+  if active.sprites.south then self:setEastSprite(active.sprites.south) end
+  if active.sprites.openSprite or active.sprites.openNorthSprite then
+    self.openSprite = active.sprites.openSprite or active.sprites.openNorthSprite
+    self.openNorthSprite = active.sprites.openNorthSprite or active.sprites.openSprite
+  end
+  if active.properties then
+    for k,v in ipairs(active.properties) do
+      if k ~= nil then
+        if type(v) == 'table' then self[k] = ISExtBuildingObject.merge(self[k], active.properties[k]) else self[k] = v end
+      end
+    end
+  end
+  self.isoData = active.isoData
+  self.modData = active.modData
+end
+
+
+
 ---
 --- Java ISO object constructor - called after completed build action
 --- @param x number Target cell X coordinate (goes from north to south)
@@ -19,13 +89,13 @@ function ISExtBuildingObject:create(x, y, z, north, sprite)
   if self.openSprite ~= nil then
     local openSprite = self.openSprite
     if north then openSprite = self.openNorthSprite end
-    self.javaObject = _G[self.isoType].new(cell, self.sq, sprite, openSprite, north, self)
+    self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, openSprite, north, self)
   else
-    self.javaObject = _G[self.isoType].new(cell, self.sq, sprite, north, self)
+    self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, north, self)
   end
   buildUtil.setInfo(self.javaObject, self)
   buildUtil.consumeMaterial(self)
-  self.javaObject:setMaxHealth(self:getHealth())
+  self.javaObject:setMaxHealth(self:getHealth(self.mainMaterial))
   self.javaObject:setHealth(self.javaObject:getMaxHealth())
   self.javaObject:setBreakSound(self.breakSound)
   self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
@@ -44,30 +114,10 @@ function ISExtBuildingObject:new(player, recipe)
   setmetatable(o, self)
   self.__index = self
   o:init()
+  o:initialise(recipe, self.classDefaults)
+  -- self:initialise(recipe)
   o.player = player
   o.name = 'Water Well'
-  o.breakSound = recipe.breakSound or self._breakSound or 'BreakObject'
-  o.mainMaterial = recipe.mainMaterial or self._mainMaterial or 'wood'
-  o.hasSpecialTooltip = recipe.hasSpecialTooltip or self._hasSpecialTooltip or false
-  if recipe.sprites ~= nil then
-    o:setSprite(recipe.sprites.sprite or self._sprites.sprite or '')
-    if recipe.sprites.north ~= nil then o:setNorthSprite(recipe.sprites.north) else o:setNorthSprite(recipe.sprites.sprite or self._sprites.sprite or '') end
-    if recipe.sprites.east ~= nil then o:setEastSprite(recipe.sprites.east) elseif self._sprites.east ~= nil then o:setEastSprite(self._sprites.east) end
-    if recipe.sprites.south ~= nil then o:setSouthSprite(recipe.sprites.south) elseif self._sprites.south ~= nil then o:setSouthSprite(self._sprites.south) end
-    o.openSprite = recipe.sprites.openSprite or self._sprites.openSprite or nil
-    o.openNorthSprite = recipe.sprites.openNorthSprite or self._sprites.openNorthSprite or recipe.sprites.openSprite or self._sprites.openSprite or nil
-  else
-    o:setSprite(self._sprites.sprite)
-    if self._sprites.north ~= nil then o:setNorthSprite(self._sprites.north) else o:setNorthSprite(self._sprites.sprite) end
-    if self._sprites.east ~= nil then o:setEastSprite(self._sprites.east) end
-    if self._sprites.south ~= nil then o:setSouthSprite(self._sprites.south) end
-    o.openSprite = self._sprites.openSprite or nil
-    o.openNorthSprite = self._sprites.openNorthSprite or self._sprites.openSprite or nil
-  end
-  if self._properties ~= nil then for k,v in pairs(self._properties) do o[k] = v end end
-  if recipe.properties ~= nil then for k,v in pairs(recipe.properties) do o[k] = v end end
-  o.modData = copyTable(recipe.modData or self._modData or {})
-  o.isoType = recipe._isoType or self._isoType or 'IsoThumpable'
   return o
 end
 
@@ -77,12 +127,13 @@ end
 --- Defines and returns the total health of the target building
 --- @return int Max health of the building
 ---
-function ISExtBuildingObject:getHealth()
+function ISExtBuildingObject:getHealth(mainMaterial)
   local plr, perk = getSpecificPlayer(self.player)
-  if     self.mainMaterial == 'wood'  then perk = Perks.Woodwork
-  elseif self.mainMaterial == 'metal' then perk = Perks.MetalWelding
-  elseif self.mainMaterial == 'stone' then perk = Perks.Strength
-  elseif self.mainMaterial == 'glass' then perk = Perks.Woodwork
+  if     mainMaterial == 'wood'  then perk = Perks.Woodwork
+  elseif mainMaterial == 'metal' then perk = Perks.MetalWelding
+  elseif mainMaterial == 'stone' then perk = Perks.Strength
+  elseif mainMaterial == 'glass' then perk = Perks.Woodwork
+  else   perk = Perks.Woodwork
   end
   local health = 50 + plr:getPerkLevel(perk) * 50
   if plr:HasTrait('Handy') then health = health + 100 end
@@ -191,7 +242,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
     if oPlayer:isTimedActionInstant() then
       maxTime = 1
     else
-      local buildTime = self._buildTime or 200
+      local buildTime = self.buildTime or 200
       if self.modData ~= nil then
         local sumOfReqSkills, counter = 0, 0
         local stringStarts, split = luautils.stringStarts, luautils.split
@@ -277,19 +328,15 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   local getText,split,getItemName,stringStarts,format = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format
   local oPlayer = getSpecificPlayer(player)
   local oInv = oPlayer:getInventory()
-  local modData = recipe.modData or targetClass._modData or nil
+  local settings = ISExtBuildingObject.merge(ISExtBuildingObject.merge(ISExtBuildingObject.defaults, targetClass.classDefaults), recipe)
   toolTip:initialise()
   toolTip:setName(option.name)
-  if recipe.sprites ~= nil and recipe.sprites.sprite ~= nil then
-    toolTip:setTexture(recipe.sprites.sprite)
-  elseif targetClass._sprites ~= nil and targetClass._sprites.sprite ~= nil then
-    toolTip:setTexture(targetClass._sprites.sprite)
-  end
-  local desc = getText(recipe.desc or targetClass._tooltipDesc or '') .. ' <LINE> '
-  if modData ~= nil then
+  toolTip:setTexture(settings.sprites.sprite)
+  local desc = getText(settings.tooltipDesc or '') .. ' <LINE> '
+  if settings.modData ~= nil then
     -- required skills
     desc = format('\n%s\n%s:\n', desc, getText('Tooltip_ExtBuilding__RequiredSkills'))
-    for k,v in pairs(modData) do
+    for k,v in pairs(settings.modData) do
       if stringStarts(k, 'requires:') then
         local perk = Perks.FromString(split(k, ':')[2])
         local plrLvl = oPlayer:getPerkLevel(perk)
@@ -299,7 +346,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
     end
     -- required tools
     desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
-    for k,v in pairs(modData) do
+    for k,v in pairs(settings.modData) do
       if stringStarts(k, 'keep:') then
         local toolList = split(split(k, ':')[2], '/')
         local found = false
@@ -314,7 +361,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
     end
     -- required materials
     desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
-    for k,v in pairs(modData) do
+    for k,v in pairs(settings.modData) do
       if not v then v = 1 end
       -- items
       if stringStarts(k, 'need:') then
