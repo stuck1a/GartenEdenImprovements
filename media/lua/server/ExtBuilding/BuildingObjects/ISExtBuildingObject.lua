@@ -64,7 +64,7 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
     self.openNorthSprite = settings.sprites.openNorthSprite or settings.sprites.openSprite
   end
   if settings.properties then
-    for k,v in ipairs(settings.properties) do
+    for k,v in pairs(settings.properties) do
       if k ~= nil then
         if type(v) == 'table' then self[k] = ISExtBuildingObject.merge(self[k], settings.properties[k]) else self[k] = v end
       end

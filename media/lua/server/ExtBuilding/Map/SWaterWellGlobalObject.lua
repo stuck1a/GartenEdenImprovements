@@ -13,8 +13,8 @@ end
 
 
 function SWaterWellGlobalObject:initNew()
-  self.waterAmount = ISWaterWell.initialValues.waterAmount
-  self.waterMax = ISWaterWell.initialValues.waterMax
+  self.waterAmount = ISWaterWell.defaults.properties.waterAmount
+  self.waterMax = ISWaterWell.defaults.properties.waterMax
 end
 
 
@@ -29,8 +29,8 @@ end
 
 
 function SWaterWellGlobalObject:stateToIsoObject(isoObject)
-  if not self.waterAmount then self.waterAmount = ISWaterWell.initialValues.waterAmount end
-  if not self.waterMax then self.waterMax = ISWaterWell.initialValues.waterMax end
+  if not self.waterAmount then self.waterAmount = ISWaterWell.defaults.properties.waterAmount end
+  if not self.waterMax then self.waterMax = ISWaterWell.defaults.properties.waterMax end
   isoObject:setWaterAmount(self.waterAmount)
   isoObject:getModData().waterMax = self.waterMax
   isoObject:transmitModData()

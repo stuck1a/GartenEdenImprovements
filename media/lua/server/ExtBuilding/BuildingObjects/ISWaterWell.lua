@@ -21,10 +21,10 @@ ISWaterWell.defaults = {
     systemName = 'waterwell',
     objectModDataKeys = { 'waterAmount', 'waterMax' },
   },
-  --properties = {
-  --  waterAmount = 50,
-  --  waterMax = 5000,
-  --},
+  properties = {
+    waterAmount = 50,
+    waterMax = 5000,
+  },
   modData = {
     ['keep:' .. UtilsSrv.ConcatItemTypes({'Hammer'})] = 'Base.Hammer',
     ['keep:' .. UtilsSrv.ConcatItemTypes({'Saw'})] = 'Base.Saw',
@@ -41,11 +41,6 @@ ISWaterWell.defaults = {
   }
 }
 
-ISWaterWell.initialValues = {
-  waterAmount = 50,
-  waterMax = 5000
-}
-
 
 
 ---
@@ -60,7 +55,7 @@ function ISWaterWell:create(x, y, z, north, sprite)
   ISExtBuildingObject.create(self, x, y, z, north, sprite)
   self.javaObject:setName(self.name)
   self.javaObject:getModData()['waterMax'] = self.waterMax
-  self.javaObject:getModData()['waterAmount'] = self.initialValues.waterAmount
+  self.javaObject:getModData()['waterAmount'] = self.waterAmount
   self.javaObject:transmitCompleteItemToServer()
   if getCore():getGameMode() ~= 'Multiplayer' then triggerEvent('OnObjectAdded', self.javaObject) end
 end
@@ -77,7 +72,7 @@ function ISWaterWell:new(player, recipe)
   local o = ISExtBuildingObject.new(self, player, recipe)
   setmetatable(o, self)
   self.__index = self
-  o.waterMax = self.initialValues.waterMax
+  --o.waterMax = self.initialValues.waterMax
   return o
 end
 
