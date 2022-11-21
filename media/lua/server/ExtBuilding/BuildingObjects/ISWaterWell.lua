@@ -1,5 +1,3 @@
-require 'Map/CGlobalObjectSystem'
-require 'Map/CGlobalObject'
 if not 'ISExtBuildingObject' then require 'ExtBuilding/BuildingObjects/ISExtBuildingObject' end
 
 
@@ -135,22 +133,12 @@ local function DoSpecialTooltip(tooltipUI, square)
 end
 
 
-
----
---- Creates the association between the buildings JS object and the system controller class
---- @param isoObject IsoThumpable Target building object JS object instance
----
-local function loadGlobalObject(isoObject)
-  if not instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end
-  SWaterWellSystem.instance:loadIsoObject(isoObject)
-end
-
-
 Events.DoSpecialTooltip.Add(DoSpecialTooltip)
-MapObjects.OnLoadWithSprite(ISWaterWell.defaults.sprites.sprite, loadGlobalObject, ISWaterWell.defaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority)
 
 
 
+
+require 'Map/CGlobalObjectSystem'
 
 --- @class CWaterWellSystem : CGlobalObjectSystem
 CWaterWellSystem = CGlobalObjectSystem:derive('CWaterWellSystem')
@@ -190,6 +178,8 @@ CGlobalObjectSystem.RegisterSystemClass(CWaterWellSystem)
 
 
 
+require 'Map/CGlobalObject'
+
 --- @class CWaterWellGlobalObject : CGlobalObject
 CWaterWellGlobalObject = CGlobalObject:derive('CWaterWellGlobalObject')
 
@@ -214,162 +204,179 @@ end
 
 
 
-if isClient() then return end
-require 'Map/SGlobalObjectSystem'
+
+if isServer() then
+  require 'Map/SGlobalObjectSystem'
 
 
---- @class SWaterWellSystem : SGlobalObjectSystem
-SWaterWellSystem = SGlobalObjectSystem:derive('SWaterWellSystem')
+  --- @class SWaterWellSystem : SGlobalObjectSystem
+  SWaterWellSystem = SGlobalObjectSystem:derive('SWaterWellSystem')
 
 
----
---- Creates a new JS global object system on server-side
----
-function SWaterWellSystem:new()
-  return SGlobalObjectSystem.new(self, ISWaterWell.defaults.isoData.systemName or 'unnamed')
-end
-
-
-
----
---- Initialises the controller by defining which fields
---- of the building object are relevant for the controller
----
-function SWaterWellSystem:initSystem()
-  SGlobalObjectSystem.initSystem(self)
-  self.system:setModDataKeys(ISWaterWell.defaults.isoData.modDataKeys or ISExtBuildingObject.defaults.isoData.modDataKeys or {})
-  self.system:setObjectModDataKeys(ISWaterWell.defaults.isoData.objectModDataKeys or ISExtBuildingObject.defaults.isoData.objectModDataKeys or {})
-  self:convertOldModData()
-end
+  ---
+  --- Creates a new JS global object system on server-side
+  ---
+  function SWaterWellSystem:new()
+    return SGlobalObjectSystem.new(self, ISWaterWell.defaults.isoData.systemName or 'unnamed')
+  end
 
 
 
----
---- Creates a new global object controller on server-side
---- @param globalObject SWaterWellGlobalObject Target global object type
----
-function SWaterWellSystem:newLuaObject(globalObject)
-  return SWaterWellGlobalObject:new(self, globalObject)
-end
+  ---
+  --- Initialises the controller by defining which fields
+  --- of the building object are relevant for the controller
+  ---
+  function SWaterWellSystem:initSystem()
+    SGlobalObjectSystem.initSystem(self)
+    self.system:setModDataKeys(ISWaterWell.defaults.isoData.modDataKeys or ISExtBuildingObject.defaults.isoData.modDataKeys or {})
+    self.system:setObjectModDataKeys(ISWaterWell.defaults.isoData.objectModDataKeys or ISExtBuildingObject.defaults.isoData.objectModDataKeys or {})
+    self:convertOldModData()
+  end
 
 
 
----
---- Checks, if a given IsoObject is a water well or not on server-side
---- @param isoObject IsoThumpable Target buildings JS object
---- @return boolean True, if the object is linked to this system
----
-function SWaterWellSystem:isValidIsoObject(isoObject)
-  return instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and isoObject:getName() == ISWaterWell.defaults.name
-end
+  ---
+  --- Creates a new global object controller on server-side
+  --- @param globalObject SWaterWellGlobalObject Target global object type
+  ---
+  function SWaterWellSystem:newLuaObject(globalObject)
+    return SWaterWellGlobalObject:new(self, globalObject)
+  end
 
 
 
----
---- For backwards compatibility
---- If the gos_xxx.bin file existed, don't touch GameTime modData in case mods are using it
----
-function SWaterWellSystem:convertOldModData()
-  if self.system:loadedWorldVersion() ~= -1 then return end
-end
+  ---
+  --- Checks, if a given IsoObject is a water well or not on server-side
+  --- @param isoObject IsoThumpable Target buildings JS object
+  --- @return boolean True, if the object is linked to this system
+  ---
+  function SWaterWellSystem:isValidIsoObject(isoObject)
+    return instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and isoObject:getName() == ISWaterWell.defaults.name
+  end
 
 
 
----
---- Increases the water amount of the buildings JS objects
----
-function SWaterWellSystem:refill()
-  for i=1, self:getLuaObjectCount() do
-    local luaObject = self:getLuaObjectByIndex(i)
-    if luaObject and luaObject.waterAmount < luaObject.waterMax then
-      luaObject.waterAmount = math.min(luaObject.waterMax, luaObject.waterAmount + 5)
-      local isoObject = luaObject:getIsoObject()
-      if isoObject then
-        isoObject:setWaterAmount(luaObject.waterAmount)
-        isoObject:transmitModData()
+  ---
+  --- For backwards compatibility
+  --- If the gos_xxx.bin file existed, don't touch GameTime modData in case mods are using it
+  ---
+  function SWaterWellSystem:convertOldModData()
+    if self.system:loadedWorldVersion() ~= -1 then return end
+  end
+
+
+
+  ---
+  --- Increases the water amount of the buildings JS objects
+  ---
+  function SWaterWellSystem:refill()
+    for i=1, self:getLuaObjectCount() do
+      local luaObject = self:getLuaObjectByIndex(i)
+      if luaObject and luaObject.waterAmount < luaObject.waterMax then
+        luaObject.waterAmount = math.min(luaObject.waterMax, luaObject.waterAmount + 5)
+        local isoObject = luaObject:getIsoObject()
+        if isoObject then
+          isoObject:setWaterAmount(luaObject.waterAmount)
+          isoObject:transmitModData()
+        end
       end
     end
   end
-end
 
 
 
----
---- Wrapper to invoke the refill method of each water well instance
----
-local function EveryTenMinutes()
-  SWaterWellSystem.instance:refill()
-end
+  ---
+  --- Wrapper to invoke the refill method of each water well instance
+  ---
+  local function EveryTenMinutes()
+    SWaterWellSystem.instance:refill()
+  end
 
 
 
----
---- Writes the new water amount from global object to this lua object
---- @param object IsoObject Target buildings JS object instance
---- @param _ int Previous water amount
----
-local function OnWaterAmountChange(object, _)
-  if not object then return end
-  local luaObject = SWaterWellSystem.instance:getLuaObjectAt(object:getX(), object:getY(), object:getZ())
-  if luaObject then luaObject.waterAmount = object:getWaterAmount() end
-end
+  ---
+  --- Writes the new water amount from global object to this lua object
+  --- @param object IsoObject Target buildings JS object instance
+  --- @param _ int Previous water amount
+  ---
+  local function OnWaterAmountChange(object, _)
+    if not object then return end
+    local luaObject = SWaterWellSystem.instance:getLuaObjectAt(object:getX(), object:getY(), object:getZ())
+    if luaObject then luaObject.waterAmount = object:getWaterAmount() end
+  end
 
 
-SGlobalObjectSystem.RegisterSystemClass(SWaterWellSystem)
-Events.EveryTenMinutes.Add(EveryTenMinutes)
-Events.OnWaterAmountChange.Add(OnWaterAmountChange)
-
-
-
-
-require 'Map/SGlobalObject'
-
---- @class SWaterWellGlobalObject : SGlobalObject
-SWaterWellGlobalObject = SGlobalObject:derive('SWaterWellGlobalObject')
-
-
----
---- Creates a new global object on server-side
---- @param luaSystem SGlobalObjectSystem Global object controller
---- @param globalObject SGlobalObject Target global object
----
-function SWaterWellGlobalObject:new(luaSystem, globalObject)
-  return SGlobalObject.new(self, luaSystem, globalObject)
-end
+  SGlobalObjectSystem.RegisterSystemClass(SWaterWellSystem)
+  Events.EveryTenMinutes.Add(EveryTenMinutes)
+  Events.OnWaterAmountChange.Add(OnWaterAmountChange)
 
 
 
----
---- Initialises a new global object
----
-function SWaterWellGlobalObject:initNew()
-  self.waterAmount = ISWaterWell.defaults.properties.waterAmount
-  self.waterMax = ISWaterWell.defaults.properties.waterMax
-end
+
+  require 'Map/SGlobalObject'
+
+  --- @class SWaterWellGlobalObject : SGlobalObject
+  SWaterWellGlobalObject = SGlobalObject:derive('SWaterWellGlobalObject')
+
+
+  ---
+  --- Creates a new global object on server-side
+  --- @param luaSystem SGlobalObjectSystem Global object controller
+  --- @param globalObject SGlobalObject Target global object
+  ---
+  function SWaterWellGlobalObject:new(luaSystem, globalObject)
+    return SGlobalObject.new(self, luaSystem, globalObject)
+  end
 
 
 
----
---- Transfers the current vales from the buildings JS object to the global object
---- @param isoObject IsoThumpable Target buildings JS object instane
----
-function SWaterWellGlobalObject:stateFromIsoObject(isoObject)
-  self.waterAmount = isoObject:getWaterAmount()
-  self.waterMax = isoObject:getModData().waterMax
-  isoObject:getModData().waterMax = self.waterMax
-  isoObject:transmitModData()
-end
+  ---
+  --- Initialises a new global object
+  ---
+  function SWaterWellGlobalObject:initNew()
+    self.waterAmount = ISWaterWell.defaults.properties.waterAmount
+    self.waterMax = ISWaterWell.defaults.properties.waterMax
+  end
 
 
 
----
---- Transfers the current values from the global object to the buildings JS object
---- @param isoObject IsoThumpable Target buildings JS object instance
----
-function SWaterWellGlobalObject:stateToIsoObject(isoObject)
-  if not self.waterAmount then self.waterAmount = ISWaterWell.defaults.properties.waterAmount end
-  if not self.waterMax then self.waterMax = ISWaterWell.defaults.properties.waterMax end
-  isoObject:setWaterAmount(self.waterAmount)
-  isoObject:getModData().waterMax = self.waterMax
-  isoObject:transmitModData()
+  ---
+  --- Transfers the current vales from the buildings JS object to the global object
+  --- @param isoObject IsoThumpable Target buildings JS object instane
+  ---
+  function SWaterWellGlobalObject:stateFromIsoObject(isoObject)
+    self.waterAmount = isoObject:getWaterAmount()
+    self.waterMax = isoObject:getModData().waterMax
+    isoObject:getModData().waterMax = self.waterMax
+    isoObject:transmitModData()
+  end
+
+
+
+  ---
+  --- Transfers the current values from the global object to the buildings JS object
+  --- @param isoObject IsoThumpable Target buildings JS object instance
+  ---
+  function SWaterWellGlobalObject:stateToIsoObject(isoObject)
+    if not self.waterAmount then self.waterAmount = ISWaterWell.defaults.properties.waterAmount end
+    if not self.waterMax then self.waterMax = ISWaterWell.defaults.properties.waterMax end
+    isoObject:setWaterAmount(self.waterAmount)
+    isoObject:getModData().waterMax = self.waterMax
+    isoObject:transmitModData()
+  end
+
+
+
+
+  ---
+  --- Initialises the global objects of all existing building JS objects while loading the map
+  --- @param isoObject IsoThumpable Target building object JS object instance
+  ---
+  local function loadGlobalObject(isoObject)
+    if not instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end
+    SWaterWellSystem.instance:loadIsoObject(isoObject)
+  end
+
+  MapObjects.OnLoadWithSprite(ISWaterWell.defaults.sprites.sprite, loadGlobalObject, ISWaterWell.defaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority)
+
 end
