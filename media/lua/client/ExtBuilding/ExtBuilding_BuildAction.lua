@@ -1,4 +1,4 @@
-
+--[[
 --- @class ExtBuildingBuildAction : ISBuildAction
 ExtBuildingBuildAction = ISBuildAction:derive('ExtBuildingBuildAction')
 
@@ -70,3 +70,4 @@ function ExtBuildingBuildAction:perform()
   print('Timed Action ExtBuildingBuildAction completed')
   ISBaseTimedAction.perform(self)
 end
+--]]

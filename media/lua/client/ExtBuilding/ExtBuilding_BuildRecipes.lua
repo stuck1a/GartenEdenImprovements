@@ -210,10 +210,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
     -- Metallkiste
   },
   ContextMenu_ExtBuilding_Cat__Technology = {
-    {
-      name = 'ContextMenu_ExtBuilding_Obj__WaterWell',
-      targetClass = 'ISWaterWell'
-    },
+    { targetClass = 'ISWaterWell' },
     -- Generator
     -- Kühlschrank
     -- Radio

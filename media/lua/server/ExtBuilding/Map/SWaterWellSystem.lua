@@ -1,20 +1,21 @@
 if isClient() then return end
 require 'Map/SGlobalObjectSystem'
 
+
 --- @class SWaterWellSystem : SGlobalObjectSystem
 SWaterWellSystem = SGlobalObjectSystem:derive('SWaterWellSystem')
 
 
 function SWaterWellSystem:new()
-  return SGlobalObjectSystem.new(self, 'waterwell')
+  return SGlobalObjectSystem.new(self, ISWaterWell.defaults.isoData.systemName or 'unnamed')
 end
 
 
 
 function SWaterWellSystem:initSystem()
   SGlobalObjectSystem.initSystem(self)
-  self.system:setModDataKeys({})
-  self.system:setObjectModDataKeys({'waterAmount', 'waterMax'})
+  self.system:setModDataKeys(ISWaterWell.defaults.isoData.modDataKeys or ISExtBuildingObject.defaults.isoData.modDataKeys or {})
+  self.system:setObjectModDataKeys(ISWaterWell.defaults.isoData.objectModDataKeys or ISExtBuildingObject.defaults.isoData.objectModDataKeys or {})
   self:convertOldModData()
 end
 
@@ -29,10 +30,10 @@ end
 ---
 --- Checks, if a given IsoObject is a water well or not
 --- @param isoObject IsoObject Target object
---- @return boolean True, if the object belongs to the system "waterwell"
+--- @return boolean True, if the object is linked to this system
 ---
 function SWaterWellSystem:isValidIsoObject(isoObject)
-  return instanceof(isoObject, 'IsoThumpable') and isoObject:getName() == 'Water Well'
+  return instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and isoObject:getName() == ISWaterWell.defaults.name
 end
 
 
@@ -76,7 +77,7 @@ end
 
 ---
 --- Writes the new water amount from global object to this lua object
---- @param object IsoObject
+--- @param object IsoObject Global object instance
 --- @param _ int Previous water amount
 ---
 local function OnWaterAmountChange(object, _)

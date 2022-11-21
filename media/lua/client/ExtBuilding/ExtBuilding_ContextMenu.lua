@@ -10,11 +10,13 @@ ExtBuildingContextMenu = ExtBuildingContextMenu or {}
 ---
 ExtBuildingContextMenu.doMenu = function(player, context)
   context:removeOptionByName(getText('ContextMenu_MetalWelding'))
-  local oBuildOption = context:insertOptionAfter(getText('ContextMenu_Build'), getText('ContextMenu_Build'))
-  context:removeOptionByName(getText('ContextMenu_Build'))
-  local oSubMenu = ISContextMenu:getNew(context)
-  context:addSubMenu(oBuildOption, oSubMenu)
-  ExtBuildingContextMenu.doMenuRecursive(oSubMenu, ExtBuildingContextMenu.BuildingRecipes, player)
+  if ISBuildMenu.haveSomethingtoBuild(player) then
+    local oBuildOption = context:insertOptionAfter(getText('ContextMenu_Build'), getText('ContextMenu_Build'))
+    context:removeOptionByName(getText('ContextMenu_Build'))
+    local oSubMenu = ISContextMenu:getNew(context)
+    context:addSubMenu(oBuildOption, oSubMenu)
+    ExtBuildingContextMenu.doMenuRecursive(oSubMenu, ExtBuildingContextMenu.BuildingRecipes, player)
+  end
 end
 
 
@@ -48,18 +50,12 @@ ExtBuildingContextMenu.doMenuRecursive = function(menu, defTable, player)
       ExtBuildingContextMenu.doMenuRecursive(subMenu, recipe, player)
     else
       -- building recipes
-      local targetClass = _G[recipe.targetClass] or _G['ISExtBuildingObject']
-      if targetClass then
+      local targetClass = _G[recipe.targetClass] or ISExtBuildingObject
+      if targetClass ~= nil then
         local recipeName
-        if recipe.name ~= nil then recipeName = recipe.name elseif targetClass._name ~= nil then recipeName = targetClass._name else recipeName = tostring(name or '?') end
+        if recipe.displayName ~= nil then recipeName = recipe.displayName elseif targetClass.defaults.displayName ~= nil then recipeName = targetClass.defaults.displayName else recipeName = ISExtBuildingObject.defaults.displayName end
         local option = menu:addOption(getText(recipeName), player, ExtBuildingContextMenu.onClickEntry, targetClass, recipe)
-        if not option.toolTip ~= nil then
-          if targetClass.makeTooltip ~= nil then
-            option.toolTip = targetClass.makeTooltip(player, option, recipe, targetClass)
-          elseif targetClass.toolTip ~= nil then
-            option.toolTip = targetClass.toolTip
-          end
-        end
+        option.toolTip = targetClass.makeTooltip(player, option, recipe, targetClass)
       else
         print(string.format('[ExtBuilding] Entry contains invalid building object class "%s" - SKIPPED', recipe.targetClass or 'nil'))
       end

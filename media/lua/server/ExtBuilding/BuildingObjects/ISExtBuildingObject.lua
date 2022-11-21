@@ -5,20 +5,17 @@ require 'BuildingObjects/ISBuildingObject'
 ISExtBuildingObject = ISBuildingObject:derive('ISExtBuildingObject')
 
 
--- Generic defaults
+-- Generic defaults (those are absolutely mandatory for initialisation)
 ISExtBuildingObject.defaults = {
+  displayName = 'UNKNOWN',
+  name = 'UNKNOWN',
   buildTime = 200,
   baseHealth = 200,
   mainMaterial = 'wood',
   hasSpecialTooltip = false,
   breakSound = 'BreakObject',
-  sprites = {
-    sprite = 'invisible_01_0'
-  },
-  isoData = {
-    isoType = 'IsoThumpable',
-    mapObjectPriority = 7
-  }
+  sprites = { sprite = 'invisible_01_0' },
+  isoData = { isoType = 'IsoThumpable', mapObjectPriority = 7 }
 }
 
 
@@ -40,37 +37,41 @@ ISExtBuildingObject.merge = function(a, b, recurse)
 end
 
 
+
+
 ---
 --- Set up properties the constructors will effectively use
 --- Recipe level values have highest priority, then class defaults
 --- the generic class defaults and finally vanilla defaults
 --- @param recipe table The defined building recipe
---- @param base ISBuildingObject Type class defaults
+--- @param classDefaults table Descendant class settings
 ---
-function ISExtBuildingObject:initialise(recipe, base)
-  local active = ISExtBuildingObject.merge(ISExtBuildingObject.merge(ISExtBuildingObject.defaults, base), recipe)
-  self.buildTime = active.buildTime
-  self.baseHealth = active.baseHealth
-  self.mainMaterial = active.mainMaterial
-  self.hasSpecialTooltip = active.hasSpecialTooltip
-  self.breakSound = active.breakSound
-  self:setSprite(active.sprites.sprite)
-  self:setNorthSprite(active.sprites.north or active.sprites.sprite)
-  if active.sprites.east then self:setEastSprite(active.sprites.east) end
-  if active.sprites.south then self:setEastSprite(active.sprites.south) end
-  if active.sprites.openSprite or active.sprites.openNorthSprite then
-    self.openSprite = active.sprites.openSprite or active.sprites.openNorthSprite
-    self.openNorthSprite = active.sprites.openNorthSprite or active.sprites.openSprite
+function ISExtBuildingObject:initialise(recipe, classDefaults)
+  local settings = ISExtBuildingObject.merge(ISExtBuildingObject.merge(ISExtBuildingObject.defaults, classDefaults), recipe)
+  self.displayName = settings.displayName
+  self.name = settings.name
+  self.buildTime = settings.buildTime
+  self.baseHealth = settings.baseHealth
+  self.mainMaterial = settings.mainMaterial
+  self.hasSpecialTooltip = settings.hasSpecialTooltip
+  self.breakSound = settings.breakSound
+  self:setSprite(settings.sprites.sprite)
+  self:setNorthSprite(settings.sprites.north or settings.sprites.sprite)
+  if settings.sprites.east then self:setEastSprite(settings.sprites.east) end
+  if settings.sprites.south then self:setEastSprite(settings.sprites.south) end
+  if settings.sprites.openSprite or settings.sprites.openNorthSprite then
+    self.openSprite = settings.sprites.openSprite or settings.sprites.openNorthSprite
+    self.openNorthSprite = settings.sprites.openNorthSprite or settings.sprites.openSprite
   end
-  if active.properties then
-    for k,v in ipairs(active.properties) do
+  if settings.properties then
+    for k,v in ipairs(settings.properties) do
       if k ~= nil then
-        if type(v) == 'table' then self[k] = ISExtBuildingObject.merge(self[k], active.properties[k]) else self[k] = v end
+        if type(v) == 'table' then self[k] = ISExtBuildingObject.merge(self[k], settings.properties[k]) else self[k] = v end
       end
     end
   end
-  self.isoData = active.isoData
-  self.modData = active.modData
+  self.isoData = settings.isoData
+  self.modData = settings.modData
 end
 
 
@@ -95,7 +96,7 @@ function ISExtBuildingObject:create(x, y, z, north, sprite)
   end
   buildUtil.setInfo(self.javaObject, self)
   buildUtil.consumeMaterial(self)
-  self.javaObject:setMaxHealth(self:getHealth(self.mainMaterial))
+  self.javaObject:setMaxHealth(self:getHealth(self.mainMaterial, self.baseHealth))
   self.javaObject:setHealth(self.javaObject:getMaxHealth())
   self.javaObject:setBreakSound(self.breakSound)
   self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
@@ -114,10 +115,8 @@ function ISExtBuildingObject:new(player, recipe)
   setmetatable(o, self)
   self.__index = self
   o:init()
-  o:initialise(recipe, self.classDefaults)
-  -- self:initialise(recipe)
+  o:initialise(recipe, self.defaults)
   o.player = player
-  o.name = 'Water Well'
   return o
 end
 
@@ -125,9 +124,11 @@ end
 
 ---
 --- Defines and returns the total health of the target building
+--- @param mainMaterial string The defined main material
+--- @param baseHealth int The defined base health
 --- @return int Max health of the building
 ---
-function ISExtBuildingObject:getHealth(mainMaterial)
+function ISExtBuildingObject:getHealth(mainMaterial, baseHealth)
   local plr, perk = getSpecificPlayer(self.player)
   if     mainMaterial == 'wood'  then perk = Perks.Woodwork
   elseif mainMaterial == 'metal' then perk = Perks.MetalWelding
@@ -317,7 +318,7 @@ end
 --- @param player number Target player ID
 --- @param option ISContextMenu Build menu entry
 --- @param recipe table Definition table
---- @param targetClass IsoObject World object type
+--- @param targetClass ISExtBuildingObject Type class
 --- @return ISToolTip Tooltip panel for the build menu entry
 ---
 function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
@@ -325,10 +326,10 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   local canBuild = true
   local sRed,sGreen,sWhite = ' <RGB:.9,0,0> ',' <RGB:0,0.7,0> ',' <RGB:1,1,1> '
   local sPen = sWhite
-  local getText,split,getItemName,stringStarts,format = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format
+  local getText,split,getItemName,stringStarts,format,merge = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format,ISExtBuildingObject.merge
   local oPlayer = getSpecificPlayer(player)
   local oInv = oPlayer:getInventory()
-  local settings = ISExtBuildingObject.merge(ISExtBuildingObject.merge(ISExtBuildingObject.defaults, targetClass.classDefaults), recipe)
+  local settings = merge(merge(ISExtBuildingObject.defaults, targetClass.defaults), recipe)
   toolTip:initialise()
   toolTip:setName(option.name)
   toolTip:setTexture(settings.sprites.sprite)
@@ -371,7 +372,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
         for i=1, #itemList do
           if itemList ~= nil and itemList[i] ~= nil then
             sum = sum + oInv:getCountTypeRecurse(itemList[i]) or 0
-            if itemList[i] == 'Base.Nails' then sum = oInv:getCountTypeRecurse(itemList[i]) * 100 end
+            if itemList[i] == 'Base.Nails' then sum = oInv:getCountTypeRecurse('Base.NailsBox') * 100 end
             materialString = materialString .. getItemName(itemList[i])
             if i < #itemList then materialString = materialString .. '/' end
           end

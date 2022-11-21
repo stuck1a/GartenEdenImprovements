@@ -5,8 +5,9 @@ if not 'ISExtBuildingObject' then require 'ExtBuilding/BuildingObjects/ISExtBuil
 ISWaterWell = ISExtBuildingObject:derive('ISWaterWell')
 
 -- Building type defaults
-ISWaterWell.classDefaults = {
+ISWaterWell.defaults = {
   displayName = 'ContextMenu_ExtBuilding_Obj__WaterWell',
+  name = 'Water Well',
   buildTime = 500,
   baseHealth = 600,
   mainMaterial = 'stone',
@@ -18,7 +19,12 @@ ISWaterWell.classDefaults = {
   },
   isoData = {
     systemName = 'waterwell',
+    objectModDataKeys = { 'waterAmount', 'waterMax' },
   },
+  --properties = {
+  --  waterAmount = 50,
+  --  waterMax = 5000,
+  --},
   modData = {
     ['keep:' .. UtilsSrv.ConcatItemTypes({'Hammer'})] = 'Base.Hammer',
     ['keep:' .. UtilsSrv.ConcatItemTypes({'Saw'})] = 'Base.Saw',
@@ -35,7 +41,10 @@ ISWaterWell.classDefaults = {
   }
 }
 
-
+ISWaterWell.initialValues = {
+  waterAmount = 50,
+  waterMax = 5000
+}
 
 
 
@@ -51,7 +60,7 @@ function ISWaterWell:create(x, y, z, north, sprite)
   ISExtBuildingObject.create(self, x, y, z, north, sprite)
   self.javaObject:setName(self.name)
   self.javaObject:getModData()['waterMax'] = self.waterMax
-  self.javaObject:getModData()['waterAmount'] = 50
+  self.javaObject:getModData()['waterAmount'] = self.initialValues.waterAmount
   self.javaObject:transmitCompleteItemToServer()
   if getCore():getGameMode() ~= 'Multiplayer' then triggerEvent('OnObjectAdded', self.javaObject) end
 end
@@ -62,13 +71,13 @@ end
 --- Lua object constructor - generates a new water well
 --- @param player number Target player ID
 --- @param recipe table The building definition - used to add/alter class fields/properties/modData
---- @return ISWaterWell
+--- @return ISWaterWell BuildingObject instance
 ---
 function ISWaterWell:new(player, recipe)
   local o = ISExtBuildingObject.new(self, player, recipe)
   setmetatable(o, self)
   self.__index = self
-  o.waterMax = 5000
+  o.waterMax = self.initialValues.waterMax
   return o
 end
 
@@ -100,14 +109,13 @@ end
 
 
 ---
---- DoSpecialTooltip-EventListener
---- Creates global context menu entries for global objects of type waterwell
---- @param tooltipUI UIElement Java tooltip factory
+--- Creates the hover tooltip for wells showing an amount bar if near enough
+--- @param tooltipUI UIElement Tooltip factory
 --- @param square IsoGridSquare Clicked square
 ---
 local function DoSpecialTooltip(tooltipUI, square)
   local oPlayer = getSpecificPlayer(0)
-  if not oPlayer or oPlayer:getZ() ~= square:getZ() or oPlayer:DistToSquared(square:getX() + 0.5, square:getY() + 0.5) > 2 * 2 then return end
+  if not oPlayer or oPlayer:getZ() ~= square:getZ() or oPlayer:DistToSquared(square:getX() + 0.5, square:getY() + 0.5) > 4 then return end
   local oIsoWell = CWaterWellSystem.instance:getIsoObjectOnSquare(square)
   if not oIsoWell or not oIsoWell:getModData()['waterMax'] then return end
   local font = UIFont.Small
@@ -119,8 +127,8 @@ local function DoSpecialTooltip(tooltipUI, square)
   local barY = textY + (fontHeight - barHgt) / 2 + 2
   tooltipUI:setWidth(barX + barWid + 12)
   tooltipUI:DrawTextureScaledColor(nil, 0, 0, tooltipUI:getWidth(), tooltipUI:getHeight(), 0, 0, 0, 0.75)
-  tooltipUI:DrawTextCentre(getText('ContextMenu_ExtBuilding_Obj__WaterWell'), tooltipUI:getWidth() / 2, 6, 1, 1, 1, 1)
-  tooltipUI:DrawText(getText('IGUI_invpanel_Remaining') .. ':', textX, textY, 1, 1, 1, 1)
+  tooltipUI:DrawTextCentre(getText(ISWaterWell.defaults.displayName), tooltipUI:getWidth() / 2, 6, 1, 1, 1, 1)
+  tooltipUI:DrawText(getText('IGUI_invpanel_Remaining'), textX, textY, 1, 1, 1, 1)
   local percent = oIsoWell:getWaterAmount() / oIsoWell:getModData()['waterMax']
   if percent < 0 then percent = 0 end
   if percent > 1 then percent = 1 end
@@ -132,16 +140,11 @@ end
 
 
 
-
-
--- TODO: Wenn der Kram hier in ISExtBuildingObject generalisiert wird,
---       am besten die merged settings auch als Feld speichern,
---       damit man an stellen wie hier ab der Initialisierung immer darauf zugreifen kann
-local function LoadWaterWell(isoObject)
-  if not instanceof(isoObject, ISWaterWell.classDefaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end
+local function loadGlobalObject(isoObject)
+  if not instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end
   SWaterWellSystem.instance:loadIsoObject(isoObject)
 end
 
 
 Events.DoSpecialTooltip.Add(DoSpecialTooltip)
-MapObjects.OnLoadWithSprite(ISWaterWell.classDefaults.sprites.sprite or ISExtBuildingObject.defaults.sprites.sprite, LoadWaterWell, ISWaterWell.classDefaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority)
+MapObjects.OnLoadWithSprite(ISWaterWell.defaults.sprites.sprite, loadGlobalObject, ISWaterWell.defaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority)
