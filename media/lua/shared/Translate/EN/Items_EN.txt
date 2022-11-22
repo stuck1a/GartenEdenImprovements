@@ -1,0 +1,6 @@
+Items_EN = {
+
+  /** ExtBuilding (Global Objects) **/
+  waterwell = "Water Well",
+
+}

@@ -342,11 +342,11 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
         local perk = Perks.FromString(split(k, ':')[2])
         local plrLvl = oPlayer:getPerkLevel(perk)
         if plrLvl < v then sPen = sRed; canBuild = false else sPen = sGreen end
-        desc = format('%s %s %s %d\n', desc, sPen, perk:getName(), v)
+        desc = format('%s <INDENT:2> %s %s %d\n', desc, sPen, perk:getName(), v)
       end
     end
     -- required tools
-    desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
+    desc = format('%s <INDENT:0> %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
     for k,v in pairs(settings.modData) do
       if stringStarts(k, 'keep:') then
         local toolList = split(split(k, ':')[2], '/')
@@ -357,11 +357,11 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
           end
         end
         if found then sPen = sGreen else sPen = sRed; canBuild = false end
-        desc = format('%s %s %s \n', desc, sPen, getItemName(v))
+        desc = format('%s <INDENT:2> %s %s \n', desc, sPen, getItemName(v))
       end
     end
     -- required materials
-    desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
+    desc = format('%s <INDENT:0> %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
     for k,v in pairs(settings.modData) do
       if not v then v = 1 end
       -- items
@@ -385,7 +385,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
           sPen = sGreen
           materialString = format('%s %d', materialString, v)
         end
-        desc = format('%s %s %s\n', desc, sPen, materialString)
+        desc = format('%s <INDENT:2> %s %s\n', desc, sPen, materialString)
       -- drainables
       elseif stringStarts(k, 'use:') then
         local sum = 0
@@ -406,17 +406,13 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
             if i < #itemList then materialString = materialString .. '/' end
           end
         end
-        if sum < v then
-          sPen = sRed
-          materialString = format('%s %d/%d', materialString, sum, v)
-          canBuild = false
+        if sum < v then sPen = sRed; canBuild = false else sPen = sGreen end
+        if v == 1 then
+          materialString = getText('IGUI_CraftUI_CountOneUnit', materialString)
         else
-          sPen = sGreen
-          materialString = format('%s %d', materialString, v)
+          materialString = getText('IGUI_CraftUI_CountUnits', materialString, getText('IGUI_CraftUI_Controls1', sum, v))
         end
-        local unitName
-        if v > 1 then unitName = 'Tooltip_ExtBuilding__Units' else unitName = 'Tooltip_ExtBuilding__Unit' end
-        desc = format('%s %s %s %s\n', desc, sPen, materialString, getText(unitName))
+        desc = format('%s <INDENT:2> %s %s\n', desc, sPen, materialString)
       end
     end
   end

@@ -202,8 +202,6 @@ Tooltip_DE = {
   Tooltip_ExtBuilding__RequiredSkills = "Benötigte Fähigkeiten",
   Tooltip_ExtBuilding__RequiredTools = "Benötigtes Werkzeug",
   Tooltip_ExtBuilding__RequiredMaterials = "Benötigtes Baumaterial",
-  Tooltip_ExtBuilding__Units = "Einheiten",
-  Tooltip_ExtBuilding__Unit = "Einheit",
-  Tooltip_ExtBuilding__WaterWell = "Eine praktisch unerschöpfliche Wasserquelle.<LINE>Liefert trinkbares Grundwasser, dass so rein ist, das selbst verseuchter Regen die Qualität nicht mindern kann.<LINE>Be water my friend.",
+  Tooltip_ExtBuilding__WaterWell = "Eine nahezu unerschöpfliche Wasserquelle. <LINE> Liefert trinkbares Grundwasser, das so rein ist, dass selbst kontaminierter Regen es nicht verseuchen kann. <LINE> <INDENT:4> - \"be water my friend\"",
 
 }

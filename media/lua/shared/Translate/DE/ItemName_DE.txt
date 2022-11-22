@@ -27,4 +27,8 @@ ItemName_DE = {
   
   /** Gate **/
   Gate.GateKey = "Torschlüssel",
+
+  /** ExtBuilding (Global Objects) **/
+  waterwell = "Brunnen",
+
 }
