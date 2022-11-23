@@ -197,17 +197,6 @@ if isClient() then
 
 
 
-  ---
-  --- Allows clients to get the iso object linked with the global objects
-  --- @return IsoObject The iso object instance linked with this global object
-  ---
-  function CWaterWellGlobalObject:getObject()
-    -- TODO: Really needed? It just wraps/maps the function SGlobalObjectSystem:getIsoObject()
-    return self:getIsoObject()
-  end
-
-
-
 
   --- @class ISWaterWellMenu
   ISWaterWellMenu = {}
@@ -248,22 +237,23 @@ if isClient() then
     if not found then return end
     local oPlayer = getSpecificPlayer(player)
     if oWell and oWell:getSquare():getBuilding() == oPlayer:getBuilding() then
-      -- option "pour on ground"
+      -- well option with tooltip
       local name = getText(ISWaterWell.defaults.displayName)
       local subMenu = context:getNew(context)
       local subOption = context:addOptionOnTop(name)
       context:addSubMenu(subOption, subMenu)
-      local optionPour = subMenu:addOption(getText('ContextMenu_Pour_on_Ground'), oWell, ISWaterWellMenu.emptyWaterWell, oPlayer)
-      if not oWell:hasWater() then
-        optionPour.onSelect = nil
-        optionPour.notAvailable = true
-      end
-      local tooltip = ISWorldObjectContextMenu.addToolTip()
+      local tooltip = ISWorldObjectContextMenu.addToolTip()  -- make use of the vanilla tooltip pool
       tooltip:setName(name)
       local tx = getTextManager():MeasureStringX(tooltip.font, getText('ContextMenu_WaterName') .. ':') + 20
       tooltip.description = string.format('%s: <SETX:%d> %d / %d', getText('ContextMenu_WaterName'), tx, oWell:getWaterAmount(), oWell:getWaterMax())
       tooltip.maxLineWidth = 512
       subOption.toolTip = tooltip
+      -- option "pour on ground"
+      local optionPour = subMenu:addOption(getText('ContextMenu_Pour_on_Ground'), oWell, ISWaterWellMenu.emptyWaterWell, oPlayer)
+      if not oWell:hasWater() then
+        optionPour.onSelect = nil
+        optionPour.notAvailable = true
+      end
       -- option "add water from item"
       local oInv = oPlayer:getInventory()
       rainCollectorBarrel = oWell
@@ -275,7 +265,6 @@ if isClient() then
         context:addSubMenu(newOption, context:getSubMenu(oldOption.subOption))
         context:removeLastOption()
       end
-
     end
     -- add debug options
     if isDebugEnabled() then
@@ -291,20 +280,11 @@ if isClient() then
       end
       local debugSubMenu = ISContextMenu:getNew(context)
       context:addSubMenu( debugOption, debugSubMenu)
-      debugSubMenu:addOption(ISWaterWell.defaults.displayName .. ': Zero Water', oWell, ISWaterWellMenu.OnWaterWellZeroWater, oPlayer)
-      debugSubMenu:addOption(ISWaterWell.defaults.displayName .. ': Set Water', oWell, ISWaterWellMenu.OnWaterWellSetWater)
+      debugSubMenu:addOption(name .. ': Zero Water', oWell, ISWaterWellMenu.OnWaterWellZeroWater, oPlayer)
+      debugSubMenu:addOption(name .. ': Set Water', oWell, ISWaterWellMenu.OnWaterWellSetWater)
     end
   end
 
-
-
-  ISWorldObjectContextMenu.onAddWaterFromItem = function(worldobjects, waterObject, waterItem, playerObj)
-    if not luautils.walkAdj(playerObj, waterObject:getSquare(), true) then return end
-    if waterItem:canStoreWater() and waterItem:isWaterSource() then
-      ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), waterItem, true)
-      ISTimedActionQueue.add(ISAddWaterFromItemAction:new(playerObj, waterItem, waterObject))
-    end
-  end
 
 
   ---
@@ -376,7 +356,6 @@ end
 
 if isServer() then
   require 'Map/SGlobalObjectSystem'
-
 
   --- @class SWaterWellSystem : SGlobalObjectSystem
   SWaterWellSystem = SGlobalObjectSystem:derive('SWaterWellSystem')
