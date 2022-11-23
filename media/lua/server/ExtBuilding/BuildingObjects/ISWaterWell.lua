@@ -222,6 +222,13 @@ if isClient() then
   --- @param test boolean Whether this call is a fetch only call for controller support
   ---
   function ISWaterWellMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, test)
+    --[[
+    TODO: FillGlobalObjectContextMenu-Erzeugung in ExtBuildingObject:create() generalisieren
+          Wie bei makeTooltip checken, ob es eine entsprechende Funktion gibt.
+          Besser wäre sogar, Callbacks oder zumindest Namen der Funktionen in defaults/recipe zu integrieren.
+          Evtl sollte dann ExtBuildingObject und evtl auch ExtBuildingContextMenu in Shared/0Framworks
+          verschoben werden, damit nichts required werden muss und trotzdem alles verfügbar ist.
+    --]]
     if test and ISWorldObjectContextMenu.Test then return true end
     local found, oWell = false
     for _,obj in ipairs(worldobjects) do
@@ -259,9 +266,16 @@ if isClient() then
       subOption.toolTip = tooltip
       -- option "add water from item"
       local oInv = oPlayer:getInventory()
-      worldItem = oWell
-      --ISWorldObjectContextMenu.addWaterFromItem(test, context, worldobjects, oPlayer, oInv)
-      worldItem = nil
+      rainCollectorBarrel = oWell
+      ISWorldObjectContextMenu.addWaterFromItem(test, context, worldobjects, oPlayer, oInv)
+      local oldOption = context:getOptionFromName(getText('ContextMenu_AddWaterFromItem'))
+      if oldOption ~= nil then
+        -- xcopy the option to the correct index
+        local newOption = context:insertOptionBefore(getText('ContextMenu_Drink'), oldOption.name, oldOption.target, nil)
+        context:addSubMenu(newOption, context:getSubMenu(oldOption.subOption))
+        context:removeLastOption()
+      end
+
     end
     -- add debug options
     if isDebugEnabled() then
@@ -284,6 +298,14 @@ if isClient() then
 
 
 
+  ISWorldObjectContextMenu.onAddWaterFromItem = function(worldobjects, waterObject, waterItem, playerObj)
+    if not luautils.walkAdj(playerObj, waterObject:getSquare(), true) then return end
+    if waterItem:canStoreWater() and waterItem:isWaterSource() then
+      ISWorldObjectContextMenu.equip(playerObj, playerObj:getPrimaryHandItem(), waterItem, true)
+      ISTimedActionQueue.add(ISAddWaterFromItemAction:new(playerObj, waterItem, waterObject))
+    end
+  end
+
 
   ---
   --- Removes all the water from the well
@@ -305,9 +327,8 @@ if isClient() then
   --- @param obj CWaterWellGlobalObject The global object instance of interest
   ---
   local function OnWaterWellConfirm(_, button, obj)
-    -- TODO: Kann man nicht auch einfach den target parameter nehmen anstatt den generischen var1? Dafür wird er doch wohl da sein...
     if button.internal == 'OK' then
-      local playerObj = getSpecificPlayer(0) -- TODO: Kann man den Player mitsenden oder könnte das schiefgehen? Ist 0 im DebugMode immer der Admin? Muss ja im Grunde nicht...
+      local playerObj = getSpecificPlayer(0)
       local text = button.parent.entry:getText()
       if tonumber(text) then
         local waterAmt = math.min(tonumber(text), obj:getWaterMax())
