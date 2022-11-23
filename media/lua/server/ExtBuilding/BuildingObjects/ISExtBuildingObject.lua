@@ -7,15 +7,14 @@ ISExtBuildingObject = ISBuildingObject:derive('ISExtBuildingObject')
 
 -- Generic defaults (those are absolutely mandatory for initialisation)
 ISExtBuildingObject.defaults = {
-  displayName = 'UNKNOWN',
-  name = 'UNKNOWN',
+  displayName = 'Unnamed',
   buildTime = 200,
-  baseHealth = 200,
+  baseHealth = 50,
   mainMaterial = 'wood',
   hasSpecialTooltip = false,
   breakSound = 'BreakObject',
   sprites = { sprite = 'invisible_01_0' },
-  isoData = { isoType = 'IsoThumpable', mapObjectPriority = 7 }
+  isoData = { isoName = 'unnamed', isoType = 'IsoThumpable', mapObjectPriority = 7 }
 }
 
 
@@ -48,8 +47,7 @@ end
 ---
 function ISExtBuildingObject:initialise(recipe, classDefaults)
   local settings = ISExtBuildingObject.merge(ISExtBuildingObject.merge(ISExtBuildingObject.defaults, classDefaults), recipe)
-  self.displayName = settings.displayName
-  self.name = settings.name
+  self.name = settings.isoData.isoName
   self.buildTime = settings.buildTime
   self.baseHealth = settings.baseHealth
   self.mainMaterial = settings.mainMaterial
@@ -87,6 +85,7 @@ end
 function ISExtBuildingObject:create(x, y, z, north, sprite)
   local cell = getWorld():getCell()
   self.sq = cell:getGridSquare(x, y, z)
+  -- buildings objects which can be opened/closed will use an overloaded constructor
   if self.openSprite ~= nil then
     local openSprite = self.openSprite
     if north then openSprite = self.openNorthSprite end
@@ -136,7 +135,7 @@ function ISExtBuildingObject:getHealth(mainMaterial, baseHealth)
   elseif mainMaterial == 'glass' then perk = Perks.Woodwork
   else   perk = Perks.Woodwork
   end
-  local health = 50 + plr:getPerkLevel(perk) * 50
+  local health = baseHealth + plr:getPerkLevel(perk) * 50
   if plr:HasTrait('Handy') then health = health + 100 end
   return health
 end
@@ -333,20 +332,20 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   toolTip:initialise()
   toolTip:setName(option.name)
   toolTip:setTexture(settings.sprites.sprite)
-  local desc = getText(settings.tooltipDesc or '') .. ' <LINE> '
+  local desc = getText(settings.tooltipDesc or '') .. ' <BR> <INDENT:0> <RGB:1,1,1> '
   if settings.modData ~= nil then
     -- required skills
-    desc = format('\n%s\n%s:\n', desc, getText('Tooltip_ExtBuilding__RequiredSkills'))
+    desc = format('%s <LINE> %s: <LINE> <INDENT:2> ', desc, getText('Tooltip_ExtBuilding__RequiredSkills'))
     for k,v in pairs(settings.modData) do
       if stringStarts(k, 'requires:') then
         local perk = Perks.FromString(split(k, ':')[2])
         local plrLvl = oPlayer:getPerkLevel(perk)
         if plrLvl < v then sPen = sRed; canBuild = false else sPen = sGreen end
-        desc = format('%s <INDENT:2> %s %s %d\n', desc, sPen, perk:getName(), v)
+        desc = format('%s %s %s %d <LINE> <INDENT:2> ', desc, sPen, perk:getName(), v)
       end
     end
     -- required tools
-    desc = format('%s <INDENT:0> %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
+    desc = format('%s <INDENT:0> %s <LINE> %s:<LINE> <INDENT:2> ', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
     for k,v in pairs(settings.modData) do
       if stringStarts(k, 'keep:') then
         local toolList = split(split(k, ':')[2], '/')
@@ -357,11 +356,11 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
           end
         end
         if found then sPen = sGreen else sPen = sRed; canBuild = false end
-        desc = format('%s <INDENT:2> %s %s \n', desc, sPen, getItemName(v))
+        desc = format('%s %s %s <LINE> <INDENT:2> ', desc, sPen, getItemName(v))
       end
     end
     -- required materials
-    desc = format('%s <INDENT:0> %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
+    desc = format('%s <INDENT:0> %s <LINE> %s: <LINE> <INDENT:2> ', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
     for k,v in pairs(settings.modData) do
       if not v then v = 1 end
       -- items
@@ -385,7 +384,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
           sPen = sGreen
           materialString = format('%s %d', materialString, v)
         end
-        desc = format('%s <INDENT:2> %s %s\n', desc, sPen, materialString)
+        desc = format('%s %s %s <LINE> <INDENT:2> ', desc, sPen, materialString)
       -- drainables
       elseif stringStarts(k, 'use:') then
         local sum = 0
@@ -410,9 +409,9 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
         if v == 1 then
           materialString = getText('IGUI_CraftUI_CountOneUnit', materialString)
         else
-          materialString = getText('IGUI_CraftUI_CountUnits', materialString, getText('IGUI_CraftUI_Controls1', sum, v))
+          materialString = getText('IGUI_CraftUI_CountUnits', materialString, sum .. '/' .. v)
         end
-        desc = format('%s <INDENT:2> %s %s\n', desc, sPen, materialString)
+        desc = format('%s <INDENT:2> %s %s <LINE> ', desc, sPen, materialString)
       end
     end
   end

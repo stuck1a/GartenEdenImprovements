@@ -1,0 +1,6 @@
+Moveables_EN {
+
+  /** ExtBuilding **/
+  Water_Well = "Well",
+
+}

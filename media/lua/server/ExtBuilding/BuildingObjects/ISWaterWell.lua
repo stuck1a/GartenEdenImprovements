@@ -7,10 +7,9 @@ ISWaterWell = ISExtBuildingObject:derive('ISWaterWell')
 
 ISWaterWell.defaults = {
   displayName = 'ContextMenu_ExtBuilding_Obj__WaterWell',
-  name = 'waterwell',
   buildTime = 500,
   baseHealth = 600,
-  mainMaterial = 'stone',
+  mainMaterial = 'stone',   -- decides which skill lvl determines the extra health (allowed is "wood", "metal", "stone" or "glass")
   hasSpecialTooltip = true,
   tooltipDesc = 'Tooltip_ExtBuilding__WaterWell',
   sprites = {
@@ -18,6 +17,7 @@ ISWaterWell.defaults = {
     north = 'garteneden_tech_01_1'
   },
   isoData = {
+    isoName = 'waterwell',    -- used as name for the iso object and global object system, if there is one
     objectModDataKeys = { 'waterAmount', 'waterMax' },
   },
   properties = {
@@ -52,7 +52,6 @@ ISWaterWell.defaults = {
 ---
 function ISWaterWell:create(x, y, z, north, sprite)
   ISExtBuildingObject.create(self, x, y, z, north, sprite)
-  self.javaObject:setName(self.name)
   self.javaObject:getModData()['waterMax'] = self.waterMax
   self.javaObject:getModData()['waterAmount'] = self.waterAmount
   self.javaObject:transmitCompleteItemToServer()
@@ -102,7 +101,7 @@ end
 
 
 ---
---- Creates the hover tooltip for wells showing an amount bar if near enough
+--- Creates the onHover tooltip for water wells showing an amount bar if near enough
 --- @param tooltipUI UIElement Tooltip factory
 --- @param square IsoGridSquare Clicked square
 ---
@@ -145,10 +144,11 @@ if isClient() then
 
 
   ---
-  ---  Creates a new JS global object system on client-side
+  --- Creates a new JS global object system on client-side
+  --- @return  CGlobalObjectSystem New controller instance of this global object system type
   ---
   function CWaterWellSystem:new()
-    return CGlobalObjectSystem.new(self, ISWaterWell.defaults.name)
+    return CGlobalObjectSystem.new(self, ISWaterWell.defaults.isoData.isoName or ISExtBuildingObject.isoData.isoName)
   end
 
 
@@ -159,14 +159,15 @@ if isClient() then
   --- @return boolean True, if the object is linked to this system
   ---
   function CWaterWellSystem:isValidIsoObject(isoObject)
-    return instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and isoObject:getName() == ISWaterWell.defaults.name
+    return instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and isoObject:getName() == ISWaterWell.defaults.isoData.isoName
   end
 
 
 
   ---
   --- Creates a new global object controller on client-side
-  --- @param globalObject SWaterWellGlobalObject Target global object type
+  --- @param globalObject CGlobalObject Target global object type
+  --- @return CGlobalObject New instance of the target object type
   ---
   function CWaterWellSystem:newLuaObject(globalObject)
     return CWaterWellGlobalObject:new(self, globalObject)
@@ -188,17 +189,20 @@ if isClient() then
   --- Creates a new global object on client-side
   --- @param luaSystem SGlobalObjectSystem Global object controller
   --- @param globalObject SGlobalObject Target global object
+  --- @return SGlobalObject New instance of the target global object
   ---
   function CWaterWellGlobalObject:new(luaSystem, globalObject)
     return CGlobalObject.new(self, luaSystem, globalObject)
   end
 
 
-  -- TODO: Really needed? It just wraps/maps the function SGlobalObjectSystem:getIsoObject()
+
   ---
   --- Allows clients to get the iso object linked with the global objects
+  --- @return IsoObject The iso object instance linked with this global object
   ---
   function CWaterWellGlobalObject:getObject()
+    -- TODO: Really needed? It just wraps/maps the function SGlobalObjectSystem:getIsoObject()
     return self:getIsoObject()
   end
 
@@ -219,15 +223,14 @@ if isClient() then
   ---
   function ISWaterWellMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, test)
     if test and ISWorldObjectContextMenu.Test then return true end
-    local aWaterWells = {}
-    local found = false
+    local found, oWell = false
     for _,obj in ipairs(worldobjects) do
       local square = obj:getSquare()
       if square then
         for i=1, square:getObjects():size() do
           local obj = square:getObjects():get(i-1)
           if CWaterWellSystem.instance:isValidIsoObject(obj) then
-            table.insert(aWaterWells, obj)
+            oWell = obj
             found = true
             break
           end
@@ -236,46 +239,55 @@ if isClient() then
       if found then break end
     end
     if not found then return end
-    for i=1, #aWaterWells do
-      local oWell = aWaterWells[i]
-      local oPlayer = getSpecificPlayer(player)
-      -- add well options if near and in same area
-      if oWell and oWell:getSquare():getBuilding() ~= oPlayer:getBuilding() then return end
-      if oWell and oPlayer:DistToSquared(oWell:getX() + 0.5, oWell:getY() + 0.5) < 4 then
-        if oWell:hasWater() then
-          local subMenu = context:getNew(context)
-          local subOption = context:addOptionOnTop(getText(ISWaterWell.defaults.displayName))
-          context:addSubMenu(subOption, subMenu)
-          subMenu:addOption(getText('ContextMenu_Pour_on_Ground'), oWell, ISWaterWellMenu.emptyWaterWell, oPlayer)
+    local oPlayer = getSpecificPlayer(player)
+    if oWell and oWell:getSquare():getBuilding() == oPlayer:getBuilding() then
+      -- option "pour on ground"
+      local name = getText(ISWaterWell.defaults.displayName)
+      local subMenu = context:getNew(context)
+      local subOption = context:addOptionOnTop(name)
+      context:addSubMenu(subOption, subMenu)
+      local optionPour = subMenu:addOption(getText('ContextMenu_Pour_on_Ground'), oWell, ISWaterWellMenu.emptyWaterWell, oPlayer)
+      if not oWell:hasWater() then
+        optionPour.onSelect = nil
+        optionPour.notAvailable = true
+      end
+      local tooltip = ISWorldObjectContextMenu.addToolTip()
+      tooltip:setName(name)
+      local tx = getTextManager():MeasureStringX(tooltip.font, getText('ContextMenu_WaterName') .. ':') + 20
+      tooltip.description = string.format('%s: <SETX:%d> %d / %d', getText('ContextMenu_WaterName'), tx, oWell:getWaterAmount(), oWell:getWaterMax())
+      tooltip.maxLineWidth = 512
+      subOption.toolTip = tooltip
+      -- option "add water from item"
+      local oInv = oPlayer:getInventory()
+      worldItem = oWell
+      --ISWorldObjectContextMenu.addWaterFromItem(test, context, worldobjects, oPlayer, oInv)
+      worldItem = nil
+    end
+    -- add debug options
+    if isDebugEnabled() then
+      -- if there are no other object debug options, the menu must be recreated
+      local debugOption = context:getOptionFromName('Objects')
+      if debugOption == nil then
+        if context:getOptionFromName('UIs') then
+          debugOption = context:insertOptionAfter('UIs', 'Objects', worldobjects)
+          debugOption.iconTexture = getTexture('media/ui/BugIcon.png')
+        else
+          debugOption = context:addDebugOption('Objects', worldobjects)
         end
       end
-
-      -- add object debug options
-      if isDebugEnabled() then
-        -- if there are no other object debug options, the menu must be recreated
-        local debugOption = context:getOptionFromName('Objects')
-        if debugOption == nil then
-          if context:getOptionFromName('UIs') then
-            debugOption = context:insertOptionAfter('UIs', 'Objects', worldobjects)
-            debugOption.iconTexture = getTexture('media/ui/BugIcon.png')
-          else
-            debugOption = context:addDebugOption('Objects', worldobjects)
-          end
-        end
-        local debugSubMenu = ISContextMenu:getNew(context)
-        context:addSubMenu( debugOption, debugSubMenu)
-        debugSubMenu:addOption(ISWaterWell.defaults.name .. ': Zero Water', oWell, ISWaterWellMenu.OnWaterWellZeroWater, oPlayer)
-        debugSubMenu:addOption(ISWaterWell.defaults.name .. ': Set Water', oWell, ISWaterWellMenu.OnWaterWellSetWater)
-      end
+      local debugSubMenu = ISContextMenu:getNew(context)
+      context:addSubMenu( debugOption, debugSubMenu)
+      debugSubMenu:addOption(ISWaterWell.defaults.displayName .. ': Zero Water', oWell, ISWaterWellMenu.OnWaterWellZeroWater, oPlayer)
+      debugSubMenu:addOption(ISWaterWell.defaults.displayName .. ': Set Water', oWell, ISWaterWellMenu.OnWaterWellSetWater)
     end
   end
 
 
 
-  -- TODO: Nur zum testen, ausgießen macht bei Brunnen wenig Sinn... Eher befüllen...
+
   ---
   --- Removes all the water from the well
-  --- @param obj CWaterWellGlobalObject Target global object instance
+  --- @param obj CGlobalObject Target global object instance
   --- @param oPlayer IsoPlayer Acting player object instance
   ---
   function ISWaterWellMenu.emptyWaterWell(obj, oPlayer)
@@ -353,7 +365,7 @@ if isServer() then
   --- Creates a new JS global object system on server-side
   ---
   function SWaterWellSystem:new()
-    return SGlobalObjectSystem.new(self, ISWaterWell.defaults.name or 'unnamed')
+    return SGlobalObjectSystem.new(self, ISWaterWell.defaults.isoData.isoName or ISExtBuilding.isoData.isoName)
   end
 
 
@@ -383,11 +395,11 @@ if isServer() then
 
   ---
   --- Checks, if a given IsoObject is a water well or not on server-side
-  --- @param isoObject IsoThumpable Target buildings JS object
+  --- @param isoObject IsoObject Target buildings JS object
   --- @return boolean True, if the object is linked to this system
   ---
   function SWaterWellSystem:isValidIsoObject(isoObject)
-    return instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and isoObject:getName() == ISWaterWell.defaults.name
+    return instanceof(isoObject, (ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType)) and isoObject:getName() == (ISWaterWell.defaults.isoData.isoName or ISExtBuildingObject.defaults.isoData.isoName)
   end
 
 
@@ -422,7 +434,7 @@ if isServer() then
 
 
   ---
-  --- Wrapper to invoke the refill method of each water well instance
+  --- Listener-Wrapper to invoke the refill method of each water well instance
   ---
   local function EveryTenMinutes()
     SWaterWellSystem.instance:refill()
@@ -478,7 +490,7 @@ if isServer() then
 
   ---
   --- Transfers the current vales from the buildings JS object to the global object
-  --- @param isoObject IsoThumpable Target buildings JS object instane
+  --- @param isoObject IsoObject Target buildings JS object instane
   ---
   function SWaterWellGlobalObject:stateFromIsoObject(isoObject)
     self.waterAmount = isoObject:getWaterAmount()
@@ -491,7 +503,7 @@ if isServer() then
 
   ---
   --- Transfers the current values from the global object to the buildings JS object
-  --- @param isoObject IsoThumpable Target buildings JS object instance
+  --- @param isoObject IsoObject Target buildings JS object instance
   ---
   function SWaterWellGlobalObject:stateToIsoObject(isoObject)
     if not self.waterAmount then self.waterAmount = ISWaterWell.defaults.properties.waterAmount end
@@ -506,13 +518,13 @@ if isServer() then
 
   ---
   --- Initialises the global objects of all existing building JS objects while loading the map
-  --- @param isoObject IsoThumpable Target building object JS object instance
+  --- @param isoObject IsoObject Target building object JS object instance
   ---
   local function loadGlobalObject(isoObject)
     if not instanceof(isoObject, ISWaterWell.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end
     SWaterWellSystem.instance:loadIsoObject(isoObject)
   end
 
-  MapObjects.OnLoadWithSprite(ISWaterWell.defaults.sprites.sprite, loadGlobalObject, ISWaterWell.defaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority)
+  MapObjects.OnLoadWithSprite(ISWaterWell.defaults.sprites.sprite or ISExtBuildingObject.defaults.sprites.sprite, loadGlobalObject, ISWaterWell.defaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority)
 
 end

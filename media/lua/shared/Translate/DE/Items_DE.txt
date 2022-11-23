@@ -1,6 +1,0 @@
-Items_DE = {
-
-  /** ExtBuilding **/
-  waterwell = "Brunnen"
-
-}

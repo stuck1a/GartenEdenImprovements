@@ -27,7 +27,4 @@ ItemName_EN = {
   
   /** Gate **/
   Gate.GateKey = "Gate Key",
-
-  /** ExtBuilding (Global Objects) **/
-  waterwell = "Water Well",
 }
