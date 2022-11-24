@@ -14,20 +14,13 @@ function Tag:create(x, y, z, north, sprite)
     local tagTile = IsoObject.new(gridSquare, sprite, 'Tag')
     local isoObjectModData = tagTile:getModData()
     isoObjectModData['isTag'] = 'true'
-    isoObjectModData['lastRainCheck'] = getGameTime():getWorldAgeHours()
-    isoObjectModData['isChalk'] = self.isChalk
     isoObjectModData['red'] = self.red
     isoObjectModData['green'] = self.green
     isoObjectModData['blue'] = self.blue
     local colorInfo = ColorInfo.new(self.red, self.green, self.blue, 1.0)
     tagTile:getSprite():setTintMod(colorInfo)
     gridSquare:AddTileObject(tagTile)
-    if isClient() then
-      tagTile:transmitCompleteItemToServer()
-    else
-      tagTile:transmitCompleteItemToClients()
-    end
-    -- Use paint, so decreasing quantity of paint in spraycan
+    if isClient() then tagTile:transmitCompleteItemToServer() else tagTile:transmitCompleteItemToClients() end
     self.sprayCanItem:Use()
   else
     self.playerObject:Say('UI_SprayPaint_CanIsEmpty')
@@ -51,7 +44,6 @@ function Tag:isValid(square, north)
     local props = square:getProperties()
     if props:Is(IsoFlagType.water) then return false end
   end
-  --  Special object layer must be yet unused
   if square:getSpecialObjects():size() == 0 then return false end
   return true
 end
@@ -70,7 +62,7 @@ end
 ---
 --- LuaObject constructor
 ---
-function Tag:new(player, sprayCanItem, shape, red, green, blue, isChalk)
+function Tag:new(player, sprayCanItem, shape, red, green, blue)
   local o = {}
   setmetatable(o, self)
   self.__index = self
@@ -83,7 +75,6 @@ function Tag:new(player, sprayCanItem, shape, red, green, blue, isChalk)
   o.red = red
   o.green = green
   o.blue = blue
-  o.isChalk = isChalk
   o.maxTime = 10
   o.noNeedHammer = true
   return o

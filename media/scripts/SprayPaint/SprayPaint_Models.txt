@@ -1,105 +1,57 @@
 module Base {
 
-  model spraycanTZWhite {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZWhite,
+  model SpraycanWhite {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanWhite,
     scale = 0.425,
   }
 
-  model spraycanTZRed {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZRed,
+  model SpraycanRed {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanRed,
     scale = 0.425,
   }
   
-  model spraycanTZBlue {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZBlue,
+  model SpraycanBlue {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanBlue,
     scale = 0.425,
   }
   
-  model spraycanTZGreen {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZGreen,
+  model SpraycanGreen {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanGreen,
     scale = 0.425,
   }
   
-  model spraycanTZOrange {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZOrange,
+  model SpraycanOrange {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanOrange,
     scale = 0.425,
   }
   
-  model spraycanTZYellow {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZYellow,
+  model SpraycanYellow {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanYellow,
     scale = 0.425,
   }
   
-  model spraycanTZViolet {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZViolet,
+  model SpraycanViolet {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanViolet,
     scale = 0.425,
   }
   
-  model spraycanTZBlack {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZBlack,
+  model SpraycanBlack {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanBlack,
     scale = 0.425,
   }
   
-  model spraycanTZCyan {
-    mesh = WorldItems/spraycanTZ,
-    texture = WorldItems/spraycanTZCyan,
+  model SpraycanCyan {
+    mesh = WorldItems/Spraycan,
+    texture = WorldItems/SpraycanCyan,
     scale = 0.425,
-  }
-  
-  model chalkTZWhite {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZWhite,
-    scale = 0.3,
-  }
-  
-  model chalkTZRed {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZRed,
-    scale = 0.3,
-  }
-  
-  model chalkTZBlue {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZBlue,
-    scale = 0.3,
-  }
-  
-  model chalkTZGreen {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZGreen,
-    scale = 0.3,
-  }
-  
-  model chalkTZOrange {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZOrange,
-    scale = 0.3,
-  }
-  
-  model chalkTZYellow {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZYellow,
-    scale = 0.3,
-  }
-  
-  model chalkTZViolet {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZViolet,
-    scale = 0.3,
-  }
-  
-  model chalkTZCyan {
-    mesh = WorldItems/chalkTZ,
-    texture = WorldItems/chalkTZCyan,
-    scale = 0.3,
   }
 
 }

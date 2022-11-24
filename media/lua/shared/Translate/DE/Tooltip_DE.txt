@@ -197,11 +197,12 @@ Tooltip_DE = {
   Tooltip_MoreTraits_ItemBoost = "Die Werte dieses Gegenstands werden durch eine deiner Eigenschaften verbessert.",
   Tooltip_MoreTraits_GordaniteBoost = "Brecheisen+",
   Tooltip_MoreTraits_GordaniteDefault = "Brecheisen",
-  
+  Tooltip_MoreTraits_Terminator = "Geboren, um zu töten...",
+
   /** ExtBuilding **/
   Tooltip_ExtBuilding__RequiredSkills = "Benötigte Fähigkeiten",
   Tooltip_ExtBuilding__RequiredTools = "Benötigtes Werkzeug",
   Tooltip_ExtBuilding__RequiredMaterials = "Benötigtes Baumaterial",
-  Tooltip_ExtBuilding__WaterWell = "Eine nahezu unerschöpfliche Wasserquelle. <LINE> Liefert trinkbares Grundwasser, das so rein ist, dass selbst kontaminierter Regen es nicht verseuchen kann. <LINE> <INDENT:4> - \"be water my friend\"",
+  Tooltip_ExtBuilding__WaterWell = "Eine nahezu unerschöpfliche Wasserquelle. <LINE> Liefert trinkbares Grundwasser, so rein, dass selbst kontaminierter Regen es nicht verseuchen kann. <LINE> <SETX:5> - "be water my friend"",
 
 }

@@ -7,7 +7,7 @@ ISWaterWell = ISExtBuildingObject:derive('ISWaterWell')
 
 ISWaterWell.defaults = {
   displayName = 'ContextMenu_ExtBuilding_Obj__WaterWell',
-  buildTime = 500,
+  buildTime = 700,
   baseHealth = 600,
   mainMaterial = 'stone',   -- decides which skill lvl determines the extra health (allowed is "wood", "metal", "stone" or "glass")
   hasSpecialTooltip = true,
@@ -25,9 +25,9 @@ ISWaterWell.defaults = {
     waterMax = 5000,
   },
   modData = {
-    ['keep:' .. UtilsSrv.ConcatItemTypes({'Hammer'})] = 'Base.Hammer',
-    ['keep:' .. UtilsSrv.ConcatItemTypes({'Saw'})] = 'Base.Saw',
-    ['keep:' .. UtilsSrv.ConcatItemTypes({'DigGrave'})] = 'Base.Shovel',
+    ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
+    ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+    ['keep:' .. utils.concatItemTypes({'DigGrave'})] = 'Base.Shovel',
     ['need:Base.Rope'] = 5,
     ['need:Base.Plank'] = 5,
     ['need:Base.Nails'] = 10,
@@ -61,7 +61,7 @@ end
 
 
 ---
---- Lua object constructor - generates a new water well
+--- Lua object constructor - generates a new well object
 --- @param player number Target player ID
 --- @param recipe table The building definition - used to add/alter class fields/properties/modData
 --- @return ISWaterWell BuildingObject instance
@@ -78,23 +78,13 @@ end
 ---
 --- Extension of the ghost tile placement validation
 --- @param square IsoGridSquare Clicked square object
---- @return boolean True, if well can be placed on current target square
+--- @return boolean True, if building can be placed on current target square
 ---
 function ISWaterWell:isValid(square)
   -- base rules (valid, walkable, free space, reachable, solid ground, etc)
   if not ISExtBuildingObject.isValid(self, square) then return false end
-  -- only on surface
-  if not getSpecificPlayer(self.player):getZ() == 0 then return false end
-  -- not under stairs
-  if buildUtil.stairIsBlockingPlacement(square, true) then return false end
-  -- tile must have any exterior, natural ground (except water)
-  for i=1, square:getObjects():size() do
-    local props = square:getProperties()
-    if props:Is(IsoFlagType.water) then return false end
-    local obj = square:getObjects():get(i-1)
-    local textureName = obj:getTextureName() or 'occupied'
-    if (not luautils.stringStarts(textureName, 'floors_exterior_natur')) and (not luautils.stringStarts(textureName, 'blends_natur')) then return false end
-  end
+  -- not in other players safehouses
+  if isClient() and SafeHouse.isSafeHouse(square, getSpecificPlayer(self.player):getUsername(), true) then return false end
   return true
 end
 
@@ -265,23 +255,23 @@ if isClient() then
         context:addSubMenu(newOption, context:getSubMenu(oldOption.subOption))
         context:removeLastOption()
       end
-    end
-    -- add debug options
-    if isDebugEnabled() then
-      -- if there are no other object debug options, the menu must be recreated
-      local debugOption = context:getOptionFromName('Objects')
-      if debugOption == nil then
-        if context:getOptionFromName('UIs') then
-          debugOption = context:insertOptionAfter('UIs', 'Objects', worldobjects)
-          debugOption.iconTexture = getTexture('media/ui/BugIcon.png')
-        else
-          debugOption = context:addDebugOption('Objects', worldobjects)
+      -- add debug options
+      if isDebugEnabled() then
+        -- if there are no other object debug options, the menu must be recreated
+        local debugOption = context:getOptionFromName('Objects')
+        if debugOption == nil then
+          if context:getOptionFromName('UIs') then
+            debugOption = context:insertOptionAfter('UIs', 'Objects', worldobjects)
+            debugOption.iconTexture = getTexture('media/ui/BugIcon.png')
+          else
+            debugOption = context:addDebugOption('Objects', worldobjects)
+          end
         end
+        local debugSubMenu = ISContextMenu:getNew(context)
+        context:addSubMenu( debugOption, debugSubMenu)
+        debugSubMenu:addOption(name .. ': Zero Water', oWell, ISWaterWellMenu.OnWaterWellZeroWater, oPlayer)
+        debugSubMenu:addOption(name .. ': Set Water', oWell, ISWaterWellMenu.OnWaterWellSetWater)
       end
-      local debugSubMenu = ISContextMenu:getNew(context)
-      context:addSubMenu( debugOption, debugSubMenu)
-      debugSubMenu:addOption(name .. ': Zero Water', oWell, ISWaterWellMenu.OnWaterWellZeroWater, oPlayer)
-      debugSubMenu:addOption(name .. ': Set Water', oWell, ISWaterWellMenu.OnWaterWellSetWater)
     end
   end
 

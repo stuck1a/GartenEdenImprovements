@@ -1,14 +1,11 @@
 UI_EN = {
   /** SprayPaint **/
-  UI_Spray = "Spray",
 	UI_SprayCan	= "Spray Can",
-	UI_Chalk = "Chalk",
 	UI_Miscellaneous = "Miscellaneous",
 	UI_Alphabet = "Alphabet",
 	UI_Numbers = "Numbers",
 	UI_SpecialChar = "Special Character",
 	UI_SprayOnFloor = "Spray on floor",
-	UI_ChalkOnFloor = "Chalk on floor",
 	UI_SimpleSymbol = "Simple symbol",
 	UI_Arrow = "Arrow",
 	UI_Cross = "Cross",
@@ -59,7 +56,6 @@ UI_EN = {
 	UI_optionscreen_binding_ToggleSpraypaintWindow = "Toggle spraypaint menu",
 	UI_SprayPaint_CanIsEmpty = "This spray can is empty.",
   UI_SprayPaint_NotHaveThisColor = "I don't have any spray can of that color.",
-  UI_SprayPaint_NotHaveThisChalkColor = "I don't have any chalk of that color.",
   
   /** More Traits **/
   UI_trait_gunspecialist = "Gun Specialist",
@@ -172,6 +168,7 @@ UI_EN = {
   UI_trait_gimp = "Slowpoke",
   UI_trait_gimpdesc = "You've always been the last in line.<br>You move 15% more slowly.",
   UI_trait_fast = "Fast",
+  UI_trait_terminator = "Terminator",
   UI_trait_fastdesc = "You were always quick on your feet.<br>You move 15% more quickly.",
   UI_trait_anemic = "Anemic",
   UI_trait_anemicdesc = "You bleed much more rapidly from wounds.",

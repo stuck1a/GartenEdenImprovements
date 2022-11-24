@@ -9,7 +9,7 @@ ISExtBuildingObject = ISBuildingObject:derive('ISExtBuildingObject')
 ISExtBuildingObject.defaults = {
   displayName = 'Unnamed',
   buildTime = 200,
-  baseHealth = 50,
+  baseHealth = 200,
   mainMaterial = 'wood',
   hasSpecialTooltip = false,
   breakSound = 'BreakObject',
@@ -18,21 +18,30 @@ ISExtBuildingObject.defaults = {
 }
 
 
-ISExtBuildingObject.merge = function(a, b, recurse)
+---
+--- Merges two objects while entries of b will replace identical entries of a if
+--- within the deepest level - used to merge recipe data over class defaults over general defaults.
+--- Can handle nil values and empty tables as well.
+--- @param a table Existing entries
+--- @param b table New entries to merge
+--- @param _r table DO NOT SET - used for recursion transfer
+--- @return table merged tables
+---
+ISExtBuildingObject.merge = function(a, b, _r)
   if a == nil then return b end
   if b == nil then b = {} end
-  if recurse == nil then recurse = {} end
+  if _r == nil then _r = {} end
   for k,v in pairs(a) do
     if k ~= nil then
-      if type(v) == 'table' then recurse[k] = ISExtBuildingObject.merge(a[k], v, recurse[k]) else recurse[k] = v end
+      if type(v) == 'table' then _r[k] = ISExtBuildingObject.merge(a[k], v, _r[k]) else _r[k] = v end
     end
   end
   for k,v in pairs(b) do
     if k ~= nil then
-      if type(v) == 'table' then recurse[k] = ISExtBuildingObject.merge(b[k], v, recurse[k]) else recurse[k] = v end
+      if type(v) == 'table' then _r[k] = ISExtBuildingObject.merge(b[k], v, _r[k]) else _r[k] = v end
     end
   end
-  return recurse
+  return _r
 end
 
 
@@ -99,7 +108,12 @@ function ISExtBuildingObject:create(x, y, z, north, sprite)
   self.javaObject:setHealth(self.javaObject:getMaxHealth())
   self.javaObject:setBreakSound(self.breakSound)
   self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
-  self.sq:AddSpecialObject(self.javaObject)
+  local objIndex = self:getObjectIndex()
+  if objIndex ~= nil then
+    self.sq:AddSpecialObject(self.javaObject, objIndex)
+  else
+    self.sq:AddSpecialObject(self.javaObject)
+  end
 end
 
 
@@ -108,6 +122,7 @@ end
 --- Lua object constructor - called when creating the ghost tile
 --- @param player number Target player ID
 --- @param recipe table The building definition - used to add/alter class fields/properties/modData
+--- @return table New lua building object instance
 ---
 function ISExtBuildingObject:new(player, recipe)
   local o = ISBuildingObject:new()
@@ -117,6 +132,17 @@ function ISExtBuildingObject:new(player, recipe)
   o:initialise(recipe, self.defaults)
   o.player = player
   return o
+end
+
+
+
+---
+--- Hook for descendants which implements this function
+--- to interact anyhow with existing objects on the square.
+--- @return nil|int Index of the object of interest or nil if not implemented
+---
+function ISExtBuildingObject:getObjectIndex()
+  return nil
 end
 
 
@@ -160,7 +186,7 @@ function ISExtBuildingObject:isValid(square)
   if square:isSolid() or square:isSolidTrans() then return false end
   if square:HasStairs() then return false end
   if square:HasTree() then return false end
-  if not square:getMovingObjects():isEmpty() then return false end
+  if not square:getMovingObjects():isEmpty() then return false end -- TODO: Will this work for walls etc?
   if not square:TreatAsSolidFloor() then return false end
   return true
 end
@@ -228,6 +254,8 @@ end
 ---
 --- Called by ISBuildAction:perform() if the timed action is done.
 --- Will create the specified ISO object and add it to the world.
+--- This is required because things could have changes makeTooltip
+--- validation.
 --- @param x int
 --- @param y int
 --- @param z int
@@ -332,20 +360,20 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   toolTip:initialise()
   toolTip:setName(option.name)
   toolTip:setTexture(settings.sprites.sprite)
-  local desc = getText(settings.tooltipDesc or '') .. ' <BR> <INDENT:0> <RGB:1,1,1> '
+  local desc = getText(settings.tooltipDesc or '') .. ' <BR> <RGB:1,1,1> '
   if settings.modData ~= nil then
     -- required skills
-    desc = format('%s <LINE> %s: <LINE> <INDENT:2> ', desc, getText('Tooltip_ExtBuilding__RequiredSkills'))
+    desc = format('%s\n%s:\n', desc, getText('Tooltip_ExtBuilding__RequiredSkills'))
     for k,v in pairs(settings.modData) do
       if stringStarts(k, 'requires:') then
         local perk = Perks.FromString(split(k, ':')[2])
         local plrLvl = oPlayer:getPerkLevel(perk)
         if plrLvl < v then sPen = sRed; canBuild = false else sPen = sGreen end
-        desc = format('%s %s %s %d <LINE> <INDENT:2> ', desc, sPen, perk:getName(), v)
+        desc = format(' <SETX:3> %s %s %s %d\n', desc, sPen, perk:getName(), v)
       end
     end
     -- required tools
-    desc = format('%s <INDENT:0> %s <LINE> %s:<LINE> <INDENT:2> ', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
+    desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
     for k,v in pairs(settings.modData) do
       if stringStarts(k, 'keep:') then
         local toolList = split(split(k, ':')[2], '/')
@@ -356,11 +384,11 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
           end
         end
         if found then sPen = sGreen else sPen = sRed; canBuild = false end
-        desc = format('%s %s %s <LINE> <INDENT:2> ', desc, sPen, getItemName(v))
+        desc = format(' <SETX:3> %s %s %s\n', desc, sPen, getItemName(v))
       end
     end
     -- required materials
-    desc = format('%s <INDENT:0> %s <LINE> %s: <LINE> <INDENT:2> ', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
+    desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
     for k,v in pairs(settings.modData) do
       if not v then v = 1 end
       -- items
@@ -384,7 +412,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
           sPen = sGreen
           materialString = format('%s %d', materialString, v)
         end
-        desc = format('%s %s %s <LINE> <INDENT:2> ', desc, sPen, materialString)
+        desc = format(' <SETX:3> %s %s %s\n', desc, sPen, materialString)
       -- drainables
       elseif stringStarts(k, 'use:') then
         local sum = 0
@@ -411,7 +439,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
         else
           materialString = getText('IGUI_CraftUI_CountUnits', materialString, sum .. '/' .. v)
         end
-        desc = format('%s <INDENT:2> %s %s <LINE> ', desc, sPen, materialString)
+        desc = format(' <SETX:3> %s %s %s\n', desc, sPen, materialString)
       end
     end
   end

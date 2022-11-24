@@ -3,188 +3,100 @@ module Base {
   item SpraycanWhite {
     Type = Drainable,
     DisplayName = Spraycan (White),
-    Icon = Icon_Spraycan_White,
+    Icon = Icons/Icon_Spraycan_White,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZWhite,
-    WorldStaticModel = spraycanTZWhite,
+    StaticModel = SpraycanWhite,
+    WorldStaticModel = SpraycanWhite,
   }
   
   item SpraycanRed {
     Type  = Drainable,
     DisplayName = Spraycan (Red),
-    Icon = Icon_Spraycan_Red,
+    Icon = Icons/Icon_Spraycan_Red,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZRed,
-    WorldStaticModel = spraycanTZRed,
+    StaticModel = SpraycanRed,
+    WorldStaticModel = SpraycanRed,
   }
   
   item SpraycanBlue {
     Type  = Drainable,
     DisplayName = Spraycan (Blue),
-    Icon = Icon_Spraycan_Blue,
+    Icon = Icons/Icon_Spraycan_Blue,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZBlue,
-    WorldStaticModel = spraycanTZBlue,
+    StaticModel = SpraycanBlue,
+    WorldStaticModel = SpraycanBlue,
   }
   
   item SpraycanGreen {
     Type  = Drainable,
     DisplayName = Spraycan (Green),
-    Icon = Icon_Spraycan_Green,
+    Icon = Icons/Icon_Spraycan_Green,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZGreen,
-    WorldStaticModel = spraycanTZGreen,
+    StaticModel = SpraycanGreen,
+    WorldStaticModel = SpraycanGreen,
   }
   
   item SpraycanOrange {
     Type  = Drainable,
     DisplayName = Spraycan (Orange),
-    Icon = Icon_Spraycan_Orange,
+    Icon = Icons/Icon_Spraycan_Orange,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZOrange,
-    WorldStaticModel = spraycanTZOrange,
+    StaticModel = SpraycanOrange,
+    WorldStaticModel = SpraycanOrange,
   }
   
   item SpraycanYellow {
     Type  = Drainable,
     DisplayName = Spraycan (Yellow),
-    Icon = Icon_Spraycan_Yellow,
+    Icon = Icons/Icon_Spraycan_Yellow,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZYellow,
-    WorldStaticModel = spraycanTZYellow,
+    StaticModel = SpraycanYellow,
+    WorldStaticModel = SpraycanYellow,
   }
   
   item SpraycanViolet {
     Type  = Drainable,
     DisplayName = Spraycan (Violet),
-    Icon = Icon_Spraycan_Violet,
+    Icon = Icons/Icons/Icon_Spraycan_Violet,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZViolet,
-    WorldStaticModel = spraycanTZViolet,
+    StaticModel = SpraycanViolet,
+    WorldStaticModel = SpraycanViolet,
   }
   
   item SpraycanBlack {
     Type  = Drainable,
     DisplayName = Spraycan (Black),
-    Icon = Icon_Spraycan_Black,
+    Icon = Icons/Icon_Spraycan_Black,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZBlack,
-    WorldStaticModel = spraycanTZBlack,
+    StaticModel = SpraycanBlack,
+    WorldStaticModel = SpraycanBlack,
   }
   
   item SpraycanCyan {
     Type  = Drainable,
     DisplayName = Spraycan (Cyan),
-    Icon = Icon_Spraycan_Cyan,
+    Icon = Icons/Icon_Spraycan_Cyan,
     UseDelta = 0.025,
     UseWhileEquipped = false,
     Weight = 0.5,
-    StaticModel = spraycanTZCyan,
-    WorldStaticModel = spraycanTZCyan,
-  }
-  
-  item ChalkWhite {
-    Type  = Drainable,
-    DisplayName = Chalk (White),
-    Icon = Icon_Chalk_White,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZWhite,
-    WorldStaticModel = chalkTZWhite,
-  }
-  
-  item ChalkRed {
-    Type  = Drainable,
-    DisplayName = Chalk (Red),
-    Icon = Icon_Chalk_Red,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZRed,
-    WorldStaticModel = chalkTZRed,
-  }
-  
-  item ChalkBlue {
-    Type  = Drainable,
-    DisplayName = Chalk (Blue),
-    Icon = Icon_Chalk_Blue,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZBlue,
-    WorldStaticModel = chalkTZBlue,
-  }
-  
-  item ChalkGreen {
-    Type  = Drainable,
-    DisplayName = Chalk (Green),
-    Icon = Icon_Chalk_Green,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZGreen,
-    WorldStaticModel = chalkTZGreen,
-  }
-  
-  item ChalkOrange {
-    Type  = Drainable,
-    DisplayName = Chalk (Orange),
-    Icon = Icon_Chalk_Orange,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZOrange,
-    WorldStaticModel = chalkTZOrange,
-  }
-  
-  item ChalkYellow {
-    Type  = Drainable,
-    DisplayName = Chalk (Yellow),
-    Icon = Icon_Chalk_Yellow,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZYellow,
-    WorldStaticModel = chalkTZYellow,
-  }
-  
-  item ChalkViolet {
-    Type  = Drainable,
-    DisplayName = Chalk (Violet),
-    Icon = Icon_Chalk_Violet,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZViolet,
-    WorldStaticModel = chalkTZViolet,
-  }
-  
-  item ChalkCyan {
-    Type  = Drainable,
-    DisplayName = Chalk (Cyan),
-    Icon = Icon_Chalk_Cyan,
-    UseDelta = 0.025,
-    UseWhileEquipped = false,
-    Weight = 0.1,
-    StaticModel = chalkTZCyan,
-    WorldStaticModel = chalkTZCyan,
+    StaticModel = SpraycanCyan,
+    WorldStaticModel = SpraycanCyan,
   }
 
 }

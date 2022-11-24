@@ -15,15 +15,6 @@ ItemName_EN = {
   Base.SpraycanViolet = "Spraycan (Violet)",
   Base.SpraycanBlack = "Spraycan (Black)",
   Base.SpraycanCyan = "Spraycan (Cyan)",
-  Base.ChalkWhite = "Chalk (White)",
-  Base.ChalkRed = "Chalk (Red)",
-  Base.ChalkBlue = "Chalk (Blue)",
-  Base.ChalkGreen = "Chalk (Green)",
-  Base.ChalkOrange = "Chalk (Orange)",
-  Base.ChalkYellow = "Chalk (Yellow)",
-  Base.ChalkViolet = "Chalk (Violet)",
-  Base.ChalkBlack = "Chalk (Black)",
-  Base.ChalkCyan = "Chalk (Cyan)",
   
   /** Gate **/
   Gate.GateKey = "Gate Key",

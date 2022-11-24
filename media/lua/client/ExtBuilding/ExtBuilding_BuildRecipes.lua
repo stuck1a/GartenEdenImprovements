@@ -57,7 +57,7 @@ ContextMenu_ReinforcedBox = {
   },
   modData = {
     -- any item with tag 'Hammer' will work, but tooltip will display name of 'Base.Hammer' only
-    ['keep:' .. UtilsSrv.ConcatItemTypes({'Hammer'})] = 'Base.Hammer',
+    ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
     ['keep:Base.Torch/MyMod.LargeTorch'] = 'Base.Torch',
     ['need:Base.Plank'] = 8,
     ['need:Base.Nails'] = 12,

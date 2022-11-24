@@ -1,15 +1,12 @@
 UI_DE = {
 
   /** SprayPaint **/
-  UI_Spray = "Sprühen",
 	UI_SprayCan = "Sprühdose",
-	UI_Chalk = "Kreide",
 	UI_Miscellaneous = "Verschieden",
 	UI_Alphabet	= "Alphabet",
 	UI_Numbers = "Nummern",
 	UI_SpecialChar = "Sonderzeichen",
 	UI_SprayOnFloor = "Symbol sprühen",
-	UI_ChalkOnFloor = "Kreidesymbol",
 	UI_SimpleSymbol = "Einfaches Symbol",
 	UI_Arrow = "Pfeil",
 	UI_Cross = "Kreuz",
@@ -60,7 +57,6 @@ UI_DE = {
 	UI_optionscreen_binding_ToggleSpraypaintWindow = "Menü ein-/ausblenden",
 	UI_SprayPaint_CanIsEmpty = "Die Sprühdose ist leer.",
 	UI_SprayPaint_NotHaveThisColor = "Ich habe keine Sprühdose mit dieser Farbe.",
-	UI_SprayPaint_NotHaveThisChalkColor = "Ich habe keine Kreide in dieser Farbe.",
 
   /** More Traits **/
   UI_trait_gunspecialist = "Waffenexperte",
@@ -170,6 +166,7 @@ UI_DE = {
   UI_trait_gimp = "Langweiler",
   UI_trait_gimpdesc = "Sie waren immer der Letzte in der Schlange.<br>Sie bewegen sich 15% langsamer.",
   UI_trait_fast = "Schnell",
+  UI_trait_terminator = "Terminator",
   UI_trait_fastdesc = "Du warst immer schnell auf den Beinen.<br>Du bewegst dich 15% schneller.",
   UI_trait_anemic = "Dünnhäutig",
   UI_trait_anemicdesc = "Sie bluten viel schneller aus Wunden.",
