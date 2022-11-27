@@ -4,11 +4,10 @@ require 'TimedActions/ISBaseTimedAction'
 ISExtBuildAction = ISBuildAction:derive('ISExtBuildAction')
 
 
---ISExtBuildAction.soundDelay = ISBuildAction.soundDelay
---ISExtBuildAction.worldSoundTime = ISBuildAction.worldSoundTime
 
-
-
+---
+--- Generates the sound map
+---
 local function init()
   local type2sound = {
     ['GardenSaw'] = 'Sawing',
@@ -45,10 +44,11 @@ local function init()
     --['BrokenGlass'] = 'BuildingGeneric',
     --['Corkscrew'] = 'BuildingGeneric',
   }
-  for i=1, #tag2sound do
-    local aItems = getScriptManager():getItemsTag(tag2sound[i])
+  for k,v in pairs(tag2sound) do
+    local aItems = getScriptManager():getItemsTag(k)
     for j=0, aItems:size() - 1 do
-      table.insert(type2sound, aItems:get(j):getName())
+      local type = aItems:get(j):getName()
+      if type then type2sound[type] = v end
     end
   end
   ISExtBuildAction.soundMap = type2sound
@@ -136,51 +136,3 @@ function ISExtBuildAction:update()
   self.character:setMetabolicTarget(Metabolics.HeavyWork)
   self:faceLocation()
 end
-
-
---[[
-function ISExtBuildAction:isReachableThroughWindow(_square)
-  return ISBuildAction.isReachableThroughWindow(self, _square)
-end
---]]
-
-
---[[
-function ISExtBuildAction:isValid()
-  return ISBuildAction.isValid(self)
-end
---]]
-
-
---[[
-function ISExtBuildAction:waitToStart()
-  return ISBuildAction.waitToStart(self)
-end
---]]
-
-
---[[
-function ISExtBuildAction:start()
-  ISBuildAction.start(self)
-end
---]]
-
-
---[[
-function ISExtBuildAction:stop()
-  ISBuildAction.stop(self)
-end
-
-
---[[
-function ISExtBuildAction:perform()
-  ISBuildAction.perform(self)
-end
---]]
-
-
---[[
-function ISExtBuildAction:faceLocation()
-  ISBuildAction.faceLocation(self)
-end
---]]
