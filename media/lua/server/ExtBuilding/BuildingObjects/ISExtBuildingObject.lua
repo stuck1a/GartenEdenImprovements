@@ -210,67 +210,6 @@ end
 
 
 
---[[
----
---- Render the item on the ground or launch the build
---- @param draggingItem ISExtBuildingObject
---- @param isRender boolean If the ghost tile is being rendered (
---- @param x int Initial target squares x coordinate (required to create new square if z>0)
---- @param y int Initial target squares y coordinate (required to create new square if z>0)
---- @param z int Initial target squares z coordinate (required to create new square if z>0)
---- @param square IsoGridSquare
----
-function ISExtBuildingObject.DoTileBuilding(draggingItem, isRender, x, y, z, square)
-  -- TODO: No changes to vanilla class done/required, so we should be able to remove this or at least use:
-  --       self.DoTileBuilding(self, draggingItem, isRender, x, y, z, square)
-  --       //Well, its a listener, so pretty sure this won't be even used due to lack of polymorphism
-  if not draggingItem.player then draggingItem.player = 0 end
-  if square == nil and getWorld():isValidSquare(x, y, z) then square = getCell():createNewGridSquare(x, y, z, true) end
-  if draggingItem.player == 0 and wasMouseActiveMoreRecentlyThanJoypad() then
-    local mouseOverUI = isMouseOverUI()
-    if Mouse:isLeftDown() then
-      if not draggingItem.isLeftDown then
-        draggingItem.clickedUI = mouseOverUI
-        draggingItem.isLeftDown = true
-      end
-      if draggingItem.clickedUI then return end
-      draggingItem:rotateMouse(x, y)
-    else
-      if draggingItem.isLeftDown then
-        draggingItem.isLeftDown = false
-        draggingItem.build = draggingItem.canBeBuild and not mouseOverUI and not draggingItem.clickedUI
-        draggingItem.clickedUI = false
-      end
-      if mouseOverUI then return end
-    end
-  end
-  if (draggingItem.isLeftDown or draggingItem.build) and draggingItem.square then
-    square = draggingItem.square
-    x = square:getX()
-    y = square:getY()
-  else
-    draggingItem.square = square
-  end
-  if not square then
-    draggingItem.canBeBuild = false
-    return
-  end
-  if isRender then
-    draggingItem.canBeBuild = draggingItem:isValid(square, draggingItem.north)
-    draggingItem:render(x, y, z, square)
-  end
-  if draggingItem.canBeBuild and draggingItem.build then
-    draggingItem.build = false
-    draggingItem:tryBuild(x, y, z)
-  end
-  if draggingItem.build and not draggingItem.dragNilAfterPlace then
-    draggingItem:reinit()
-  end
-end
---]]
-
-
-
 ---
 --- Called by DoTileBuilding after ghost tile drag located the desired target square.
 --- It will generate the timed action query from the modData/fields and launch it and by that,
@@ -369,7 +308,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       end
       local selfCopy = copyTable(self)
       setmetatable(selfCopy, getmetatable(self, true))
-      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound1))
+      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2))
     end
   end
 end
