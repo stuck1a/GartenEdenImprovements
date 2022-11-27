@@ -283,7 +283,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local square = getCell():getGridSquare(x, y, z)
   local oPlayer = getSpecificPlayer(self.player)
   local oInv = oPlayer:getInventory()
-  local maxTime, firstToolEntry
+  local maxTime, firstToolEntry, toolSound1, toolSound2
   if ISBuildMenu.cheat or self:walkTo(x, y, z) then
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
     if oPlayer:isTimedActionInstant() then
@@ -293,14 +293,19 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       if self.modData ~= nil then
         local sumOfReqSkills, counter = 0, 0
         local stringStarts, split = luautils.stringStarts, luautils.split
-        for k,_ in pairs(self.modData) do
+        for k,v in pairs(self.modData) do
           if stringStarts(k, 'requires:') then
             local perk = Perks.FromString(split(k, ':')[2])
             sumOfReqSkills = sumOfReqSkills + oPlayer:getPerkLevel(perk)
             counter = counter + 1
           end
-          if firstToolEntry == nil and stringStarts(k, 'keep:') then
-            firstToolEntry = split(split(k, ':')[2], '/')
+          if stringStarts(k, 'keep:') then
+            if firstToolEntry == nil then
+              toolSound1 = v
+              firstToolEntry = split(split(k, ':')[2], '/')
+            elseif toolSound2 == nil then
+              toolSound2 = v
+            end
           end
         end
         if counter == 0 then counter = 1 end
@@ -364,7 +369,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       end
       local selfCopy = copyTable(self)
       setmetatable(selfCopy, getmetatable(self, true))
-      ISTimedActionQueue.add(ISBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime))
+      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound1))
     end
   end
 end
