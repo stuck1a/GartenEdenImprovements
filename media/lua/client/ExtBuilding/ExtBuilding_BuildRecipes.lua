@@ -1,5 +1,8 @@
-ExtBuildingContextMenu = ExtBuildingContextMenu or {}
-
+if not ExtBuildingContextMenu then
+  ExtBuildingContextMenu = {}
+  ExtBuildingContextMenu.call = function(callback, ...) return callback(...) end
+  setmetatable(ExtBuildingContextMenu, {__call = ExtBuildingContextMenu.call})
+end
 
 -- SUBCATEGORY ENTRIES:
 --[[
@@ -47,13 +50,9 @@ ContextMenu_ReinforcedBox = {
       -- add as many tiers as wanted. The one with the highest ID whose skill requirements are ALL met will be used
     },
   },
-  -- of course this makes only sense if targetClass will make any use of it as well
-  additionalFields = {
-    lockDigitsAmount = 4
-  }
-
   properties = {
     canBeLockedByPadlock = true
+    myCustomField = myValue  -- of course this makes only sense if the target class will make any use of it as well
   },
   modData = {
     -- any item with tag 'Hammer' will work, but tooltip will display name of 'Base.Hammer' only
@@ -62,7 +61,7 @@ ContextMenu_ReinforcedBox = {
     ['need:Base.Plank'] = 8,
     ['need:Base.Nails'] = 12,
     ['need:Base.IronPlate'] = 4,
-    -- any drainable item must use the 'use:" prefix. Will consume 4 units.
+    -- any drainable item must use the 'use:" prefix. Value is the number of uses, not items
     ['use:Base.WeldingStab/MyMod.WeldingStab2'] = 4,
     ['requires:Woodwork'] = 2,
     ['requires:MetalWelding'] = 1,
@@ -81,10 +80,34 @@ ContextMenu_ReinforcedBox = {
 --- to create all submenus and their recipes of the new build menu
 ---
 ExtBuildingContextMenu.BuildingRecipes = {
+
   ContextMenu_ExtBuilding_Cat__Architecture = {
     ContextMenu_ExtBuilding_Cat__Walls = {
       ContextMenu_ExtBuilding_Cat__WoodenWalls = {
-        -- Holzwand
+        {
+          displayName = 'ContextMenu_Wooden_Wall_Frame',
+          targetClass = 'ISWall',
+          tooltipDesc = 'Tooltip_craft_woodenWallFrameDesc',
+          sprites = {
+            -- Holzwandrahmen
+            sprite = 'carpentry_02_100',
+            northSprite = 'carpentry_02_101',
+            corner = 'walls_exterior_wooden_01_27'
+          },
+          isoData = { isoName = 'WoodenWallFrame' },
+          properties = {
+            canBePlastered = function(o) return getSpecificPlayer(o.player):getPerkLevel(Perks.Woodwork) > 7 end,
+            completionSound = 'BuildWoodenStructureLarge'
+          },
+          modData = {
+            ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
+            ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+            ['need:Base.Plank'] = 3,
+            ['need:Base.Nails'] = 3,
+            ['requires:Woodwork'] = 2,
+            ['xp:Woodwork'] = 5
+          }
+        },
         -- Holzsäule
         -- Holztürrahmen
         -- Baumstammwall
@@ -210,7 +233,33 @@ ExtBuildingContextMenu.BuildingRecipes = {
     -- Metallkiste
   },
   ContextMenu_ExtBuilding_Cat__Technology = {
-    { targetClass = 'ISWaterWell' },
+    {
+      targetClass = 'ISWaterCollector',
+      displayName = 'ContextMenu_ExtBuilding_Obj__WaterWell',
+      tooltipDesc = 'Tooltip_ExtBuilding__WaterWell',
+      buildTime = 700,
+      baseHealth = 600,
+      mainMaterial = 'stone',
+      completionSound = 'BuildFenceCairn',
+      isoData = { isoName = 'waterwell' },
+      properties = { waterAmount = 50, waterMax = 5000, addWaterPerAction = 5, craftingBank = 'Shoveling' },
+      sprites = { sprite = 'garteneden_tech_01_0', northSprite = 'garteneden_tech_01_1' },
+      modData = {
+        ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
+        ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+        ['keep:' .. utils.concatItemTypes({'DigGrave'})] = 'Base.Shovel',
+        ['need:Base.Rope'] = 5,
+        ['need:Base.Plank'] = 4,
+        ['need:Base.Nails'] = 10,
+        ['need:Base.Stone'] = 20,
+        ['use:Base.Gravelbag'] = 8,
+        ['need:Base.BucketEmpty'] = 1,
+        ['requires:Woodwork'] = 7,
+        ['requires:Fitness'] = 5,
+        ['xp:Woodwork'] = 5,
+        ['xp:Fitness'] = 5
+      }
+    },
     -- Generator
     -- Kühlschrank
     -- Radio
@@ -254,5 +303,5 @@ ExtBuildingContextMenu.BuildingRecipes = {
     -- Steinhaufen
     -- Holzpfosten
     -- Holzkreuz
-  },
+  }
 }

@@ -12,7 +12,7 @@ ExtBuildingContextMenu.doMenu = function(player, context)
   context:removeOptionByName(getText('ContextMenu_MetalWelding'))
   if ISBuildMenu.haveSomethingtoBuild(player) then
     local oBuildOption = context:insertOptionAfter(getText('ContextMenu_Build'), getText('ContextMenu_Build'))
-    context:removeOptionByName(getText('ContextMenu_Build'))
+    --context:removeOptionByName(getText('ContextMenu_Build'))
     local oSubMenu = ISContextMenu:getNew(context)
     context:addSubMenu(oBuildOption, oSubMenu)
     ExtBuildingContextMenu.doMenuRecursive(oSubMenu, ExtBuildingContextMenu.BuildingRecipes, player)

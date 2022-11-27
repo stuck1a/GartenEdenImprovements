@@ -2,14 +2,14 @@ if not 'ISExtBuildingObject' then require 'ExtBuilding/BuildingObjects/ISExtBuil
 
 
 --- @class ISWall : ISExtBuildingObject
-ISWall = ISExtBuildingObject:derive('ISWaterWell')
+ISWall = ISExtBuildingObject:derive('ISWall')
 
 ISWall.defaults = {
   displayName = 'Wall',
-  properties = {
-    canBarricade = true,
-    isWallLike = true
-  }
+  craftingBank = 'Hammering',
+  properties = { isWallLike = true },
+  isoData = { isoName = 'wall' },
+  modData = { ['wallType'] = 'wall' }
 }
 
 
@@ -53,10 +53,6 @@ end
 function ISWall:isValid(square)
   -- base rules (valid, walkable, free space, reachable, solid ground, etc)
   if not ISExtBuildingObject.isValid(self, square) then return false end
-  -- only on surface
-  if not getSpecificPlayer(self.player):getZ() == 0 then return false end
-  -- not under stairs
-  if buildUtil.stairIsBlockingPlacement(square, true) then return false end
   for i=1, square:getObjects():size() do
     local object = square:getObjects():get(i-1);
     local sprite = object:getSprite()
@@ -77,11 +73,11 @@ function ISWall:isValid(square)
       if not self.north and gridX > 0 then return false end
     end
   end
-  -- not if we are in midair
+  -- not in midair
   if not square:hasFloor(self.north) then
     local belowSQ = getCell():getGridSquare(square:getX(), square:getY(), square:getZ()-1)
     if belowSQ then
-      -- except the square on top of stairs
+      -- except on top of stairs
       if self.north and not belowSQ:HasStairsWest() then return false end
       if not self.north and not belowSQ:HasStairsNorth() then return false end
     end
@@ -97,5 +93,5 @@ end
 --- @return int Object index on target square or -1 if no flooring found
 ---
 function ISWall:getObjectIndex()
-  return ISWoodenWall:getObjectIndex()
+  return ISWoodenWall.getObjectIndex(self)
 end
