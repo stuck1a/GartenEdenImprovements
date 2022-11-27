@@ -324,8 +324,8 @@ end
 ---
 function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   local toolTip = ISToolTip:new()
-  local canBuild = true
-  local sRed,sGreen,sWhite = ' <RGB:.9,0,0> ',' <RGB:0,0.7,0> ',' <RGB:1,1,1> '
+  local canBuild, headlineSet = true, false
+  local sRed,sGreen,sWhite = '<RGB:.9,0,0>', '<RGB:0,0.7,0>', '<RGB:1,1,1>'
   local sPen = sWhite
   local getText,split,getItemName,stringStarts,format,merge = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format,ISExtBuildingObject.merge
   local oPlayer = getSpecificPlayer(player)
@@ -334,22 +334,24 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   toolTip:initialise()
   toolTip:setName(option.name)
   toolTip:setTexture(settings.sprites.sprite)
-  local desc = getText(settings.tooltipDesc or '') .. ' <BR> <RGB:1,1,1> '
+  local desc = ' <LEFT> ' .. getText(settings.tooltipDesc or '') .. ' <BR> '
   if settings.modData ~= nil then
     -- required skills
-    desc = format('%s\n%s:\n', desc, getText('Tooltip_ExtBuilding__RequiredSkills'))
+    headlineSet = false
     for k,v in pairs(settings.modData) do
       if stringStarts(k, 'requires:') then
+        if not headlineSet then desc = format('%s <H2> %s:', desc, getText('Tooltip_ExtBuilding__RequiredSkills')); headlineSet = true end
         local perk = Perks.FromString(split(k, ':')[2])
         local plrLvl = oPlayer:getPerkLevel(perk)
         if plrLvl < v then sPen = sRed; canBuild = false else sPen = sGreen end
-        desc = format(' <SETX:3> %s %s %s %d\n', desc, sPen, perk:getName(), v)
+        desc = format('%s <LINE> <TEXT> %s %s %d/%d', desc, sPen, perk:getName(), plrLvl, v)
       end
     end
     -- required tools
-    desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools'))
+    headlineSet = false
     for k,v in pairs(settings.modData) do
       if stringStarts(k, 'keep:') then
+        if not headlineSet then desc = format('%s %s <LINE> <LINE> <H2> %s:', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredTools')); headlineSet = true end
         local toolList = split(split(k, ':')[2], '/')
         local found = false
         for i=1, #toolList do
@@ -358,18 +360,19 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
           end
         end
         if found then sPen = sGreen else sPen = sRed; canBuild = false end
-        desc = format(' <SETX:3> %s %s %s\n', desc, sPen, getItemName(v))
+        desc = format('%s <LINE> <TEXT> %s %s', desc, sPen, getItemName(v))
       end
     end
     -- required materials
     local groundItems = buildUtil.getMaterialOnGround(oPlayer:getSquare())
     local groundItemCounts = buildUtil.getMaterialOnGroundCounts(groundItems)
     local groundItemUses = buildUtil.getMaterialOnGroundUses(groundItems)
-    desc = format('%s %s\n%s:\n', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials'))
+    headlineSet = false
     for k,v in pairs(settings.modData) do
-      if not v then v = 1 end
-      -- items
+      -- regular
       if stringStarts(k, 'need:') then
+        v = v or 1
+        if not headlineSet then desc = format('%s %s <LINE> <LINE> <H2> %s:', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials')); headlineSet = true end
         local sum = 0
         local materialString = ''
         local itemList = split(split(k, ':')[2], '/')
@@ -382,43 +385,37 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
             if i < #itemList then materialString = materialString .. '/' end
           end
         end
-        if sum < v then
-          sPen = sRed
-          materialString = format('%s %d/%d', materialString, sum, v)
-          canBuild = false
-        else
-          sPen = sGreen
-          materialString = format('%s %d', materialString, v)
-        end
-        desc = format(' <SETX:3> %s %s %s\n', desc, sPen, materialString)
+        if sum < v then sPen = sRed; canBuild = false else sPen = sGreen end
+        materialString = format('%s %d/%d', materialString, sum, v)
+        desc = format('%s <LINE> <TEXT> %s %s', desc, sPen, materialString)
       -- drainables
       elseif stringStarts(k, 'use:') then
+        v = v or 1
+        if not headlineSet then desc = format('%s %s <LINE> <LINE> <H2> %s:', desc, sWhite, getText('Tooltip_ExtBuilding__RequiredMaterials')); headlineSet = true end
         local sum = 0
         local materialString = ''
         local itemList = split(split(k, ':')[2], '/')
         for i=1, #itemList do
           if itemList ~= nil and itemList[i] ~= nil then
             local aItemObjects = oInv:getAllTypeRecurse(itemList[i])
-            if itemList ~= nil and itemList[i] ~= nil then
-              if aItemObjects ~= nil and aItemObjects:size() > 0 then
-                for j=0, aItemObjects:size()-1 do
-                  local oItem = aItemObjects:get(j)
-                  sum = sum + math.floor(oItem:getUsedDelta() or 0 / oItem:getUseDelta() or 1)
-                  if groundItemUses[itemList[i]] ~= nil then sum = sum + groundItemUses[itemList[i]] end
-                end
+            if aItemObjects ~= nil and aItemObjects:size() > 0 then
+              for j=0, aItemObjects:size()-1 do
+                local oItem = aItemObjects:get(j)
+                sum = sum + oItem:getDrainableUsesInt() or 0
               end
-              materialString = materialString .. getItemName(itemList[i])
             end
+            if groundItemUses[itemList[i]] ~= nil then sum = sum + groundItemUses[itemList[i]] end
+            materialString = materialString .. getItemName(itemList[i])
             if i < #itemList then materialString = materialString .. '/' end
           end
         end
         if sum < v then sPen = sRed; canBuild = false else sPen = sGreen end
         if v == 1 then
-          materialString = getText('IGUI_CraftUI_CountOneUnit', materialString)
+          materialString = sum .. '/' .. getText('IGUI_CraftUI_CountOneUnit', materialString)
         else
           materialString = getText('IGUI_CraftUI_CountUnits', materialString, sum .. '/' .. v)
         end
-        desc = format(' <SETX:3> %s %s %s\n', desc, sPen, materialString)
+        desc = format('%s <LINE> <TEXT> %s %s', desc, sPen, materialString)
       end
     end
   end

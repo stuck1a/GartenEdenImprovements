@@ -104,7 +104,8 @@ end
 
 
 ---
---- Executed in every progress quantum of the action
+--- Executed in every action process quantum
+--- Alternates sounds and adjusts construction site overlay
 ---
 function ISExtBuildAction:update()
   local worldSoundRadius = 0

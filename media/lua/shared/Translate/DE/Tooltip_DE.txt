@@ -203,6 +203,6 @@ Tooltip_DE = {
   Tooltip_ExtBuilding__RequiredSkills = "Benötigte Fähigkeiten",
   Tooltip_ExtBuilding__RequiredTools = "Benötigtes Werkzeug",
   Tooltip_ExtBuilding__RequiredMaterials = "Benötigtes Baumaterial",
-  Tooltip_ExtBuilding__WaterWell = "Eine nahezu unerschöpfliche Wasserquelle. <LINE> Liefert trinkbares Grundwasser, so rein, dass selbst kontaminierter Regen es nicht verseuchen kann. <LINE> <SETX:5> - "be water my friend"",
+  Tooltip_ExtBuilding__WaterWell = "Eine nahezu unerschöpfliche Wasserquelle. <LINE> Liefert trinkbares Grundwasser, so rein, dass selbst kontaminierter Regen es nicht verseuchen kann. <LINE> <SETX:10> - "be water my friend"",
 
 }
