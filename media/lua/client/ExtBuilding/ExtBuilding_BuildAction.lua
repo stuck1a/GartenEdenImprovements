@@ -4,66 +4,108 @@ require 'TimedActions/ISBaseTimedAction'
 ISExtBuildAction = ISBuildAction:derive('ISExtBuildAction')
 
 
-ISExtBuildAction.soundDelay = ISBuildAction.soundDelay
-ISExtBuildAction.worldSoundTime = ISBuildAction.worldSoundTime
+--ISExtBuildAction.soundDelay = ISBuildAction.soundDelay
+--ISExtBuildAction.worldSoundTime = ISBuildAction.worldSoundTime
 
 
 
--- TODO: Use existing ItemTags to fill the table
 local function init()
-  ISExtBuildAction.soundMap = {
-    ['Hammer'] = 'Hammering',
-    ['ClubHammer'] = 'Hammering',
-    ['BallPeenHammer'] = 'Hammering',
-    ['WoodenMallet'] = 'Hammering',
-    ['HammerStone'] = 'Hammering',
-    ['Sledgehammer'] = 'Hammering',
-    ['Sledgehammer2'] = 'Hammering',
-    ['Crowbar'] = 'Hammering',
-    ['Saw'] = 'Sawing',
+  local type2sound = {
     ['GardenSaw'] = 'Sawing',
-    ['Shovel'] = 'Shoveling',
-    ['Shovel2'] = 'Shoveling',
-    ['SnowShovel'] = 'Shoveling',
-    ['Axe'] = 'ChopTree',
-    ['AxeStone'] = 'ChopTree',
-    ['PickAxe'] = 'ChopTree',
-    ['HandAxe'] = 'ChopTree',
-    ['WoodAxe'] = 'ChopTree',
     ['Wrench'] = 'RepairWithWrench',
     ['LugWrench'] = 'RepairWithWrench',
     ['PipeWrench'] = 'RepairWithWrench',
-    ['KitchenKnife'] = 'SliceBread',
-    ['HuntingKnife'] = 'SliceBread',
-    ['MeatCleaver'] = 'SliceBread',
-    ['HandScythe'] = 'SliceBread',
     ['BlowTorch'] = 'BlowTorch',
-    ['Screwdriver'] = 'Screwdriver',
-    ['Paintbrush'] = 'Painting'
+    ['Paintbrush'] = 'Painting',
   }
+  local tag2sound = {
+    ['Hammer'] = 'Hammering',
+    ['Saw'] = 'Sawing',
+    ['DigPlow'] = 'Shoveling',
+    ['CutPlant'] = 'ChopTree',
+    ['ChopTree'] = 'ChopTree',
+    ['SharpKnife'] = 'SliceMeat',
+    ['Razor'] = 'SliceMeat',
+    ['DullKnife'] = 'SliceBread',
+    ['Crowbar'] = 'Dismantle',
+    ['Sledgehammer'] = 'Dismantle',
+    ['MortarPestle'] = 'SliceBread',
+    ['Screwdriver'] = 'Screwdriver',
+    ['SewingNeedle'] = 'Screwdriver',
+    ['EmptyPetrol'] = 'GetWaterFromTapPlasticBig',
+    ['CanOpener'] = 'RepairWithWrench',
+    --['Fork'] = 'BuildingGeneric',
+    --['Scissors'] = 'BuildingGeneric',
+    --['Spoon'] = 'BuildingGeneric',
+    --['FishingSpear'] = 'BuildingGeneric',
+    --['Digital'] = 'BuildingGeneric',       -- digital watches
+    --['GasMask'] = 'BuildingGeneric',
+    --['WeldingMask'] = 'BuildingGeneric',
+    --['HeavyItem'] = 'BuildingGeneric',     -- in vanilla only Generator for now
+    --['BrokenGlass'] = 'BuildingGeneric',
+    --['Corkscrew'] = 'BuildingGeneric',
+  }
+  for i=1, #tag2sound do
+    local aItems = getScriptManager():getItemsTag(tag2sound[i])
+    for j=0, aItems:size() - 1 do
+      table.insert(type2sound, aItems:get(j):getName())
+    end
+  end
+  ISExtBuildAction.soundMap = type2sound
 end
 
 
 
-
-function ISExtBuildAction:isReachableThroughWindow(_square)
-  return ISBuildAction.isReachableThroughWindow(self, _square)
+---
+--- Adds or replaces sound names used for specific tools
+--- @param soundMap table Mappings to merge - Syntax: {['MyItemType']='MySoundScript',['AxeStone']='ChopTree',...}
+--- @param skipExisting boolean Do not overwrite existing entries (Default: false)
+---
+function ISExtBuildAction.addSoundMapping(soundMap, skipExisting)
+  skipExisting = skipExisting or false
+  if not ISExtBuildAction.soundMap then init() end
+  for k,v in ipairs(soundMap) do
+    local type = k
+    if (skipExisting == false) or (skipExisting and ISExtBuildAction[type] == nil) then
+      if string.find(type, '.') then type = luautils.split(type, '.')[2] end
+      ISExtBuildAction.soundMap[type] = v
+    end
+  end
 end
 
 
 
-function ISExtBuildAction:isValid()
-  return ISBuildAction.isValid(self)
+---
+--- Constructs a new timed action for constructions
+--- @param character IsoPlayer Target player object
+--- @param item ISBuildingObject Target building class object
+--- @param x int Target squares x coordinate (primary square if multi-tiled)
+--- @param y int Target squares x coordinate (primary square if multi-tiled)
+--- @param z int Target squares z coordinate  (primary square if multi-tiled)
+--- @param north string|boolean Secondary sprite parameter. For most isoObjects it's the rotated sprite
+--- @param spriteName string Name of the chosen sprite of the building
+--- @param time int Overall duration for required for the building
+--- @param tool1 string|nil Item type of the first required tool found, if any
+--- @param tool2 string|nil Item type of the second required tool found, if any
+--- @return ISExtBuildAction Timed action class object for building the structure
+---
+function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time, tool1, tool2)
+  local o = ISBuildAction.new(self, character, item, x, y, z, north, spriteName, time)
+  setmetatable(o, self)
+  self.__index = self
+  if type(tool1) == 'string' and string.find(tool1, '.') then tool1 = luautils.split(tool1, '.')[2] end
+  if type(tool2) == 'string' and string.find(tool2, '.') then tool2 = luautils.split(tool2, '.')[2] end
+  o.tool1 = tool1
+  o.tool2 = tool2
+  if self.soundMap == nil then init() end
+  return o
 end
 
 
 
-function ISExtBuildAction:waitToStart()
-  return ISBuildAction.waitToStart(self)
-end
-
-
-
+---
+--- Executed in every progress quantum of the action
+---
 function ISExtBuildAction:update()
   local worldSoundRadius = 0
   if self.soundTime + ISBuildAction.soundDelay < getTimestamp() then
@@ -96,39 +138,49 @@ function ISExtBuildAction:update()
 end
 
 
+--[[
+function ISExtBuildAction:isReachableThroughWindow(_square)
+  return ISBuildAction.isReachableThroughWindow(self, _square)
+end
+--]]
 
+
+--[[
+function ISExtBuildAction:isValid()
+  return ISBuildAction.isValid(self)
+end
+--]]
+
+
+--[[
+function ISExtBuildAction:waitToStart()
+  return ISBuildAction.waitToStart(self)
+end
+--]]
+
+
+--[[
 function ISExtBuildAction:start()
   ISBuildAction.start(self)
 end
+--]]
 
 
-
+--[[
 function ISExtBuildAction:stop()
   ISBuildAction.stop(self)
 end
 
 
-
+--[[
 function ISExtBuildAction:perform()
   ISBuildAction.perform(self)
 end
+--]]
 
 
-
+--[[
 function ISExtBuildAction:faceLocation()
   ISBuildAction.faceLocation(self)
 end
-
-
-
-function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time, tool1, tool2)
-  local o = ISBuildAction.new(self, character, item, x, y, z, north, spriteName, time)
-  setmetatable(o, self)
-  self.__index = self
-  if type(tool1) == 'string' and string.find(tool1, '.') then tool1 = luautils.split(tool1, '.')[2] end
-  if type(tool2) == 'string' and string.find(tool2, '.') then tool2 = luautils.split(tool2, '.')[2] end
-  o.tool1 = tool1
-  o.tool2 = tool2
-  if self.soundMap == nil then init() end
-  return o
-end
+--]]

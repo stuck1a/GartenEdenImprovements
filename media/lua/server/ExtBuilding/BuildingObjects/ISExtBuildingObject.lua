@@ -10,11 +10,10 @@ ISExtBuildingObject.defaults = {
   displayName = 'Unnamed',
   buildTime = 200,
   baseHealth = 200,
-  craftingBank = 'BuildingGeneric',    -- used sound file while performing the build action (it will alternate with tool sounds of the first two tool requirements defined as modData "keep:" entry. It can be used for regular construction sounds as well as "real" crafting bank sounds.
   mainMaterial = 'wood',    -- decides which skill lvl determines the extra health (allowed is "wood", "metal", "stone" or "glass")
   hasSpecialTooltip = false,
-  craftingBank = 'BuildingGeneric',
   breakSound = 'BreakObject',
+  craftingBank = 'BuildingGeneric',    -- used sound file while performing the build action (it will alternate with tool sounds of the first two tool requirements defined as modData "keep:" entry. It can be used for regular construction sounds as well as "real" crafting bank sounds.
   sprites = { sprite = 'invisible_01_0' },
   isoData = {
     isoName = 'unnamed',    -- defines the name of the global map object instance, if any. If a global object has several subtypes (like in "watercollector"), this might be used to differ between those subtypes (like "waterwell", "rainbarrel"). If there are no subtypes, then it can simply use the same value as its systemName (name of the associated global object system, which must be unique)
