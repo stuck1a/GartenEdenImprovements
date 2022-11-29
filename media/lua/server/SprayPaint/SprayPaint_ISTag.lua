@@ -3,7 +3,7 @@ Tag = ISBuildingObject:derive('Tag')
 
 ---
 --- JavaObject constructor
---- Will place the tag on the cell in its special object layer
+--- Will place the tag on the square as tile object
 ---
 function Tag:create(x, y, z, north, sprite)
   if not self.playerObject:isEquipped(self.sprayCanItem) then
@@ -44,7 +44,7 @@ function Tag:isValid(square, north)
     local props = square:getProperties()
     if props:Is(IsoFlagType.water) then return false end
   end
-  if square:getSpecialObjects():size() == 0 then return false end
+  if square:getSpecialObjects():size() ~= 0 then return false end
   return true
 end
 

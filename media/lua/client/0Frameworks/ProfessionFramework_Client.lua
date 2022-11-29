@@ -1,5 +1,5 @@
 --
--- Client file for the profession framework mod.
+-- Client part of the profession framework.
 -- Handles special profession trait swaps, adding starter kits, and
 -- mounts OnNewGame handler for each registered profession and trait,
 -- and OnGameStart handler for traits

@@ -1,5 +1,7 @@
 if not ExtBuildingContextMenu then require 'ExtBuilding/ExtBuilding_BuildRecipes' end
 require 'BuildingObjects/ISBuildingObject'
+require 'luautils'
+
 
 --- @class ISExtBuildingObject : ISBuildingObject
 ISExtBuildingObject = ISBuildingObject:derive('ISExtBuildingObject')
@@ -23,6 +25,8 @@ ISExtBuildingObject.defaults = {
   modData = {}
 }
 
+
+-- TODO: Can merge() and predicateNotBroken become locals?
 
 ---
 --- Merges two objects while entries of b will replace identical entries of a if
@@ -73,8 +77,8 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   self.craftingBank = settings.craftingBank
   self:setSprite(settings.sprites.sprite)
   self:setNorthSprite(settings.sprites.northSprite or settings.sprites.sprite)
-  if settings.sprites.east then self:setEastSprite(settings.sprites.east) end -- TODO: Use west sprite as alternative?
-  if settings.sprites.south then self:setSouthSprite(settings.sprites.south) end -- TODO: Use northSprite as alternativ
+  if settings.sprites.east then self:setEastSprite(settings.sprites.east) end
+  if settings.sprites.south then self:setSouthSprite(settings.sprites.south) end
   if settings.sprites.corner then self.corner = settings.sprites.corner end
   if settings.sprites.openSprite or settings.sprites.openNorthSprite then
     self.openSprite = settings.sprites.openSprite or settings.sprites.openNorthSprite
@@ -209,6 +213,52 @@ end
 
 
 
+
+
+-- Some support functions for the overloaded timed actions
+local function transferIfNeeded(oPlayer, oItem, isoTile)
+  if luautils.haveToBeTransfered(oPlayer, oItem) then
+    ISTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
+  end
+end
+local function onClothingItemExtra(oItem, extra, oPlayer, isoTile)
+  if oItem:getBodyLocation() == 'Hat' or oItem:getBodyLocation() == 'FullHat' then
+    local wornItems = oPlayer:getWornItems()
+    for i=1, wornItems:size() do
+      local wornItem = wornItems:get(i-1)
+      if (wornItem:getLocation() == 'SweaterHat' or wornItem:getLocation() == 'JacketHat') then
+        for j=0, wornItem:getItem():getClothingItemExtraOption():size() - 1 do
+          if wornItem:getItem():getClothingItemExtraOption():get(j) == 'DownHoodie' then
+            onClothingItemExtra(wornItem:getItem(), wornItem:getItem():getClothingItemExtra():get(j), oPlayer, isoTile)
+          end
+        end
+      end
+    end
+  end
+  if luautils.haveToBeTransfered(oPlayer, oItem) then
+    ISTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
+  end
+  ISTimedActionQueue.add(ISExtClothingExtraAction:new(oPlayer, oItem, extra, isoTile))
+end
+local function wearItem(oTtem, oPlayer, isoTile)
+  if oTtem:getClothingItemExtraOption() and oTtem:getClothingItemExtra() and oTtem:getClothingItemExtra():get(0) then
+    onClothingItemExtra(oTtem, oTtem:getClothingItemExtra():get(0), oPlayer, isoTile)
+  else
+    transferIfNeeded(oPlayer, oTtem, isoTile)
+    ISTimedActionQueue.add(ISExtWearClothing:new(oPlayer, oTtem, 50, isoTile))
+  end
+end
+local function equipItem(oTtem, primary, twoHands, oPlayer, isoTile)
+  if isForceDropHeavyItem(oPlayer:getPrimaryHandItem()) then
+    ISTimedActionQueue.add(ISExtUnequipAction:new(oPlayer, oPlayer:getPrimaryHandItem(), 50, isoTile))
+  end
+  transferIfNeeded(oPlayer, oTtem, isoTile)
+  ISTimedActionQueue.add(ISExtEquipWeaponAction:new(oPlayer, oTtem, 50, primary, twoHands, isoTile))
+end
+
+
+
+
 ---
 --- Called by DoTileBuilding after ghost tile drag located the desired target square.
 --- It will generate the timed action query from the modData/fields and launch it and by that,
@@ -221,7 +271,8 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local square = getCell():getGridSquare(x, y, z)
   local oPlayer = getSpecificPlayer(self.player)
   local oInv = oPlayer:getInventory()
-  local maxTime, firstToolEntry, toolSound1, toolSound2
+  local grabTime, fromGround = 50, false
+  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material
   if ISBuildMenu.cheat or self:walkTo(x, y, z) then
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
     if oPlayer:isTimedActionInstant() then
@@ -236,81 +287,81 @@ function ISExtBuildingObject:tryBuild(x, y, z)
             local perk = Perks.FromString(split(k, ':')[2])
             sumOfReqSkills = sumOfReqSkills + oPlayer:getPerkLevel(perk)
             counter = counter + 1
-          end
-          if stringStarts(k, 'keep:') then
-            if firstToolEntry == nil then
+          elseif stringStarts(k, 'keep:') then
+            if tool1 == nil then
+              local typelist = split(split(k, ':')[2], '/')
               toolSound1 = v
-              firstToolEntry = split(split(k, ':')[2], '/')
-            elseif toolSound2 == nil then
+              for i=1, #typelist do
+                tool1 = oInv:getFirstTypeEvalRecurse(typelist[i], ISExtBuildingObject.predicateNotBroken)
+                if tool1 then break end
+              end
+            elseif tool2 == nil then
+              local typelist = split(split(k, ':')[2], '/')
               toolSound2 = v
+              for i=1, #typelist do
+                tool2 = oInv:getFirstTypeEvalRecurse(typelist[i], ISExtBuildingObject.predicateNotBroken)
+                if tool2 then break end
+              end
+            end
+            if wearable == nil then
+              local typelist = split(split(k, ':')[2], '/')
+              for i=1, #typelist do
+                local item = oInv:getFirstTypeRecurse(typelist[i])
+                if item and instanceof(item, 'Clothing') then wearable = item; break end
+              end
+            end
+          elseif material == nil and (stringStarts(k, 'need:') or stringStarts(k, 'use:')) then
+            local typelist = split(split(k, ':')[2], '/')
+            for i=1, #typelist do
+              local material = oInv:getFirstTypeRecurse(typelist[i])
+              if material then break end
+            end
+            for i=1, #typelist do
+              local groundItems = buildUtil.getMaterialOnGround(square)
+              for k,v in ipairs(groundItems) do
+                if k == typelist[i] then
+                  material = v
+                  fromGround = true
+                  grabTime = ISWorldObjectContextMenu.grabItemTime(oPlayer, material:getWorldItem())
+                  break
+                end
+              end
+              if material then break end
             end
           end
         end
         if counter == 0 then counter = 1 end
-        maxTime = buildTime - 5 * math.floor(sumOfReqSkills / counter)
+        maxTime = math.floor(buildTime - 5 * sumOfReqSkills / counter)
       else
-        maxTime = buildTime - 5 * oPlayer:getPerkLevel(Perks.Woodwork)
+        maxTime = math.floor(buildTime - 5 * oPlayer:getPerkLevel(Perks.Woodwork))
       end
     end
     if self.skipBuildAction then
       self:create(x, y, z, self.north, self:getSprite())
     else
-      local equipTool
+      local isoTile = IsoObject.new(square, 'garteneden_tech_01_2', 'ConstructionSite')
+      square:AddTileObject(isoTile)
+      if isClient() then isoTile:transmitCompleteItemToServer() else isoTile:transmitCompleteItemToClients() end
       if not ISBuildMenu.cheat then
-        if firstToolEntry ~= nil then
-          if type(firstToolEntry) == 'table' then
-            for i=1, #firstToolEntry do
-              equipTool = oInv:getFirstTypeEvalRecurse(firstToolEntry[i], ISExtBuildingObject.predicateNotBroken)
-              if equipTool then break end
-            end
-          else
-            equipTool = oInv:getFirstTypeEvalRecurse(firstToolEntry, ISExtBuildingObject.predicateNotBroken)
-          end
-        end
-      end
-      if equipTool then ISInventoryPaneContextMenu.equipWeapon(equipTool, true, false, self.player) end
-      if not ISBuildMenu.cheat then
-        if self.firstItem then
-          local item
-          if self.firstPredicate then
-            item = oInv:getFirstTypeEvalArgRecurse(self.firstItem, self.firstPredicate)
-            if not item then
-              local groundItems = buildUtil.getMaterialOnGround(square)
-              for _,item2 in ipairs(groundItems[self.firstItem]) do
-                if self.firstPredicate(item2, self.firstArg) then
-                  item = item2
-                  break
-                end
-              end
-              local time = ISWorldObjectContextMenu.grabItemTime(oPlayer, item:getWorldItem())
-              ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, item:getWorldItem(), time))
-            end
-          else
-            item = oInv:getItemFromFullType(self.firstItem, true, true)
-            if not item then
-              local groundItems = buildUtil.getMaterialOnGround(square)
-              item = groundItems[self.firstItem][1]
-              local time = ISWorldObjectContextMenu.grabItemTime(oPlayer, item:getWorldItem())
-              ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, item:getWorldItem(), time))
-            end
-          end
-          ISInventoryPaneContextMenu.equipWeapon(item, true, false, self.player)
-        end
-        if self.secondItem then
-          local item = oInv:getItemFromFullType(self.secondItem, true, true)
-          if instanceof(item, 'Clothing') then
-            if not item:isEquipped() then ISInventoryPaneContextMenu.wearItem(item, self.player) end
-          else
-            ISInventoryPaneContextMenu.equipWeapon(item, false, false, self.player)
-          end
+        if wearable then wearItem(wearable, oPlayer, isoTile) end
+        if tool1 then equipItem(tool1, true, false, oPlayer, isoTile) end
+        if tool2 then
+          equipItem(tool2, false, false, oPlayer, isoTile)
+        elseif material then
+          if fromGround then ISTimedActionQueue.add(ISExtGrabItemAction:new(oPlayer, material:getWorldItem(), grabTime, isoTile)) end
+          equipItem(material, false, false, oPlayer, isoTile)
         end
       end
       local selfCopy = copyTable(self)
       setmetatable(selfCopy, getmetatable(self, true))
-      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2))
+      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2, isoTile))
     end
   end
 end
+
+
+
+
 
 
 

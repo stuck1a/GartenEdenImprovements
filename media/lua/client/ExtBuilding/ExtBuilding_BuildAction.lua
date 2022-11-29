@@ -4,6 +4,8 @@ require 'TimedActions/ISBaseTimedAction'
 ISExtBuildAction = ISBuildAction:derive('ISExtBuildAction')
 
 
+ISExtBuildAction.constructionSiteOverlay = 'garteneden_tech_01_2'
+
 
 ---
 --- Generates the sound map
@@ -87,9 +89,10 @@ end
 --- @param time int Overall duration for required for the building
 --- @param tool1 string|nil Item type of the first required tool found, if any
 --- @param tool2 string|nil Item type of the second required tool found, if any
+--- @param isoTile IsoObject The construction site tile overlay
 --- @return ISExtBuildAction Timed action class object for building the structure
 ---
-function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time, tool1, tool2)
+function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time, tool1, tool2, isoTile)
   local o = ISBuildAction.new(self, character, item, x, y, z, north, spriteName, time)
   setmetatable(o, self)
   self.__index = self
@@ -97,6 +100,7 @@ function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time,
   if type(tool2) == 'string' and string.find(tool2, '.') then tool2 = luautils.split(tool2, '.')[2] end
   o.tool1 = tool1
   o.tool2 = tool2
+  o.isoTile = isoTile
   if self.soundMap == nil then init() end
   return o
 end
@@ -136,4 +140,125 @@ function ISExtBuildAction:update()
   end
   self.character:setMetabolicTarget(Metabolics.HeavyWork)
   self:faceLocation()
+end
+
+
+
+function ISExtBuildAction:stop()
+  ISBuildAction.stop(self)
+  if not ISTimedActionQueue.isPlayerDoingAction(self.character) and self.isoTile then
+    self.square:RemoveTileObject(self.isoTile)
+  end
+end
+
+
+
+
+
+
+
+---@class ISExtInventoryTransferAction : ISInventoryTransferAction
+ISExtInventoryTransferAction = ISInventoryTransferAction:derive('ISExtInventoryTransferAction')
+function ISExtInventoryTransferAction:new(character, item, srcContainer, destContainer, time, isoTile)
+  local o = ISInventoryTransferAction:new(character, item, srcContainer, destContainer, time)
+  setmetatable(o, self)
+  self.__index = self
+  self.isoTile = isoTile
+  return o
+end
+function ISExtInventoryTransferAction:stop()
+  ISInventoryTransferAction.stop(self)
+  if not ISTimedActionQueue.isPlayerDoingAction(self.character) and self.isoTile then
+    self.square:RemoveTileObject(self.isoTile)
+  end
+end
+
+
+
+---@class ISExtWearClothing : ISWearClothing
+ISExtWearClothing = ISWearClothing:derive('ISExtWearClothing')
+function ISExtWearClothing:new(character, item, time, isoTile)
+  local o = ISWearClothing:new(character, item, time)
+  setmetatable(o, self)
+  self.__index = self
+  self.isoTile = isoTile
+  return o
+end
+function ISExtWearClothing:stop()
+  ISWearClothing.stop(self)
+  if not ISTimedActionQueue.isPlayerDoingAction(self.character) and self.isoTile then
+    self.square:RemoveTileObject(self.isoTile)
+  end
+end
+
+
+
+---@class ISExtClothingExtraAction : ISClothingExtraAction
+ISExtClothingExtraAction = ISClothingExtraAction:derive('ISExtClothingExtraAction')
+function ISExtClothingExtraAction:new(character, item, extra, isoTile)
+  local o = ISClothingExtraAction:new(character, item, extra)
+  setmetatable(o, self)
+  self.__index = self
+  self.isoTile = isoTile
+  return o
+end
+function ISExtClothingExtraAction:stop()
+  ISClothingExtraAction.stop(self)
+  if not ISTimedActionQueue.isPlayerDoingAction(self.character) and self.isoTile then
+    self.square:RemoveTileObject(self.isoTile)
+  end
+end
+
+
+
+---@class ISExtUnequipAction : ISUnequipAction
+ISExtUnequipAction = ISUnequipAction:derive('ISExtUnequipAction')
+function ISExtUnequipAction:new(character, item, time, isoTile)
+  local o = ISUnequipAction:new(character, item, time)
+  setmetatable(o, self)
+  self.__index = self
+  self.isoTile = isoTile
+  return o
+end
+function ISExtUnequipAction:stop()
+  ISUnequipAction.stop(self)
+  if not ISTimedActionQueue.isPlayerDoingAction(self.character) and self.isoTile then
+    self.square:RemoveTileObject(self.isoTile)
+  end
+end
+
+
+
+---@class ISExtEquipWeaponAction : ISEquipWeaponAction
+ISExtEquipWeaponAction = ISEquipWeaponAction:derive('ISExtEquipWeaponAction')
+function ISExtEquipWeaponAction:new(character, item, time, primary, twoHands, isoTile)
+  local o = ISEquipWeaponAction:new(character, item, time, primary, twoHands)
+  setmetatable(o, self)
+  self.__index = self
+  self.isoTile = isoTile
+  return o
+end
+function ISExtEquipWeaponAction:stop()
+  ISEquipWeaponAction.stop(self)
+  if not ISTimedActionQueue.isPlayerDoingAction(self.character) and self.isoTile then
+    self.square:RemoveTileObject(self.isoTile)
+  end
+end
+
+
+
+---@class ISExtGrabItemAction : ISGrabItemAction
+ISExtGrabItemAction = ISGrabItemAction:derive('ISExtGrabItemAction')
+function ISExtGrabItemAction:new(character, item, time, isoTile)
+  local o = ISGrabItemAction:new(character, item, time)
+  setmetatable(o, self)
+  self.__index = self
+  self.isoTile = isoTile
+  return o
+end
+function ISExtGrabItemAction:stop()
+  ISGrabItemAction.stop(self)
+  if not ISTimedActionQueue.isPlayerDoingAction(self.character) and self.isoTile then
+    self.square:RemoveTileObject(self.isoTile)
+  end
 end
