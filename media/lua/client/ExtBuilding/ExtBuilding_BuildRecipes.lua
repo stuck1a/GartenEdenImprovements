@@ -1,24 +1,24 @@
-if not ExtBuildingContextMenu then
-  ExtBuildingContextMenu = {}
+if not ExtBuildingContextMenu then ExtBuildingContextMenu = {} end
+if not ExtBuildingContextMenu.call then
   ExtBuildingContextMenu.call = function(callback, ...) return callback(...) end
   setmetatable(ExtBuildingContextMenu, {__call = ExtBuildingContextMenu.call})
 end
 
--- SUBCATEGORY ENTRIES:
+
+-- SUBMENU ENTRIES:
 --[[
 DisplayNameTranslationString = {
-  --isCategory = true,
-  Entry1 = { ... },
-  Entry2 = { ... },
+  { ... },
+  { ... },
   ...
 }
 --]]
 
--- RECIPE ENTRIES (none of them are mandatory. Specify only these which differs from targetClass' default values):
+-- RECIPE ENTRIES (Basically only targetClass ist mandatory. But there might be another mandatory fields if targetClass is only a generic class for different recipes)
 --[[
-ContextMenu_ReinforcedBox = {
+{
   targetClass = 'ISWoodenContainer',  -- will use 'ISBuildingObject' if not set
-  name = 'ContextMenu_ReinforcedBox',
+  displayName = 'ContextMenu_ReinforcedBox',
   buildTime = 500,
   baseHealth = 1000,
   mainMaterial = 'wood',
@@ -28,26 +28,10 @@ ContextMenu_ReinforcedBox = {
     sprite = 'carpentry_02_17',
     north = 'carpentry_02_18',
     south = 'carpentry_02_19',
-    north = 'carpentry_02_20',
+    east = 'carpentry_02_20',
+    open = 'carpentry_02_22,
     corner = 'carpentry_02_21',
     damaged = 'carpentry_05_17',
-    tiers = {
-      [1] = {
-        requires = { ['Woodwork'] = 4, ['NetalWelding'] = 3 },
-        sprite = 'carpentry_03_17',
-        north = 'carpentry_03_18',
-        south = 'carpentry_03_19',
-        north = 'carpentry_03_20'
-      },
-      [2] = {
-        requires = { ['Woodwork'] = 7, ['NetalWelding'] = 5 },
-        sprite = 'carpentry_03_17',
-        north = 'carpentry_03_18',
-        south = 'carpentry_03_19',
-        north = 'carpentry_03_20',
-        corner = 'carpentry_02_21'
-      },
-      -- add as many tiers as wanted. The one with the highest ID whose skill requirements are ALL met will be used
     },
   },
   properties = {
@@ -55,13 +39,13 @@ ContextMenu_ReinforcedBox = {
     myCustomField = myValue  -- of course this makes only sense if the target class will make any use of it as well
   },
   modData = {
-    -- any item with tag 'Hammer' will work, but tooltip will display name of 'Base.Hammer' only
+    -- any item with tag 'Hammer' will work, but tooltip will display translated name of 'Base.Hammer' only
     ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
     ['keep:Base.Torch/MyMod.LargeTorch'] = 'Base.Torch',
     ['need:Base.Plank'] = 8,
     ['need:Base.Nails'] = 12,
     ['need:Base.IronPlate'] = 4,
-    -- any drainable item must use the 'use:" prefix. Value is the number of uses, not items
+    -- any drainable item must use the 'use:" prefix. Value is then the number of uses, not the item count
     ['use:Base.WeldingStab/MyMod.WeldingStab2'] = 4,
     ['requires:Woodwork'] = 2,
     ['requires:MetalWelding'] = 1,
@@ -89,7 +73,6 @@ ExtBuildingContextMenu.BuildingRecipes = {
           targetClass = 'ISWall',
           tooltipDesc = 'Tooltip_craft_woodenWallFrameDesc',
           sprites = {
-            -- Holzwandrahmen
             sprite = 'carpentry_02_100',
             northSprite = 'carpentry_02_101',
             corner = 'walls_exterior_wooden_01_27'

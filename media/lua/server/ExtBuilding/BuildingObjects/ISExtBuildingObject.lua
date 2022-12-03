@@ -26,7 +26,6 @@ ISExtBuildingObject.defaults = {
 }
 
 
--- TODO: Can merge() and predicateNotBroken become locals?
 
 ---
 --- Merges two objects while entries of b will replace identical entries of a if
@@ -184,17 +183,6 @@ end
 
 
 ---
---- Checks whether the given item object (tool) is broken or not.
---- @param item IsoObject Target item instance
---- @return boolean Whether the instance has got the predicate "broken" or not
----
-function ISExtBuildingObject.predicateNotBroken(item)
-  return not item:isBroken()
-end
-
-
-
----
 --- Extension of the ghost tile placement validation
 --- @param square IsoGridSquare Clicked square object
 --- @return boolean If the hovered cell has space for the target construction
@@ -213,9 +201,18 @@ end
 
 
 
+---
+--- Checks whether the given item object (tool) is broken or not.
+--- @param item IsoObject Target item instance
+--- @return boolean Whether the instance has got the predicate "broken" or not
+---
+local function predicateNotBroken(item)
+  return not item:isBroken()
+end
 
 
--- Some support functions for the overloaded timed actions
+
+-- Some support functions for the overloaded timed action queue
 local function transferIfNeeded(oPlayer, oItem, isoTile)
   if luautils.haveToBeTransfered(oPlayer, oItem) then
     ISTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
@@ -258,6 +255,28 @@ end
 
 
 
+function ISExtBuildingObject:walkTo(square, oPlayer, isoTile)
+  if self.skipWalk2 then return true end
+  local adjacent = AdjacentFreeTileFinder.FindWall(square, self.north, oPlayer)
+  ISTimedActionQueue.clear(oPlayer)
+  if self.isWallLike then
+    if adjacent ~= nil then
+      ISTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile))
+      return true
+    else
+      return false
+    end
+  end
+  square = luautils.getCorrectSquareForWall(oPlayer, square)
+  local diffX = math.abs(square:getX() + 0.5 - oPlayer:getX())
+  local diffY = math.abs(square:getY() + 0.5 - oPlayer:getY())
+  if diffX <= 1.6 and diffY <= 1.6 then return true end
+  local adjacent = AdjacentFreeTileFinder.Find(square, oPlayer)
+  if adjacent ~= nil then ISTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile)); return true else return  false end
+end
+
+
+
 
 ---
 --- Called by DoTileBuilding after ghost tile drag located the desired target square.
@@ -273,7 +292,12 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local oInv = oPlayer:getInventory()
   local grabTime, fromGround = 50, false
   local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material
-  if ISBuildMenu.cheat or self:walkTo(x, y, z) then
+  local isoTile = IsoObject.new(square, 'garteneden_tech_01_2', 'ConstructionSite')
+  if ISBuildMenu.cheat or self:walkTo(square, oPlayer, isoTile) then
+    if not self.skipBuildAction then
+      square:AddSpecialTileObject(isoTile)
+      if isClient() then isoTile:transmitCompleteItemToServer() else isoTile:transmitCompleteItemToClients() end
+    end
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
     if oPlayer:isTimedActionInstant() then
       maxTime = 1
@@ -292,14 +316,14 @@ function ISExtBuildingObject:tryBuild(x, y, z)
               local typelist = split(split(k, ':')[2], '/')
               toolSound1 = v
               for i=1, #typelist do
-                tool1 = oInv:getFirstTypeEvalRecurse(typelist[i], ISExtBuildingObject.predicateNotBroken)
+                tool1 = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
                 if tool1 then break end
               end
             elseif tool2 == nil then
               local typelist = split(split(k, ':')[2], '/')
               toolSound2 = v
               for i=1, #typelist do
-                tool2 = oInv:getFirstTypeEvalRecurse(typelist[i], ISExtBuildingObject.predicateNotBroken)
+                tool2 = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
                 if tool2 then break end
               end
             end
@@ -339,9 +363,6 @@ function ISExtBuildingObject:tryBuild(x, y, z)
     if self.skipBuildAction then
       self:create(x, y, z, self.north, self:getSprite())
     else
-      local isoTile = IsoObject.new(square, 'garteneden_tech_01_2', 'ConstructionSite')
-      square:AddTileObject(isoTile)
-      if isClient() then isoTile:transmitCompleteItemToServer() else isoTile:transmitCompleteItemToClients() end
       if not ISBuildMenu.cheat then
         if wearable then wearItem(wearable, oPlayer, isoTile) end
         if tool1 then equipItem(tool1, true, false, oPlayer, isoTile) end

@@ -1,39 +1,35 @@
 require 'luautils'
-if not luautils then luautils = {} end
+if not utils then utils = {} end
 
 
-if luautils.tableContains == nil then
-  ---
-  --- Searches for a given value within a table (not recursive!)
-  --- @param tbl table Target table
-  --- @param value any Value to search for
-  --- @return boolean True if the value was found, false otherwise
-  ---
-  function luautils.tableContains(tbl, value)
-    for _,v in ipairs(tbl) do if v == value then return true end end
-    return false
-  end
+---
+--- Searches for a given value within a table (not recursive!)
+--- @param tbl table Target table
+--- @param value any Value to search for
+--- @return boolean True if the value was found, false otherwise
+---
+utils.tableContains = function(tbl, value)
+  for _,v in ipairs(tbl) do if v == value then return true end end
+  return false
 end
 
 
 
-if luautils.tableCopyData == nil then
-  ---
-  --- Recursively copies the value of a table
-  --- @param data table Target table
-  --- @param _ int Recursion counter (don't set this value!)
-  --- @return table Deep copy (no metatables)
-  ---
-  function luautils.tableCopyData(data, _)
-    _ = _ or 0
-    if _ > 100 then return nil end
-    local result = {}
-    for k, v in pairs(data) do
-      if type(v) == 'table' then v = luautils.tableCopyData(v, 1 + _) end
-      result[k] = v
-    end
-    return result
+---
+--- Recursively copies the value of a table
+--- @param data table Target table
+--- @param _ int Recursion counter (don't set this value!)
+--- @return table Deep copy (no metatables)
+---
+utils.tableCopyData = function(data, _)
+  _ = _ or 0
+  if _ > 100 then return nil end
+  local result = {}
+  for k, v in pairs(data) do
+    if type(v) == 'table' then v = utils.tableCopyData(v, 1 + _) end
+    result[k] = v
   end
+  return result
 end
 
 
