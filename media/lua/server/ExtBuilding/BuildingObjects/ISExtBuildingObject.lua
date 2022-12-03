@@ -215,7 +215,7 @@ end
 -- Some support functions for the overloaded timed action queue
 local function transferIfNeeded(oPlayer, oItem, isoTile)
   if luautils.haveToBeTransfered(oPlayer, oItem) then
-    ISTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
+    ISExtTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
   end
 end
 local function onClothingItemExtra(oItem, extra, oPlayer, isoTile)
@@ -233,24 +233,24 @@ local function onClothingItemExtra(oItem, extra, oPlayer, isoTile)
     end
   end
   if luautils.haveToBeTransfered(oPlayer, oItem) then
-    ISTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
+    ISExtTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
   end
-  ISTimedActionQueue.add(ISExtClothingExtraAction:new(oPlayer, oItem, extra, isoTile))
+  ISExtTimedActionQueue.add(ISExtClothingExtraAction:new(oPlayer, oItem, extra, isoTile))
 end
 local function wearItem(oTtem, oPlayer, isoTile)
   if oTtem:getClothingItemExtraOption() and oTtem:getClothingItemExtra() and oTtem:getClothingItemExtra():get(0) then
     onClothingItemExtra(oTtem, oTtem:getClothingItemExtra():get(0), oPlayer, isoTile)
   else
     transferIfNeeded(oPlayer, oTtem, isoTile)
-    ISTimedActionQueue.add(ISExtWearClothing:new(oPlayer, oTtem, 50, isoTile))
+    ISExtTimedActionQueue.add(ISExtWearClothing:new(oPlayer, oTtem, 50, isoTile))
   end
 end
 local function equipItem(oTtem, primary, twoHands, oPlayer, isoTile)
   if isForceDropHeavyItem(oPlayer:getPrimaryHandItem()) then
-    ISTimedActionQueue.add(ISExtUnequipAction:new(oPlayer, oPlayer:getPrimaryHandItem(), 50, isoTile))
+    ISExtTimedActionQueue.add(ISExtUnequipAction:new(oPlayer, oPlayer:getPrimaryHandItem(), 50, isoTile))
   end
   transferIfNeeded(oPlayer, oTtem, isoTile)
-  ISTimedActionQueue.add(ISExtEquipWeaponAction:new(oPlayer, oTtem, 50, primary, twoHands, isoTile))
+  ISExtTimedActionQueue.add(ISExtEquipWeaponAction:new(oPlayer, oTtem, 50, primary, twoHands, isoTile))
 end
 
 
@@ -258,10 +258,10 @@ end
 function ISExtBuildingObject:walkTo(square, oPlayer, isoTile)
   if self.skipWalk2 then return true end
   local adjacent = AdjacentFreeTileFinder.FindWall(square, self.north, oPlayer)
-  ISTimedActionQueue.clear(oPlayer)
+  ISExtTimedActionQueue.clear(oPlayer)
   if self.isWallLike then
     if adjacent ~= nil then
-      ISTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile))
+      ISExtTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile))
       return true
     else
       return false
@@ -272,7 +272,12 @@ function ISExtBuildingObject:walkTo(square, oPlayer, isoTile)
   local diffY = math.abs(square:getY() + 0.5 - oPlayer:getY())
   if diffX <= 1.6 and diffY <= 1.6 then return true end
   local adjacent = AdjacentFreeTileFinder.Find(square, oPlayer)
-  if adjacent ~= nil then ISTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile)); return true else return  false end
+  if adjacent ~= nil then
+    ISExtTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile))
+    return true
+  else
+    return false
+  end
 end
 
 
@@ -293,10 +298,10 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local grabTime, fromGround = 50, false
   local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material
   local isoTile = IsoObject.new(square, 'garteneden_tech_01_2', 'ConstructionSite')
-  if ISBuildMenu.cheat or self:walkTo(square, oPlayer, isoTile) then
+  if (ISBuildMenu.cheat or self:walkTo(square, oPlayer, isoTile)) and self:isValid(square) then
     if not self.skipBuildAction then
       square:AddSpecialTileObject(isoTile)
-      if isClient() then isoTile:transmitCompleteItemToServer() else isoTile:transmitCompleteItemToClients() end
+      isoTile:transmitCompleteItemToServer()
     end
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
     if oPlayer:isTimedActionInstant() then
@@ -369,13 +374,13 @@ function ISExtBuildingObject:tryBuild(x, y, z)
         if tool2 then
           equipItem(tool2, false, false, oPlayer, isoTile)
         elseif material then
-          if fromGround then ISTimedActionQueue.add(ISExtGrabItemAction:new(oPlayer, material:getWorldItem(), grabTime, isoTile)) end
+          if fromGround then ISExtTimedActionQueue.add(ISExtGrabItemAction:new(oPlayer, material:getWorldItem(), grabTime, isoTile)) end
           equipItem(material, false, false, oPlayer, isoTile)
         end
       end
       local selfCopy = copyTable(self)
       setmetatable(selfCopy, getmetatable(self, true))
-      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2, isoTile))
+      ISExtTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2, isoTile))
     end
   end
 end

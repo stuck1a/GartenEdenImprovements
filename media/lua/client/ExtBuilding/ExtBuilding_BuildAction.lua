@@ -296,3 +296,212 @@ function ISExtWalkToTimedAction:stop()
   ISWalkToTimedAction.stop(self)
   if self.isoTile ~= nil then removeConstructionSite(self.isoTile) end
 end
+
+
+
+
+
+-- ---------------------------------------------------------------
+
+
+---@class ISExtTimedActionQueue : ISTimedActionQueue
+ISExtTimedActionQueue = ISTimedActionQueue:derive('ISExtTimedActionQueue')
+
+
+local STATES = {}
+STATES[ClimbThroughWindowState.instance()] = true
+STATES[ClimbOverFenceState.instance()] = true
+STATES[ClimbOverWallState.instance()] = true
+STATES[ClimbSheetRopeState.instance()] = true
+STATES[ClimbDownSheetRopeState.instance()] = true
+STATES[CloseWindowState.instance()] = true
+STATES[OpenWindowState.instance()] = true
+
+ISExtTimedActionQueue.queues = ISTimedActionQueue.queues
+
+
+function ISExtTimedActionQueue:new(character)
+  local o = ISTimedActionQueue:new(character)
+  setmetatable(o, self)
+  self.__index = self
+  o.character = character
+  o.queue = {}
+  ISExtTimedActionQueue.queues[character] = o
+  return o
+end
+
+
+
+function ISExtTimedActionQueue:addToQueue(action)
+  local count = #self.queue
+  table.insert(self.queue, action)
+  if count == 0 then
+    self.current = action
+    action:begin()
+  end
+end
+
+
+
+function ISExtTimedActionQueue:indexOf(action)
+  for i,v in ipairs(self.queue) do
+    if v == action then return i end
+  end
+  return -1
+end
+
+
+
+function ISExtTimedActionQueue:removeFromQueue(action)
+  local i = self:indexOf(action)
+  if i ~= -1 then
+    table.remove(self.queue, i)
+  end
+end
+
+
+
+function ISExtTimedActionQueue.getTimedActionQueue(character)
+  local queue = ISExtTimedActionQueue.queues[character]
+  if queue == nil then queue = ISExtTimedActionQueue:new(character) end
+  return queue
+end
+
+
+
+function ISExtTimedActionQueue.add(action)
+  if action.ignoreAction then return end
+  if instanceof(action.character, 'IsoGameCharacter') and action.character:isAsleep() then return end
+  local queue = ISExtTimedActionQueue.getTimedActionQueue(action.character)
+  local current = queue.queue[1]
+  if current and (current.Type == 'ISQueueActionsAction') and current.isAddingActions then
+    table.insert(queue.queue, current.indexToAdd, action)
+    current.indexToAdd = current.indexToAdd + 1
+    return queue
+  end
+  queue:addToQueue(action)
+  return queue
+end
+
+
+
+function ISExtTimedActionQueue:tick()
+  local action = self.queue[1]
+  if action == nil then
+    self:clearQueue()
+    return
+  end
+  if not action.character:getCharacterActions():contains(action.action) then
+    print('bugged action, cleared ExtBuildingQueue ', action.Type or '???')
+    if action.isoTile ~= nil then removeConstructionSite(action.isoTile) end
+    self:resetQueue()
+    return
+  end
+  if action.action:hasStalled() then
+    self:onCompleted(action)
+    return
+  end
+end
+
+
+
+function ISExtTimedActionQueue.queueActions(character, addActionsFunction, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+  local action = ISQueueActionsAction:new(character, addActionsFunction, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
+  return ISExtTimedActionQueue.add(action)
+end
+
+
+
+function ISExtTimedActionQueue:onCompleted(action)
+  self:removeFromQueue(action)
+  self.current = self.queue[1]
+  if self.current then
+    self.current:begin() else
+    if action.isoTile ~= nil then removeConstructionSite(action.isoTile) end
+  end
+end
+
+
+
+function ISExtTimedActionQueue:clearQueue()
+  table.wipe(self.queue)
+end
+
+
+
+function ISExtTimedActionQueue:resetQueue()
+  table.wipe(self.queue)
+  self.current = nil
+end
+
+
+
+function ISExtTimedActionQueue.addAfter(previousAction, action)
+  if action.ignoreAction then return nil end
+  if instanceof(action.character, 'IsoGameCharacter') and action.character:isAsleep() then return nil end
+  local queue = ISExtTimedActionQueue.getTimedActionQueue(action.character)
+  local i = queue:indexOf(previousAction)
+  if i ~= -1 then
+    table.insert(queue.queue, i + 1, action)
+    return queue,action
+  end
+  return nil
+end
+
+
+
+function ISExtTimedActionQueue.hasAction(action)
+  if action == nil then return false end
+  local queue = ISExtTimedActionQueue.queues[action.character]
+  if queue == nil then return false end
+  return queue:indexOf(action) ~= -1
+end
+
+
+
+function ISExtTimedActionQueue.isPlayerDoingAction(playerObj)
+  if not playerObj then return false end
+  if playerObj:isDead() then return false end
+  if not playerObj:getCharacterActions():isEmpty() then return true end
+  local state = playerObj:getCurrentState()
+  if STATES[state] then return true end
+  return false
+end
+
+
+
+function ISExtTimedActionQueue.clear(character)
+  character:StopAllActionQueue()
+  local queue = ISExtTimedActionQueue.getTimedActionQueue(character)
+  queue:clearQueue()
+  return queue
+end
+
+
+function ISExtTimedActionQueue.onTick()
+  for _,queue in pairs(ISExtTimedActionQueue.queues) do
+    queue:tick()
+  end
+  if not getCore():getOptionTimedActionGameSpeedReset() then
+    return
+  end
+  local isDoingAction = false
+  for playerNum = 1,getNumActivePlayers() do
+    local playerObj = getSpecificPlayer(playerNum-1)
+    if ISExtTimedActionQueue.isPlayerDoingAction(playerObj) then
+      isDoingAction = true
+      break
+    end
+  end
+  if isDoingAction then
+    ISExtTimedActionQueue.shouldResetGameSpeed = true
+  elseif ISExtTimedActionQueue.shouldResetGameSpeed then
+    ISExtTimedActionQueue.shouldResetGameSpeed = false
+    if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() > 1) then
+      UIManager.getSpeedControls():SetCurrentGameSpeed(1)
+    end
+  end
+end
+
+
+Events.OnTick.Add(ISExtTimedActionQueue.onTick)
