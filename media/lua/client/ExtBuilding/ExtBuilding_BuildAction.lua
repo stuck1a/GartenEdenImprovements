@@ -308,15 +308,6 @@ end
 ISExtTimedActionQueue = ISTimedActionQueue:derive('ISExtTimedActionQueue')
 
 
-local STATES = {}
-STATES[ClimbThroughWindowState.instance()] = true
-STATES[ClimbOverFenceState.instance()] = true
-STATES[ClimbOverWallState.instance()] = true
-STATES[ClimbSheetRopeState.instance()] = true
-STATES[ClimbDownSheetRopeState.instance()] = true
-STATES[CloseWindowState.instance()] = true
-STATES[OpenWindowState.instance()] = true
-
 ISExtTimedActionQueue.queues = ISTimedActionQueue.queues
 
 
@@ -392,7 +383,6 @@ function ISExtTimedActionQueue:tick()
     return
   end
   if not action.character:getCharacterActions():contains(action.action) then
-    print('bugged action, cleared ExtBuildingQueue ', action.Type or '???')
     if action.isoTile ~= nil then removeConstructionSite(action.isoTile) end
     self:resetQueue()
     return
@@ -459,17 +449,6 @@ end
 
 
 
-function ISExtTimedActionQueue.isPlayerDoingAction(playerObj)
-  if not playerObj then return false end
-  if playerObj:isDead() then return false end
-  if not playerObj:getCharacterActions():isEmpty() then return true end
-  local state = playerObj:getCurrentState()
-  if STATES[state] then return true end
-  return false
-end
-
-
-
 function ISExtTimedActionQueue.clear(character)
   character:StopAllActionQueue()
   local queue = ISExtTimedActionQueue.getTimedActionQueue(character)
@@ -479,28 +458,7 @@ end
 
 
 function ISExtTimedActionQueue.onTick()
-  for _,queue in pairs(ISExtTimedActionQueue.queues) do
-    queue:tick()
-  end
-  if not getCore():getOptionTimedActionGameSpeedReset() then
-    return
-  end
-  local isDoingAction = false
-  for playerNum = 1,getNumActivePlayers() do
-    local playerObj = getSpecificPlayer(playerNum-1)
-    if ISExtTimedActionQueue.isPlayerDoingAction(playerObj) then
-      isDoingAction = true
-      break
-    end
-  end
-  if isDoingAction then
-    ISExtTimedActionQueue.shouldResetGameSpeed = true
-  elseif ISExtTimedActionQueue.shouldResetGameSpeed then
-    ISExtTimedActionQueue.shouldResetGameSpeed = false
-    if UIManager.getSpeedControls() and (UIManager.getSpeedControls():getCurrentGameSpeed() > 1) then
-      UIManager.getSpeedControls():SetCurrentGameSpeed(1)
-    end
-  end
+  for _,queue in pairs(ISExtTimedActionQueue.queues) do queue:tick() end
 end
 
 
