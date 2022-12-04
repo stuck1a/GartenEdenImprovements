@@ -74,6 +74,7 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   self.hasSpecialTooltip = settings.hasSpecialTooltip
   self.breakSound = settings.breakSound
   self.craftingBank = settings.craftingBank
+  self.isValidAddition = settings.isValidAddition
   self:setSprite(settings.sprites.sprite)
   self:setNorthSprite(settings.sprites.northSprite or settings.sprites.sprite)
   if settings.sprites.east then self:setEastSprite(settings.sprites.east) end
@@ -188,11 +189,21 @@ end
 --- @return boolean If the hovered cell has space for the target construction
 ---
 function ISExtBuildingObject:isValid(square)
-  -- base rules (valid, walkable, free space, reachable, etc)
+  -- base rules (valid square, blocked by char, stranger safehouse, not twice the same, etc)
   if not ISBuildingObject.isValid(self, square) then return false end
-  -- square must not occupied by another solid structure
+  -- not allow to block stairs except walls
+  if self.isWallLike then
+    if buildUtil.stairIsBlockingPlacement(square, true, (self.nSprite==4 or self.nSprite==2)) then return false end
+  else
+    if buildUtil.stairIsBlockingPlacement(square, true) then return false end
+  end
+  -- check additional isValid callbacks, if any
+  if self.isValidAddition ~= nil then
+    if not self.isValidAddition(square) then return false end
+  end
+  -- not occupied by a solid structure
   if square:isSolid() or square:isSolidTrans() then return false end
-  if square:HasStairs() then return false end
+  --if square:HasStairs() then return false end
   if square:HasTree() then return false end
   if not square:getMovingObjects():isEmpty() then return false end
   if not square:TreatAsSolidFloor() then return false end

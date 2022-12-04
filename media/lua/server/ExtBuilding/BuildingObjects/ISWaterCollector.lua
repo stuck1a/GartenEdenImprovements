@@ -61,20 +61,7 @@ end
 --- @return boolean True, if building can be placed on current target square
 ---
 function ISWaterCollector:isValid(square)
-  -- base rules (valid, walkable, free space, reachable, solid ground, etc)
   if not ISExtBuildingObject.isValid(self, square) then return false end
-  -- only on surface
-  if square:getZ() ~= 0 then return false end
-  -- not under stairs
-  if buildUtil.stairIsBlockingPlacement(square, true) then return false end
-  -- tile must have any exterior, natural ground (except water)
-  for i=1, square:getObjects():size() do
-    local props = square:getProperties()
-    if props:Is(IsoFlagType.water) then return false end
-    local obj = square:getObjects():get(i-1)
-    local textureName = obj:getTextureName() or 'occupied'
-    if (not luautils.stringStarts(textureName, 'floors_exterior_natur')) and (not luautils.stringStarts(textureName, 'blends_natur')) then return false end
-  end
   return true
 end
 

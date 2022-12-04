@@ -51,7 +51,7 @@ end
 --- @return boolean True, if building can be placed on current target square
 ---
 function ISWall:isValid(square)
-  ---- base rules (valid, walkable, free space, reachable, solid ground, etc)
+  -- base rules (valid, walkable, free space, reachable, solid ground, etc)
   --if not ISExtBuildingObject.isValid(self, square) then return false end
   --for i=1, square:getObjects():size() do
   --  local object = square:getObjects():get(i-1);
@@ -73,7 +73,7 @@ function ISWall:isValid(square)
   --    if not self.north and gridX > 0 then return false end
   --  end
   --end
-  ---- not in midair
+  -- not in midair
   --if not square:hasFloor(self.north) then
   --  local belowSQ = getCell():getGridSquare(square:getX(), square:getY(), square:getZ()-1)
   --  if belowSQ then

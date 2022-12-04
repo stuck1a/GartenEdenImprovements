@@ -225,6 +225,31 @@ ExtBuildingContextMenu.BuildingRecipes = {
       mainMaterial = 'stone',
       completionSound = 'BuildFenceCairn',
       isoData = { isoName = 'waterwell' },
+      isValidAddition = function(sq)
+        if sq:getZ() ~= 0 then return false end
+        -- tile must have any exterior, natural ground (except water) - shovelled or not
+        local props = sq:getProperties()
+        if props:Is(IsoFlagType.water) then return false end
+        for i=1, sq:getObjects():size() do
+          local obj = sq:getObjects():get(i-1)
+          local objModData = obj:getModData()
+          if objModData ~= nil then
+            local shovelledSprites = objModData.shovelledSprites
+            if shovelledSprites ~= nil then
+              for j=1, #shovelledSprites do
+                if luautils.stringStarts(shovelledSprites[j], 'blends_natur') then
+                  return true
+                end
+              end
+              return false
+            else
+              local textureName = obj:getTextureName() or 'occupied'
+              if (not luautils.stringStarts(textureName, 'floors_exterior_natur')) and (not luautils.stringStarts(textureName, 'blends_natur')) then return false end
+            end
+          end
+        end
+        return true
+      end,
       properties = { waterAmount = 50, waterMax = 5000, addWaterPerAction = 5, craftingBank = 'Shoveling' },
       sprites = { sprite = 'garteneden_tech_01_0', northSprite = 'garteneden_tech_01_1' },
       modData = {
