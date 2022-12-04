@@ -64,7 +64,7 @@ function ISWaterCollector:isValid(square)
   -- base rules (valid, walkable, free space, reachable, solid ground, etc)
   if not ISExtBuildingObject.isValid(self, square) then return false end
   -- only on surface
-  if not getSpecificPlayer(self.player):getZ() == 0 then return false end
+  if square:getZ() ~= 0 then return false end
   -- not under stairs
   if buildUtil.stairIsBlockingPlacement(square, true) then return false end
   -- tile must have any exterior, natural ground (except water)
