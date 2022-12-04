@@ -51,38 +51,10 @@ end
 --- @return boolean True, if building can be placed on current target square
 ---
 function ISWall:isValid(square)
-  -- base rules (valid, walkable, free space, reachable, solid ground, etc)
-  --if not ISExtBuildingObject.isValid(self, square) then return false end
-  --for i=1, square:getObjects():size() do
-  --  local object = square:getObjects():get(i-1);
-  --  local sprite = object:getSprite()
-  --  -- not if existing objects have mismatching collide flags
-  --  if (sprite and ((sprite:getProperties():Is(IsoFlagType.collideN) and self.north) or
-  --      (sprite:getProperties():Is(IsoFlagType.collideW) and not self.north))) or
-  --      ((instanceof(object, 'IsoThumpable') and (object:getNorth() == self.north)) and not object:isCorner() and not object:isFloor() and not object:isBlockAllTheSquare()) or
-  --      (instanceof(object, 'IsoWindow') and object:getNorth() == self.north) or
-  --      (instanceof(object, 'IsoDoor') and object:getNorth() == self.north) then
-  --    return false
-  --  end
-  --  -- not between parts of multi-tile objects
-  --  local spriteGrid = sprite and sprite:getSpriteGrid()
-  --  if spriteGrid then
-  --    local gridX = spriteGrid:getSpriteGridPosX(sprite)
-  --    local gridY = spriteGrid:getSpriteGridPosY(sprite)
-  --    if self.north and gridY > 0 then return false end
-  --    if not self.north and gridX > 0 then return false end
-  --  end
-  --end
-  -- not in midair
-  --if not square:hasFloor(self.north) then
-  --  local belowSQ = getCell():getGridSquare(square:getX(), square:getY(), square:getZ()-1)
-  --  if belowSQ then
-  --    -- except on top of stairs
-  --    if self.north and not belowSQ:HasStairsWest() then return false end
-  --    if not self.north and not belowSQ:HasStairsNorth() then return false end
-  --  end
-  --end
-  --return true
+  -- check additional isValid callbacks, if any
+  if self.isValidAddition ~= nil then
+    if not self.isValidAddition(square) then return false end
+  end
   if not self:haveMaterial(square) then return false end
   if isClient() and SafeHouse.isSafeHouse(square, getSpecificPlayer(self.player):getUsername(), true) then return false end
   if square:isVehicleIntersecting() then return false end
