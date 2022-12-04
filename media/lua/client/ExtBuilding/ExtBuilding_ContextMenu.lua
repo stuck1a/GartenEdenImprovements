@@ -10,9 +10,9 @@ ExtBuildingContextMenu = ExtBuildingContextMenu or {}
 ---
 ExtBuildingContextMenu.doMenu = function(player, context)
   context:removeOptionByName(getText('ContextMenu_MetalWelding'))
-  if ISBuildMenu.haveSomethingtoBuild(player) then
+  if ISBuildMenu.haveSomethingtoBuild(player) then  -- TODO: Simply check whether the vanilla entry exist might be faster
     local oBuildOption = context:insertOptionAfter(getText('ContextMenu_Build'), getText('ContextMenu_Build'))
-    --context:removeOptionByName(getText('ContextMenu_Build'))
+    --context:removeOptionByName(getText('ContextMenu_Build')) --TODO: Uncomment again after debugging vanilla all implementations
     local oSubMenu = ISContextMenu:getNew(context)
     context:addSubMenu(oBuildOption, oSubMenu)
     ExtBuildingContextMenu.doMenuRecursive(oSubMenu, ExtBuildingContextMenu.BuildingRecipes, player)

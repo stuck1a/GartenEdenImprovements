@@ -1,7 +1,7 @@
 require 'TimedActions/ISBaseTimedAction'
 
 
----@class ISExtBuildAction : ISBuildAction
+--- @class ISExtBuildAction : ISBuildAction
 ISExtBuildAction = ISBuildAction:derive('ISExtBuildAction')
 
 
@@ -197,7 +197,7 @@ end
 -- building something. Stores a pointer to the construction site tile object
 -- and adds an additional call to remove it if an action becomes interrupted.
 --
- ---@class ISExtInventoryTransferAction : ISInventoryTransferAction
+--- @class ISExtInventoryTransferAction : ISInventoryTransferAction
 ISExtInventoryTransferAction = ISInventoryTransferAction:derive('ISExtInventoryTransferAction')
 function ISExtInventoryTransferAction:new(character, item, srcContainer, destContainer, isoTile)
   local o = ISInventoryTransferAction:new(character, item, srcContainer, destContainer)
@@ -212,7 +212,7 @@ function ISExtInventoryTransferAction:stop()
 end
 
 
- ---@class ISExtWearClothing : ISWearClothing
+--- @class ISExtWearClothing : ISWearClothing
 ISExtWearClothing = ISWearClothing:derive('ISExtWearClothing')
 function ISExtWearClothing:new(character, item, time, isoTile)
   local o = ISWearClothing:new(character, item, time)
@@ -227,7 +227,7 @@ function ISExtWearClothing:stop()
 end
 
 
- ---@class ISExtClothingExtraAction : ISClothingExtraAction
+--- @class ISExtClothingExtraAction : ISClothingExtraAction
 ISExtClothingExtraAction = ISClothingExtraAction:derive('ISExtClothingExtraAction')
 function ISExtClothingExtraAction:new(character, item, extra, isoTile)
   local o = ISClothingExtraAction:new(character, item, extra)
@@ -242,7 +242,7 @@ function ISExtClothingExtraAction:stop()
 end
 
 
- ---@class ISExtUnequipAction : ISUnequipAction
+--- @class ISExtUnequipAction : ISUnequipAction
 ISExtUnequipAction = ISUnequipAction:derive('ISExtUnequipAction')
 function ISExtUnequipAction:new(character, item, time, isoTile)
   local o = ISUnequipAction:new(character, item, time)
@@ -257,7 +257,7 @@ function ISExtUnequipAction:stop()
 end
 
 
- ---@class ISExtEquipWeaponAction : ISEquipWeaponAction
+--- @class ISExtEquipWeaponAction : ISEquipWeaponAction
 ISExtEquipWeaponAction = ISEquipWeaponAction:derive('ISExtEquipWeaponAction')
 function ISExtEquipWeaponAction:new(character, item, time, primary, twoHands, isoTile)
   local o = ISEquipWeaponAction:new(character, item, time, primary, twoHands)
@@ -272,7 +272,7 @@ function ISExtEquipWeaponAction:stop()
 end
 
 
- ---@class ISExtGrabItemAction : ISGrabItemAction
+--- @class ISExtGrabItemAction : ISGrabItemAction
 ISExtGrabItemAction = ISGrabItemAction:derive('ISExtGrabItemAction')
 function ISExtGrabItemAction:new(character, item, time, isoTile)
   local o = ISGrabItemAction:new(character, item, time)
@@ -287,7 +287,7 @@ function ISExtGrabItemAction:stop()
 end
 
 
- ---@class ISExtWalkToTimedAction : ISWalkToTimedAction
+--- @class ISExtWalkToTimedAction : ISWalkToTimedAction
 ISExtWalkToTimedAction = ISWalkToTimedAction:derive('ISExtWalkToTimedAction')
 function ISExtWalkToTimedAction:new(character, location, isoTile)
   local o = ISWalkToTimedAction:new(character, location)
@@ -305,12 +305,12 @@ end
 
 
 
----@class ISExtTimedActionQueue : ISTimedActionQueue
+--- @class ISExtTimedActionQueue : ISTimedActionQueue
 ISExtTimedActionQueue = ISTimedActionQueue:derive('ISExtTimedActionQueue')
 
 function ISExtTimedActionQueue:clearQueue() ISTimedActionQueue.clearQueue(self) end
-
 function ISExtTimedActionQueue:resetQueue() ISTimedActionQueue.resetQueue(self) end
+
 
 function ISExtTimedActionQueue:new(character)
   local o = ISTimedActionQueue:new(character)
@@ -319,11 +319,13 @@ function ISExtTimedActionQueue:new(character)
   return o
 end
 
+
 function ISExtTimedActionQueue.getTimedActionQueue(character)
   local queue = ISExtTimedActionQueue.queues[character]
   if queue == nil then queue = ISExtTimedActionQueue:new(character) end
   return queue
 end
+
 
 function ISExtTimedActionQueue.add(action)
   if action.ignoreAction then return end
@@ -339,10 +341,12 @@ function ISExtTimedActionQueue.add(action)
   return queue
 end
 
+
 function ISExtTimedActionQueue.queueActions(character, addActionsFunction, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
   local action = ISQueueActionsAction:new(character, addActionsFunction, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10)
   return ISExtTimedActionQueue.add(action)
 end
+
 
 function ISExtTimedActionQueue.hasAction(action)
   if action == nil then return false end
@@ -351,12 +355,14 @@ function ISExtTimedActionQueue.hasAction(action)
   return queue:indexOf(action) ~= -1
 end
 
+
 function ISExtTimedActionQueue.clear(character)
   character:StopAllActionQueue()
   local queue = ISExtTimedActionQueue.getTimedActionQueue(character)
   queue:clearQueue()
   return queue
 end
+
 
 function ISExtTimedActionQueue:tick()
   local action = self.queue[1]
@@ -371,8 +377,10 @@ function ISExtTimedActionQueue:tick()
   end
 end
 
+
 function ISExtTimedActionQueue.onTick()
   for _,queue in pairs(ISExtTimedActionQueue.queues) do queue:tick() end
 end
+
 
 Events.OnRenderTick.Add(ISExtTimedActionQueue.onTick)
