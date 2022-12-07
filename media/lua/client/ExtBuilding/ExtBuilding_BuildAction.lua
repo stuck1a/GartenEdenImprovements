@@ -66,13 +66,15 @@ end
 local function removeConstructionSite(isoTile)
   local square = isoTile:getSquare()
   -- there might be several construction sites on the square, so remove only the assigned one
-  local specialTiles = square:getSpecialObjects()
-  for i=0, specialTiles:size()-1 do
-    if specialTiles:get(i) == isoTile then
-      square:transmitRemoveItemFromSquare(isoTile)
-      square:RemoveTileObject(isoTile)
-      isoTile = nil
-      return
+  if square then
+    local specialTiles = square:getSpecialObjects()
+    for i=0, specialTiles:size()-1 do
+      if specialTiles:get(i) == isoTile then
+        square:transmitRemoveItemFromSquare(isoTile)
+        square:RemoveTileObject(isoTile)
+        isoTile = nil
+        return
+      end
     end
   end
 end

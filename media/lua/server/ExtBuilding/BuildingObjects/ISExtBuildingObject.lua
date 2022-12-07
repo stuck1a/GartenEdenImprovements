@@ -223,6 +223,47 @@ end
 
 
 
+---
+--- Compares the player location with the target location and
+--- adjusts the resulting location for the construction site tile for wallType objects.
+--- For each target edge (W,N,E,S) of the target square there exists one possible mirrored square.
+--- First, it will try the use the square, the player faces.
+--- Only if this square has no flooring, the other side will be used to place the construction site.
+--- @param plr IsoPlayer Target player object
+--- @param x int Target square x coordinate
+--- @param y int Target square x coordinate
+--- @param z int Target square x coordinate
+--- @param square IsoGridSquare The base target square object
+--- @param west boolean Whether the wall is shall be placed on either the west or east edge of the target square
+--- @return IsoGridSquare Resulting square object for the construction site tile
+---
+local function getAdjustedSquareForConstructionSite(plr, x, y, z, square, west)
+  if west then
+    if z == 0 then
+      if plr:getX() < x then
+        return square:getW() or square
+      else
+        return square or square:getW()
+      end
+    else
+      return square:getW() or square
+    end
+  else
+    if z == 0 then
+      if plr:getY() < y then
+        return square:getN() or square
+      else
+        return square or square:getN()
+      end
+    else
+      return square:getN() or square
+    end
+  end
+  return square
+end
+
+
+
 -- Some support functions for the overloaded timed action queue
 local function transferIfNeeded(oPlayer, oItem, isoTile)
   if luautils.haveToBeTransfered(oPlayer, oItem) then
@@ -308,11 +349,19 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local oInv = oPlayer:getInventory()
   local grabTime, fromGround = 50, false
   local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material
-  local isoTile = IsoObject.new(square, 'garteneden_tech_01_2', 'ConstructionSite')
+  local sqConstructionSite
+  if self.isWallLike then
+    sqConstructionSite = getAdjustedSquareForConstructionSite(oPlayer, x, y, z, square, self.west)
+    else
+    sqConstructionSite = square
+  end
+  local isoTile = IsoObject.new(sqConstructionSite, 'garteneden_tech_01_2', 'ConstructionSite')
   if (ISBuildMenu.cheat or self:walkTo(square, oPlayer, isoTile)) and self:isValid(square) then
     if not self.skipBuildAction then
-      square:AddSpecialTileObject(isoTile)
-      isoTile:transmitCompleteItemToServer()
+      if sqConstructionSite then
+        sqConstructionSite:AddSpecialTileObject(isoTile)
+        isoTile:transmitCompleteItemToServer()
+      end
     end
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
     if oPlayer:isTimedActionInstant() then
