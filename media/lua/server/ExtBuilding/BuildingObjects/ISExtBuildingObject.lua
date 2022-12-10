@@ -26,6 +26,81 @@ ISExtBuildingObject.defaults = {
 }
 
 
+-- Storage for construction site pointer
+ISExtBuildingObject.constructionSites = {}
+
+
+
+---
+--- Checks whether the given item object (tool) is broken or not.
+--- @param item IsoObject Target item instance
+--- @return boolean Whether the instance has got the predicate "broken" or not
+---
+local function predicateNotBroken(item)
+  return not item:isBroken()
+end
+
+
+
+---
+--- Compares the player location with the target location and
+--- adjusts the resulting location for the construction site tile for wallType objects.
+--- For each target edge (W,N,E,S) of the target square there exists one possible mirrored square.
+--- First, it will try the use the square, the player faces.
+--- Only if this square has no flooring, the other side will be used to place the construction site.
+--- @param plr IsoPlayer Target player object
+--- @param x int Target square x coordinate
+--- @param y int Target square x coordinate
+--- @param z int Target square x coordinate
+--- @param square IsoGridSquare The base target square object
+--- @param west boolean Whether the wall is shall be placed on either the west or east edge of the target square
+--- @return IsoGridSquare Resulting square object for the construction site tile
+---
+local function getAdjustedSquareForConstructionSite(plr, x, y, z, square, west)
+  if west then
+    if z == 0 then
+      if plr:getX() < x then return square:getW() or square else return square or square:getW() end
+    else
+      return square:getW() or square
+    end
+  else
+    if z == 0 then
+      if plr:getY() < y then return square:getN() or square else return square or square:getN() end
+    else
+      return square:getN() or square
+    end
+  end
+  return square
+end
+
+
+
+---
+--- Listener for player update event - removes construction site if necessary
+--- @param oPlayer IsoPlayer Target player object
+---
+local function onPlayerUpdate(oPlayer)
+  local actionlist = oPlayer:getCharacterActions()
+  if actionlist:size() ~= 0 then return end
+  local isoTile = ISExtBuildingObject.constructionSites[oPlayer]
+  if isoTile == nil then return end
+  Events.OnPlayerUpdate.Remove(onPlayerUpdate)
+  local square = isoTile:getSquare()
+  -- there might be several construction sites on the square, so remove only the assigned one
+  if square then
+    local specialTiles = square:getSpecialObjects()
+    for i=0, specialTiles:size()-1 do
+      if specialTiles:get(i) == isoTile then
+        square:transmitRemoveItemFromSquare(isoTile)
+        square:RemoveTileObject(isoTile)
+        isoTile = nil
+        return
+      end
+    end
+  end
+end
+
+
 
 ---
 --- Merges two objects while entries of b will replace identical entries of a if
@@ -52,7 +127,6 @@ ISExtBuildingObject.merge = function(a, b, _r)
   end
   return _r
 end
-
 
 
 
@@ -213,129 +287,6 @@ end
 
 
 ---
---- Checks whether the given item object (tool) is broken or not.
---- @param item IsoObject Target item instance
---- @return boolean Whether the instance has got the predicate "broken" or not
----
-local function predicateNotBroken(item)
-  return not item:isBroken()
-end
-
-
-
----
---- Compares the player location with the target location and
---- adjusts the resulting location for the construction site tile for wallType objects.
---- For each target edge (W,N,E,S) of the target square there exists one possible mirrored square.
---- First, it will try the use the square, the player faces.
---- Only if this square has no flooring, the other side will be used to place the construction site.
---- @param plr IsoPlayer Target player object
---- @param x int Target square x coordinate
---- @param y int Target square x coordinate
---- @param z int Target square x coordinate
---- @param square IsoGridSquare The base target square object
---- @param west boolean Whether the wall is shall be placed on either the west or east edge of the target square
---- @return IsoGridSquare Resulting square object for the construction site tile
----
-local function getAdjustedSquareForConstructionSite(plr, x, y, z, square, west)
-  if west then
-    if z == 0 then
-      if plr:getX() < x then
-        return square:getW() or square
-      else
-        return square or square:getW()
-      end
-    else
-      return square:getW() or square
-    end
-  else
-    if z == 0 then
-      if plr:getY() < y then
-        return square:getN() or square
-      else
-        return square or square:getN()
-      end
-    else
-      return square:getN() or square
-    end
-  end
-  return square
-end
-
-
-
--- Some support functions for the overloaded timed action queue
-local function transferIfNeeded(oPlayer, oItem, isoTile)
-  if luautils.haveToBeTransfered(oPlayer, oItem) then
-    ISExtTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
-  end
-end
-local function onClothingItemExtra(oItem, extra, oPlayer, isoTile)
-  if oItem:getBodyLocation() == 'Hat' or oItem:getBodyLocation() == 'FullHat' then
-    local wornItems = oPlayer:getWornItems()
-    for i=1, wornItems:size() do
-      local wornItem = wornItems:get(i-1)
-      if (wornItem:getLocation() == 'SweaterHat' or wornItem:getLocation() == 'JacketHat') then
-        for j=0, wornItem:getItem():getClothingItemExtraOption():size() - 1 do
-          if wornItem:getItem():getClothingItemExtraOption():get(j) == 'DownHoodie' then
-            onClothingItemExtra(wornItem:getItem(), wornItem:getItem():getClothingItemExtra():get(j), oPlayer, isoTile)
-          end
-        end
-      end
-    end
-  end
-  if luautils.haveToBeTransfered(oPlayer, oItem) then
-    ISExtTimedActionQueue.add(ISExtInventoryTransferAction:new(oPlayer, oItem, oItem:getContainer(), oPlayer:getInventory(), isoTile))
-  end
-  ISExtTimedActionQueue.add(ISExtClothingExtraAction:new(oPlayer, oItem, extra, isoTile))
-end
-local function wearItem(oTtem, oPlayer, isoTile)
-  if oTtem:getClothingItemExtraOption() and oTtem:getClothingItemExtra() and oTtem:getClothingItemExtra():get(0) then
-    onClothingItemExtra(oTtem, oTtem:getClothingItemExtra():get(0), oPlayer, isoTile)
-  else
-    transferIfNeeded(oPlayer, oTtem, isoTile)
-    ISExtTimedActionQueue.add(ISExtWearClothing:new(oPlayer, oTtem, 50, isoTile))
-  end
-end
-local function equipItem(oTtem, primary, twoHands, oPlayer, isoTile)
-  if isForceDropHeavyItem(oPlayer:getPrimaryHandItem()) then
-    ISExtTimedActionQueue.add(ISExtUnequipAction:new(oPlayer, oPlayer:getPrimaryHandItem(), 50, isoTile))
-  end
-  transferIfNeeded(oPlayer, oTtem, isoTile)
-  ISExtTimedActionQueue.add(ISExtEquipWeaponAction:new(oPlayer, oTtem, 50, primary, twoHands, isoTile))
-end
-
-
-
-function ISExtBuildingObject:walkTo(square, oPlayer, isoTile)
-  if self.skipWalk2 then return true end
-  local adjacent = AdjacentFreeTileFinder.FindWall(square, self.north, oPlayer)
-  ISExtTimedActionQueue.clear(oPlayer)
-  if self.isWallLike then
-    if adjacent ~= nil then
-      ISExtTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile))
-      return true
-    else
-      return false
-    end
-  end
-  square = luautils.getCorrectSquareForWall(oPlayer, square)
-  local diffX = math.abs(square:getX() + 0.5 - oPlayer:getX())
-  local diffY = math.abs(square:getY() + 0.5 - oPlayer:getY())
-  if diffX <= 1.6 and diffY <= 1.6 then return true end
-  local adjacent = AdjacentFreeTileFinder.Find(square, oPlayer)
-  if adjacent ~= nil then
-    ISExtTimedActionQueue.add(ISExtWalkToTimedAction:new(oPlayer, adjacent, isoTile))
-    return true
-  else
-    return false
-  end
-end
-
-
-
-
----
 --- Called by DoTileBuilding after ghost tile drag located the desired target square.
 --- It will generate the timed action query from the modData/fields and launch it and by that,
 --- validate the requirements once more (things could have changed since the context menu vaildation).
@@ -356,11 +307,13 @@ function ISExtBuildingObject:tryBuild(x, y, z)
     sqConstructionSite = square
   end
   local isoTile = IsoObject.new(sqConstructionSite, 'garteneden_tech_01_2', 'ConstructionSite')
-  if (ISBuildMenu.cheat or self:walkTo(square, oPlayer, isoTile)) and self:isValid(square) then
+  -- TODO: Replace self.Type == 'fishingNet' with something like self.Type == 'waterConstruction'
+  if (ISBuildMenu.cheat or self:walkTo(x, y, z) or self.Type == 'fishingNet') and self:isValid(square) then
     if not self.skipBuildAction then
       if sqConstructionSite then
         sqConstructionSite:AddSpecialTileObject(isoTile)
         isoTile:transmitCompleteItemToServer()
+        ISExtBuildingObject.constructionSites[oPlayer] = isoTile
       end
     end
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
@@ -429,18 +382,22 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       self:create(x, y, z, self.north, self:getSprite())
     else
       if not ISBuildMenu.cheat then
-        if wearable then wearItem(wearable, oPlayer, isoTile) end
-        if tool1 then equipItem(tool1, true, false, oPlayer, isoTile) end
+        if wearable then ISInventoryPaneContextMenu.wearItem(wearable, self.player) end
+        if tool1 then ISInventoryPaneContextMenu.equipWeapon(tool1, true, false, self.player) end
         if tool2 then
-          equipItem(tool2, false, false, oPlayer, isoTile)
+          ISInventoryPaneContextMenu.equipWeapon(tool2, false, false, self.player)
         elseif material then
-          if fromGround then ISExtTimedActionQueue.add(ISExtGrabItemAction:new(oPlayer, material:getWorldItem(), grabTime, isoTile)) end
-          equipItem(material, false, false, oPlayer, isoTile)
+          if fromGround then
+            ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, material:getWorldItem(), grabTime))
+          end
+          -- FIXME: Does not work yet
+          ISInventoryPaneContextMenu.equipWeapon(material, false, false, self.player)
         end
       end
       local selfCopy = copyTable(self)
       setmetatable(selfCopy, getmetatable(self, true))
-      ISExtTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2, isoTile))
+      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2))
+      Events.OnPlayerUpdate.Add(onPlayerUpdate, oPlayer)
     end
   end
 end
@@ -564,3 +521,7 @@ function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
   end
   return toolTip
 end
+
+
+
+LuaEventManager.AddEvent('ExtBuildEvent')
