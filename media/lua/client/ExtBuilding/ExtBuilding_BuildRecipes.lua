@@ -3,9 +3,6 @@
 TODO: Fehlende Funktionen f¸r ExtBuilding
   - overwriteHandModel    Callback-Funktionen, wenn mˆglich dynamisch von genutzten Tools ableiten
   - height                "low"/"medium"/"high" -> Anpassung der LootHeight oder wie das hieﬂ (Bauposition)
-
-TOFIX:
-  - toolSounds funzen noch nicht richtig, wenn forceEquip genutzt wird
 --]]
 
 
@@ -118,6 +115,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       {
         displayName = 'ContextMenu_Wooden_Wall_Frame',
         targetClass = 'ISWall',
+        buildTime = 1000,
         tooltipDesc = 'Tooltip_ExtBuilding__WoodenWallFrame',
         sprites = {
           sprite = 'carpentry_02_100',

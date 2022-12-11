@@ -98,8 +98,8 @@ function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time,
   tool1 = tool1 or tool2
   tool2 = tool2 or tool1
   if self.soundMap == nil then init() end
-  o.toolSound1 = self.soundMap[tool1] or false
-  o.toolSound2 = self.soundMap[tool2] or o.toolSound1
+  o.toolSound1 = self.soundMap[tool1] or self.soundMap[tool2] or false
+  o.toolSound2 = self.soundMap[tool2] or self.soundMap[tool1] or false
   o.shallPlay1 = true
   o.shallPlay2 = false
   return o
