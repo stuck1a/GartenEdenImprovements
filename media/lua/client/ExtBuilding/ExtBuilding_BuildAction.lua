@@ -87,12 +87,17 @@ end
 --- @param time int Overall duration for required for the building
 --- @param tool1 string|nil Item type of the first required tool found, if any
 --- @param tool2 string|nil Item type of the second required tool found, if any
+--- @param oTool1 InventoryItem The first used tool, if any
+--- @param oTool2 InventoryItem The second used tool, if any
 --- @return ISExtBuildAction Timed action class object for building the structure
 ---
-function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time, tool1, tool2)
+function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time, tool1, tool2, oTool1, oTool2)
   local o = ISBuildAction.new(self, character, item, x, y, z, north, spriteName, time)
   setmetatable(o, self)
   self.__index = self
+  -- TOOPTIMIZE: Get tool sounds from oTool1 and oTool2 and then remove params tool1, tool2
+  o.oTool1 = oTool1 or oTool2
+  o.oTool2 = oTool2 or oTool1
   if type(tool1) == 'string' and string.find(tool1, '.') then tool1 = luautils.split(tool1, '.')[2] end
   if type(tool2) == 'string' and string.find(tool2, '.') then tool2 = luautils.split(tool2, '.')[2] end
   tool1 = tool1 or tool2
@@ -123,10 +128,12 @@ function ISExtBuildAction:update()
       if not isPlaying1 and not isPlaying2 then
         worldSoundRadius = math.ceil(20 * self.character:getHammerSoundMod())
         if self.shallPlay1 then
+          if self.oTool1:getScriptItem():getSoundRadius() > 0 then worldSoundRadius = self.oTool1:getScriptItem():getSoundRadius() end
           self.toolSound1Pointer = self.character:getEmitter():playSound(self.toolSound1)
           self.shallPlay1 = false
           self.shallPlay2 = true
         else
+          if self.oTool2:getScriptItem():getSoundRadius() > 0 then worldSoundRadius = self.oTool2:getScriptItem():getSoundRadius() end
           self.toolSound2Pointer = self.character:getEmitter():playSound(self.toolSound2)
           self.shallPlay1 = true
           self.shallPlay2 = false
@@ -148,9 +155,15 @@ end
 
 
 
+
 function ISExtBuildAction:start()
   ISBuildAction.start(self)
-  --self.setOverrideHandModels(self, self.character:getPrimaryHandItem(), self.character:getSecondaryHandItem())
+  if self.item.actionAnim then
+    self.setActionAnim(self, self.item.actionAnim)
+  end
+  if self.item.overwriteTool1Model or self.item.overwriteTool2Model then
+    self.setOverrideHandModels(self, self.item.overwriteTool1Model or self.oTool1, self.item.overwriteTool2Model or self.oTool2)
+  end
 end
 
 

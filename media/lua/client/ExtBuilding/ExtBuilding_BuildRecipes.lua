@@ -1,14 +1,3 @@
-
---[[
-TODO: Fehlende Funktionen f¸r ExtBuilding
-  - overwriteHandModel    Callback-Funktionen, wenn mˆglich dynamisch von genutzten Tools ableiten
-  - height                "low"/"medium"/"high" -> Anpassung der LootHeight oder wie das hieﬂ (Bauposition)
---]]
-
-
-
-
-
 -- SYNTAX AND SEMANTIC OF SUBMENU ENTRIES:
 --[[
 SubcategoryTranslationStringIdentifier = {
@@ -35,6 +24,11 @@ SubcategoryTranslationStringIdentifier = {
   mainMaterial = 'wood',    -- decides which skill lvl determines the extra health (allowed is 'wood', 'metal', 'stone' or 'glass')
   breakSound = 'BreakObject',    -- will be played once, if the construction gets destroyed
   thumpSound = 'ZombieThumpGeneric',    -- will be played whenever the object is hit by any character (zombie, player, npc)
+  actionAnim = 'BlowTorch',   -- Character movement animation while building (e.g. 'Loot' if without tool or 'BlowTorchMid')
+  -- overwriteToolXModel can be used to replace the visible model for tool 1 or 2.
+  -- The tool is then still required and equipped as usual, but the given model is rendered instead.
+  overwriteTool1Model = 'Hammer',
+  overwriteTool2Model = 'Plank',
   hasSpecialTooltip = false,    -- Set to true for hover tooltips. This requires a mounted DoSpecialTooltip listener within the given targetClass TODO: Allow dynamic listener mount
   craftingBank = 'BuildingGeneric',    -- used sound script while performing the build action (it will alternate with tool sounds of the first two tool requirements defined as modData "keep:" entry. It can be used for regular construction sounds as well as "real" crafting bank sounds.
   completionSound = 'BuildWoodenStructureMedium',    -- will be played once if the construction is completed
@@ -67,7 +61,7 @@ SubcategoryTranslationStringIdentifier = {
   -- The values must match the keys of the target modData entries.
   -- If forceEquip is used, no automatic selection will be done, so if one is omitted or invalid, this slot will be ignored.
   forceEquip = {
-    ['tool1'] = 'use:Base.BlowTorch/MyMod.LargeBlowTorch',    -- enforces to use BlowTorch as tool1m (and for toolSound1, if a mapping for it exists) instead of the Hammer (which would be chosen by the automation)
+    ['tool1'] = 'use:Base.BlowTorch/MyMod.LargeBlowTorch',    -- enforces to use BlowTorch as tool1 (and for toolSound1, if a mapping for it exists) instead of the Hammer (which would be chosen by the automation)
     ['tool2'] = 'use:Base.WeldingStab/MyMod.WeldingStab2',    -- enforces to use WeldingStab as tool2 (and for toolSound2, if a mapping for it exists)
     ['wearable'] = 'keep:' .. utils.concatItemTypes({'WeldingMask'})    -- enforces wearing the WeldingMask entry (can also handle more items (like 2,5,3,7) to wear several clothing items
   }
@@ -115,7 +109,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       {
         displayName = 'ContextMenu_Wooden_Wall_Frame',
         targetClass = 'ISWall',
-        buildTime = 1000,
+        overwriteTool2Model = 'Plank',
         tooltipDesc = 'Tooltip_ExtBuilding__WoodenWallFrame',
         sprites = {
           sprite = 'carpentry_02_100',
@@ -141,6 +135,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
         targetClass = 'ISWall',
         requiresRecipe = 'Make Metal Walls',
         tooltipDesc = 'Tooltip_ExtBuilding__MetalWallFrame',
+        actionAnim = 'BlowTorchMid',
         thumpSound = 'ZombieThumpMetal',
         sprites = {
           sprite = 'constructedobjects_01_68',

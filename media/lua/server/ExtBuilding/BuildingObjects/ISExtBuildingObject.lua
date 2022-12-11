@@ -16,6 +16,7 @@ ISExtBuildingObject.defaults = {
   hasSpecialTooltip = false,
   breakSound = 'BreakObject',
   thumpSound = 'ZombieThumpGeneric',
+  actionAnim = CharacterActionAnims.Build,
   craftingBank = nil,
   sprites = { sprite = 'invisible_01_0' },
   isoData = {
@@ -87,7 +88,7 @@ local function onPlayerUpdate(oPlayer)
   if isoTile == nil then return end
   Events.OnPlayerUpdate.Remove(onPlayerUpdate)
   local square = isoTile:getSquare()
-  -- there might be several construction sites on the square, so remove only the assigned one
+  -- there might be several construction sites on the square (multiplayer), so remove only the assigned one
   if square then
     local specialTiles = square:getSpecialObjects()
     for i=0, specialTiles:size()-1 do
@@ -106,7 +107,7 @@ end
 ---
 --- Replaces possibly existing construction site tile assigned to the player
 --- with the new one
---- @param _ table The shadow table (only used for proxy access)
+--- @param _ table The proxy table
 --- @param key IsoPlayer The target player instance
 --- @param value IsoObject The construction site tile object
 ---
@@ -116,7 +117,7 @@ local function setConstructionSite(_, key, value)
     if isoTile == nil then return end
     Events.OnPlayerUpdate.Remove(onPlayerUpdate)
     local square = isoTile:getSquare()
-    -- there might be several construction sites on the square, so remove only the assigned one
+    -- there might be several construction sites on the square (multiplayer), so remove only the assigned one
     if square then
       local specialTiles = square:getSpecialObjects()
       for i=0, specialTiles:size()-1 do
@@ -133,7 +134,7 @@ local function setConstructionSite(_, key, value)
 end
 ---
 --- Returns the isoTile from the shadowed table
---- @param _ table The shadowed table
+--- @param _ table The proxy table
 --- @param key IsoPlayer The target player instance
 ---
 local function getConstructionSite(_, key)
@@ -192,8 +193,11 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   self.hasSpecialTooltip = settings.hasSpecialTooltip
   self.thumpSound = settings.thumpSound
   self.breakSound = settings.breakSound
+  self.actionAnim = settings.actionAnim
   self.craftingBank = settings.craftingBank
   self.isValidAddition = settings.isValidAddition
+  if settings.overwriteTool1Model then self.overwriteTool1Model = settings.overwriteTool1Model end
+  if settings.overwriteTool2Model then self.overwriteTool2Model = settings.overwriteTool2Model end
   self:setSprite(settings.sprites.sprite)
   self:setNorthSprite(settings.sprites.northSprite or settings.sprites.sprite)
   if settings.sprites.east then self:setEastSprite(settings.sprites.east) end
@@ -536,7 +540,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       end
       local selfCopy = copyTable(self)
       setmetatable(selfCopy, getmetatable(self, true))
-      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2))
+      ISTimedActionQueue.add(ISExtBuildAction:new(oPlayer, selfCopy, x, y, z, self.north, self:getSprite(), maxTime, toolSound1, toolSound2, tool1, tool2))
       Events.OnPlayerUpdate.Add(onPlayerUpdate, oPlayer)
     end
   end
