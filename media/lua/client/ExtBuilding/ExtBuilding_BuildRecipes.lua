@@ -1,35 +1,18 @@
---[[
-TODO [TBD] forceEquip
-  Introduce something like "forceEquip" to differentiate contentMenu order from autoEquip order
-  for required tools/material/wearables? This might be useful especially for welding stuff and such.
-  If will work as it is, too, but to get the usual welding equipment, those use entries must be set before
-  any use entry so the autoEquip algo will equip those instead of the use entries instead.
-  Also, this method would be a bit faster than the autoEquip algo (minor relevance, since it occurs only once when
-  placing the construction).
-  -- If decided to implement this additional feature, then lets use this format:
-  forceEquip = { primary: iIndex|false, secondary: iIndex|false, wearables: [ iIndex, iIndex, ... ] }
-  Where all entries are optional and index means the position in the recipes modData table.
-  If one of them is omitted (or invalid), nothing will be equipped for that location instead.
-  Then we check in tryBuild if we have forceEquip values and use them if so instead of
-  the autoEquip algorithm we currently use.
-  Only if no forceEquip table is given, the autoEquip algo should be used.
-  Also not additionally to fill any gaps, since it might be possible that those gaps are wanted.
---]]
-
 
 --[[
 TODO: Fehlende Funktionen f¸r ExtBuilding
-  - forceEquip            siehe oben
   - overwriteHandModel    Callback-Funktionen, wenn mˆglich dynamisch von genutzten Tools ableiten
   - height                "low"/"medium"/"high" -> Anpassung der LootHeight oder wie das hieﬂ (Bauposition)
+
+TOFIX:
+  - toolSounds funzen noch nicht richtig, wenn forceEquip genutzt wird
 --]]
 
 
 
 
 
-
--- SUBMENU ENTRIES:
+-- SYNTAX AND SEMANTIC OF SUBMENU ENTRIES:
 --[[
 SubcategoryTranslationStringIdentifier = {
   { ... },
@@ -39,7 +22,7 @@ SubcategoryTranslationStringIdentifier = {
 --]]
 
 
--- RECIPE ENTRIES
+-- SYNTAX AND SEMANTIC OF RECIPE ENTRIES:
 --[[
 -- Basically no value is mandatory. But depending on the targetClass used, there will be some.
 -- The following shows ALL existing fields. Most classes will use only a couple of them and there are also default values
@@ -81,21 +64,35 @@ SubcategoryTranslationStringIdentifier = {
     canBeLockedByPadlock = true    --- one of the vanilla properties as an example - will influence the behaviour/functionality
     myCustomField = myValue    -- of course this makes only sense if the target class will make any use of it as well
   },
-  -- allows additional checks for the isValid function of the given targetClass. Will receive the square object as argument.
+  -- Allows additional checks for the isValid function of the given targetClass. Will receive the square object as argument.
   isValidAddition = function(sq) return sq ~= nil end
+  -- forceEquip can be used, to specify, which tools/wearables/materials should be equipped (will also influence toolSound1 and toolSound2)
+  -- The values must match the keys of the target modData entries.
+  -- If forceEquip is used, no automatic selection will be done, so if one is omitted or invalid, this slot will be ignored.
+  forceEquip = {
+    ['tool1'] = 'use:Base.BlowTorch/MyMod.LargeBlowTorch',    -- enforces to use BlowTorch as tool1m (and for toolSound1, if a mapping for it exists) instead of the Hammer (which would be chosen by the automation)
+    ['tool2'] = 'use:Base.WeldingStab/MyMod.WeldingStab2',    -- enforces to use WeldingStab as tool2 (and for toolSound2, if a mapping for it exists)
+    ['wearable'] = 'keep:' .. utils.concatItemTypes({'WeldingMask'})    -- enforces wearing the WeldingMask entry (can also handle more items (like 2,5,3,7) to wear several clothing items
+  }
+  -- Mainly used to define the requirements to build the structure.
+  -- For that, it recognizes keys beginning with keep, need, use, requires and xp.
+  -- They have the same meaning like in script files.
+  -- This table might be used for any other values as well, but usually, the properties table should suit more for any other.
+  -- The order (within each prefix group) will also define the order, in which those items will be displayed in the build menu.
   modData = {
-    -- any item with tag 'Hammer' will work, but tooltip will display translated name of 'Base.Hammer' only
+    -- any item with tag 'Hammer' will work, but the build menu will show the translated name of 'Base.Hammer' only
     ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
-    ['keep:Base.Torch/MyMod.LargeTorch'] = 'Base.Torch',
+    ['keep:' .. utils.concatItemTypes({'WeldingMask'})] = 'Base.WeldingMask',
+    ['use:Base.WeldingStab/MyMod.WeldingStab2'] = 4,
     ['need:Base.Plank'] = 8,
     ['need:Base.Nails'] = 12,
     ['need:Base.IronPlate'] = 4,
-    -- any drainable item must use the 'use:" prefix. The value then represents the number of uses, not the item count
-    ['use:Base.WeldingStab/MyMod.WeldingStab2'] = 4,
-    -- the skill levels (perks) this recipe requires
+    -- Any drainable item must use the 'use:" prefix. The value then represents the number of uses, not the item count
+    ['use:Base.BlowTorch/MyMod.LargeBlowTorch'] = 8,
+    -- The skill levels (perks) this recipe requires
     ['requires:Woodwork'] = 2,
     ['requires:MetalWelding'] = 1,
-    -- the gained experience - note that this value will be gained a couple of times while the build action processes.
+    -- The gained experience - note that this value will be gained a couple of times while the build action processes.
     ['xp:Woodwork'] = 5,
     ['xp:MetalWelding'] = 5
   }
@@ -108,6 +105,7 @@ if not ExtBuildingContextMenu.call then
   ExtBuildingContextMenu.call = function(callback, ...) return callback(...) end
   setmetatable(ExtBuildingContextMenu, {__call = ExtBuildingContextMenu.call})
 end
+
 
 
 ---
@@ -157,11 +155,16 @@ ExtBuildingContextMenu.BuildingRecipes = {
         },
         modData = {
           ['keep:' .. utils.concatItemTypes({'WeldingMask'})] = 'Base.WeldingMask',
-          ['use:Base.WeldingRods'] = 4,
-          ['use:Base.BlowTorch'] = 8,
           ['need:Base.MetalBar']= 3,
+          ['use:Base.BlowTorch'] = 8,
+          ['use:Base.WeldingRods'] = 4,
           ['requires:MetalWelding'] = 3,
           ['xp:MetalWelding'] = 20,
+        },
+        forceEquip = {
+          ['tool1'] = 'use:Base.BlowTorch',
+          ['tool2'] = 'use:Base.WeldingRods',
+          ['wearable'] = 'keep:' .. utils.concatItemTypes({'WeldingMask'})
         }
       },
       -- Steinwand

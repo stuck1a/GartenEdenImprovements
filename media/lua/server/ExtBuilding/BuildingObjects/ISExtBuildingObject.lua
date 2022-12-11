@@ -170,6 +170,7 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   end
   self.isoData = settings.isoData
   self.modData = settings.modData
+  if settings.forceEquip then self.forceEquip = settings.forceEquip end
 end
 
 
@@ -246,15 +247,15 @@ end
 --- @return int Max health of the building
 ---
 function ISExtBuildingObject:getHealth(mainMaterial, baseHealth)
-  local plr, perk = getSpecificPlayer(self.player)
+  local oPlayer, perk = getSpecificPlayer(self.player)
   if     mainMaterial == 'wood'  then perk = Perks.Woodwork
   elseif mainMaterial == 'metal' then perk = Perks.MetalWelding
   elseif mainMaterial == 'stone' then perk = Perks.Strength
   elseif mainMaterial == 'glass' then perk = Perks.Woodwork
   else   perk = Perks.Woodwork
   end
-  local health = baseHealth + plr:getPerkLevel(perk) * 50
-  if plr:HasTrait('Handy') then health = health + 100 end
+  local health = baseHealth + oPlayer:getPerkLevel(perk) * 50
+  if oPlayer:HasTrait('Handy') then health = health + 100 end
   return health
 end
 
@@ -303,6 +304,14 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local oInv = oPlayer:getInventory()
   local grabTime1, grabTime2, fromGround1, fromGround2 = 50, 50, false, false
   local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material1, material2, sqConstructionSite
+  local forceTool1, forceTool2, forceWearable
+
+  if self.forceEquip then
+    forceTool1 = self.forceEquip['tool1']
+    forceTool2 = self.forceEquip['tool2']
+    forceWearable = self.forceEquip['wearable']
+  end
+
   if self.isWallLike then
     sqConstructionSite = getAdjustedSquareForConstructionSite(oPlayer, x, y, z, square, self.west)
     else
@@ -333,85 +342,111 @@ function ISExtBuildingObject:tryBuild(x, y, z)
             counter = counter + 1
           elseif stringStarts(k, 'keep:') then
             if tool1 == nil then
-              local typelist = split(split(k, ':')[2], '/')
-              for i=1, #typelist do
-                local oItem = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
-                if oItem then
-                  if instanceof(oItem, 'Clothing') then break end
-                  tool1 = oItem
-                  toolSound1 = v
-                  break
+              local skipEntry = false
+              if forceTool1 ~= nil and not k ~= forceTool1 then skipEntry = true end
+              if skipEntry == false then
+                local typelist = split(split(k, ':')[2], '/')
+                for i=1, #typelist do
+                  local oItem = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
+                  if oItem then
+                    if instanceof(oItem, 'Clothing') then break end
+                    tool1 = oItem
+                    toolSound1 = v
+                    break
+                  end
                 end
               end
             elseif tool2 == nil then
-              local typelist = split(split(k, ':')[2], '/')
-              for i=1, #typelist do
-                local oItem = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
-                if oItem then
-                  if instanceof(oItem, 'Clothing') then break end
-                  tool2 = oItem
-                  toolSound2 = v
-                  break
+              local skipEntry = false
+              if forceTool2 ~= nil and k ~= forceTool2 then skipEntry = true end
+              if skipEntry == false then
+                local typelist = split(split(k, ':')[2], '/')
+                for i=1, #typelist do
+                  local oItem = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
+                  if oItem then
+                    if instanceof(oItem, 'Clothing') then break end
+                    tool2 = oItem
+                    toolSound2 = v
+                    break
+                  end
                 end
               end
             end
             if wearable == nil then
-              local typelist = split(split(k, ':')[2], '/')
-              for i=1, #typelist do
-                local oItem = oInv:getFirstTypeRecurse(typelist[i])
-                if oItem and instanceof(oItem, 'Clothing') then
-                  wearable = oItem
-                  break
+              local skipEntry = false
+              if forceWearable ~= nil and k ~= forceWearable then skipEntry = true end
+              if skipEntry == false then
+                local typelist = split(split(k, ':')[2], '/')
+                for i=1, #typelist do
+                  local oItem = oInv:getFirstTypeRecurse(typelist[i])
+                  if oItem and instanceof(oItem, 'Clothing') then
+                    wearable = oItem
+                    break
+                  end
                 end
               end
             end
           elseif stringStarts(k, 'need:') or stringStarts(k, 'use:') then
             if material1 == nil then
-              local typelist = split(split(k, ':')[2], '/')
-              for i=1, #typelist do
-                material1 = oInv:getFirstTypeRecurse(typelist[i])
-                if material1 then
-                  if toolSound2 == nil then toolSound2 = k end
-                  break
-                end
-              end
-              if material1 == nil then
+              local skipEntry = false
+              local forceOverwrite = forceTool1 ~= nil
+              if forceOverwrite and k ~= forceTool1 then skipEntry = true end
+              if skipEntry == false then
+                local typelist = split(split(k, ':')[2], '/')
                 for i=1, #typelist do
-                  local groundItems = buildUtil.getMaterialOnGround(square)
-                  for k,v in ipairs(groundItems) do
-                    if k == typelist[i] then
-                      material1 = v
-                      if toolSound2 == nil then toolSound2 = k end
-                      fromGround1 = true
-                      grabTime1 = ISWorldObjectContextMenu.grabItemTime(oPlayer, material1:getWorldItem())
-                      break
-                    end
+                  material1 = oInv:getFirstTypeRecurse(typelist[i])
+                  if material1 then
+                    if toolSound2 == nil or forceOverwrite then toolSound2 = k end
+                    if forceOverwrite then tool1 = material1 end
+                    break
                   end
-                  if material1 then break end
+                end
+                if material1 == nil then
+                  for i=1, #typelist do
+                    local groundItems = buildUtil.getMaterialOnGround(square)
+                    for k,v in ipairs(groundItems) do
+                      if k == typelist[i] then
+                        material1 = v
+                        if toolSound2 == nil or forceOverwrite then toolSound2 = k end
+                        if forceOverwrite then tool1 = material1 end
+                        fromGround1 = true
+                        grabTime1 = ISWorldObjectContextMenu.grabItemTime(oPlayer, material1:getWorldItem())
+                        break
+                      end
+                    end
+                    if material1 then break end
+                  end
                 end
               end
             elseif material2 == nil then
-              local typelist = split(split(k, ':')[2], '/')
-              for i=1, #typelist do
-                material2 = oInv:getFirstTypeRecurse(typelist[i])
-                if material2 then
-                  if toolSound1 == nil then toolSound1 = k end
-                  break
-                end
-              end
-              if material2 == nil then
+              local skipEntry = false
+              local forceOverwrite = forceTool2 ~= nil
+              if forceOverwrite and k ~= forceTool2 then skipEntry = true end
+              if skipEntry == false then
+                local typelist = split(split(k, ':')[2], '/')
                 for i=1, #typelist do
-                  local groundItems = buildUtil.getMaterialOnGround(square)
-                  for k,v in ipairs(groundItems) do
-                    if k == typelist[i] then
-                      material2 = v
-                      if toolSound1 == nil then toolSound1 = k end
-                      fromGround2 = true
-                      grabTime2 = ISWorldObjectContextMenu.grabItemTime(oPlayer, material2:getWorldItem())
-                      break
-                    end
+                  material2 = oInv:getFirstTypeRecurse(typelist[i])
+                  if material2 then
+                    if toolSound1 == nil or forceOverwrite then toolSound1 = k end
+                    if forceOverwrite then tool2 = material2 end
+                    break
                   end
-                  if material2 then break end
+                end
+                if material2 == nil then
+                  for i=1, #typelist do
+                    local groundItems = buildUtil.getMaterialOnGround(square)
+                    for k,v in ipairs(groundItems) do
+                      if k == typelist[i] then
+                        material2 = v
+                        if toolSound1 == nil or forceOverwrite then toolSound1 = k end
+                        if forceOverwrite then tool2 = material2 end
+                        fromGround2 = true
+                        grabTime2 = ISWorldObjectContextMenu.grabItemTime(oPlayer, material2:getWorldItem())
+                        break
+                      end
+                    end
+                    if material2 then break end
+                  end
                 end
               end
             end
