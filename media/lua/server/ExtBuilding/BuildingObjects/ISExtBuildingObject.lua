@@ -28,8 +28,8 @@ ISExtBuildingObject.defaults = {
 
 
 -- Storage for construction site pointer
-ISExtBuildingObject.constructionSites = {}
-
+ISExtBuildingObject.constructionSites = {}    -- proxy (provides getter/setter meta for the shadow table)
+ISExtBuildingObject.constructionSitesShadow = {}    -- holds the real values
 
 
 ---
@@ -100,6 +100,49 @@ local function onPlayerUpdate(oPlayer)
     end
   end
 end
+
+
+
+---
+--- Replaces possibly existing construction site tile assigned to the player
+--- with the new one
+--- @param _ table The shadow table (only used for proxy access)
+--- @param key IsoPlayer The target player instance
+--- @param value IsoObject The construction site tile object
+---
+local function setConstructionSite(_, key, value)
+  if ISExtBuildingObject.constructionSitesShadow[key] ~= nil then
+    local isoTile = ISExtBuildingObject.constructionSitesShadow[key]
+    if isoTile == nil then return end
+    Events.OnPlayerUpdate.Remove(onPlayerUpdate)
+    local square = isoTile:getSquare()
+    -- there might be several construction sites on the square, so remove only the assigned one
+    if square then
+      local specialTiles = square:getSpecialObjects()
+      for i=0, specialTiles:size()-1 do
+        if specialTiles:get(i) == isoTile then
+          square:transmitRemoveItemFromSquare(isoTile)
+          square:RemoveTileObject(isoTile)
+          isoTile = nil
+          break
+        end
+      end
+    end
+  end
+  ISExtBuildingObject.constructionSitesShadow[key] = value
+end
+---
+--- Returns the isoTile from the shadowed table
+--- @param _ table The shadowed table
+--- @param key IsoPlayer The target player instance
+---
+local function getConstructionSite(_, key)
+  return ISExtBuildingObject.constructionSitesShadow[key] or nil
+end
+setmetatable(ISExtBuildingObject.constructionSites, {
+ __newindex = setConstructionSite,
+ __index = getConstructionSite
+})
 
 
 
@@ -324,6 +367,14 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       if sqConstructionSite then
         sqConstructionSite:AddSpecialTileObject(isoTile)
         isoTile:transmitCompleteItemToServer()
+
+
+
+
+
+
+
+
         ISExtBuildingObject.constructionSites[oPlayer] = isoTile
       end
     end

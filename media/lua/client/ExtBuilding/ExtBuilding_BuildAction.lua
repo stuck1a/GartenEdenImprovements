@@ -148,6 +148,14 @@ end
 
 
 
+function ISExtBuildAction:start()
+  ISBuildAction.start(self)
+  --self.setOverrideHandModels(self, self.character:getPrimaryHandItem(), self.character:getSecondaryHandItem())
+end
+
+
+
+
 ---
 --- Executed once if the action ends anyhow.
 --- Will stop any action sound which might currently playing.
