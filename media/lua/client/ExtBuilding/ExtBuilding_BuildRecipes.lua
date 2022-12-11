@@ -22,7 +22,6 @@ TODO: Fehlende Funktionen f¸r ExtBuilding
   - forceEquip            siehe oben
   - overwriteHandModel    Callback-Funktionen, wenn mˆglich dynamisch von genutzten Tools ableiten
   - height                "low"/"medium"/"high" -> Anpassung der LootHeight oder wie das hieﬂ (Bauposition)
-  - material2             in tryBuild, damit zwei Materialien in Hand genommen werden, wenn kein Tool
 --]]
 
 
@@ -121,7 +120,6 @@ ExtBuildingContextMenu.BuildingRecipes = {
       {
         displayName = 'ContextMenu_Wooden_Wall_Frame',
         targetClass = 'ISWall',
-        buildTime = 2000,
         tooltipDesc = 'Tooltip_ExtBuilding__WoodenWallFrame',
         sprites = {
           sprite = 'carpentry_02_100',
@@ -159,9 +157,9 @@ ExtBuildingContextMenu.BuildingRecipes = {
         },
         modData = {
           ['keep:' .. utils.concatItemTypes({'WeldingMask'})] = 'Base.WeldingMask',
+          ['use:Base.WeldingRods'] = 4,
           ['use:Base.BlowTorch'] = 8,
           ['need:Base.MetalBar']= 3,
-          ['use:Base.WeldingRods'] = 4,
           ['requires:MetalWelding'] = 3,
           ['xp:MetalWelding'] = 20,
         }

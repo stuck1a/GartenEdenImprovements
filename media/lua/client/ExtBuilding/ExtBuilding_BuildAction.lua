@@ -99,7 +99,7 @@ function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time,
   tool2 = tool2 or tool1
   if self.soundMap == nil then init() end
   o.toolSound1 = self.soundMap[tool1] or false
-  o.toolSound2 = self.soundMap[tool2] or o.tool1
+  o.toolSound2 = self.soundMap[tool2] or o.toolSound1
   o.shallPlay1 = true
   o.shallPlay2 = false
   return o
@@ -173,9 +173,19 @@ end
 
 
 ---
---- Called when the action is done
+--- Called when the action is completed
 ---
 function ISExtBuildAction:perform()
+  self.item.ghostSprite = nil
+  if self.toolSound1 and self.toolSound1Pointer ~= nil and self.character:getEmitter():isPlaying(self.toolSound1) then
+    self.character:getEmitter():stopSound(self.toolSound1Pointer)
+  end
+  if self.toolSound2 and self.toolSound2Pointer ~= nil and self.character:getEmitter():isPlaying(self.toolSound2) then
+    self.character:getEmitter():stopSound(self.toolSound2Pointer)
+  end
+  if self.craftingSound and self.character:getEmitter():isPlaying(self.craftingSound) then
+    self.character:stopOrTriggerSound(self.craftingSound)
+  end
   if self.tool2 and self.tool2 == 'HammerStone' then
     local oTool = self.character:getSecondaryHandItem()
     if oTool ~= nil and ZombRand(oTool:getConditionLowerChance()) == 0 then

@@ -291,8 +291,8 @@ end
 
 ---
 --- Called by DoTileBuilding after ghost tile drag located the desired target square.
---- It will generate the timed action query from the modData/fields and launch it and by that,
---- validate the requirements once more (things could have changed since the context menu vaildation).
+--- It will generate the timed action query from the modData/fields and handle the
+--- construction site tile
 --- @param x int Target squares x coordinate
 --- @param y int Target squares y coordinate
 --- @param z int Target squares z coordinate
@@ -301,8 +301,8 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local square = getCell():getGridSquare(x, y, z)
   local oPlayer = getSpecificPlayer(self.player)
   local oInv = oPlayer:getInventory()
-  local grabTime, fromGround = 50, false
-  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material1, sqConstructionSite
+  local grabTime1, grabTime2, fromGround1, fromGround2 = 50, 50, false, false
+  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material1, material2, sqConstructionSite
   if self.isWallLike then
     sqConstructionSite = getAdjustedSquareForConstructionSite(oPlayer, x, y, z, square, self.west)
     else
@@ -310,7 +310,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   end
   local isoTile = IsoObject.new(sqConstructionSite, 'garteneden_tech_01_2', 'ConstructionSite')
   -- TODO: Replace self.Type == 'fishingNet' with something like self.Type == 'waterConstruction'
-  if (ISBuildMenu.cheat or self:walkTo(x, y, z) or self.Type == 'fishingNet') and self:isValid(square) then
+  if ISBuildMenu.cheat or self:walkTo(x, y, z) or (self.Type == 'fishingNet' and self:isValid(square)) then
     if not self.skipBuildAction then
       if sqConstructionSite then
         sqConstructionSite:AddSpecialTileObject(isoTile)
@@ -365,29 +365,54 @@ function ISExtBuildingObject:tryBuild(x, y, z)
                 end
               end
             end
-          elseif material1 == nil and (stringStarts(k, 'need:') or stringStarts(k, 'use:')) then
-            local typelist = split(split(k, ':')[2], '/')
-            for i=1, #typelist do
-              print(tostring(typelist[i]))
-              material1 = oInv:getFirstTypeRecurse(typelist[i])
-              if material1 then
-                if toolSound2 == nil then toolSound2 = k end
-                break
-              end
-            end
+          elseif stringStarts(k, 'need:') or stringStarts(k, 'use:') then
             if material1 == nil then
+              local typelist = split(split(k, ':')[2], '/')
               for i=1, #typelist do
-                local groundItems = buildUtil.getMaterialOnGround(square)
-                for k,v in ipairs(groundItems) do
-                  if k == typelist[i] then
-                    material1 = v
-                    if toolSound2 == nil then toolSound2 = k end
-                    fromGround = true
-                    grabTime = ISWorldObjectContextMenu.grabItemTime(oPlayer, material1:getWorldItem())
-                    break
-                  end
+                material1 = oInv:getFirstTypeRecurse(typelist[i])
+                if material1 then
+                  if toolSound2 == nil then toolSound2 = k end
+                  break
                 end
-                if material1 then break end
+              end
+              if material1 == nil then
+                for i=1, #typelist do
+                  local groundItems = buildUtil.getMaterialOnGround(square)
+                  for k,v in ipairs(groundItems) do
+                    if k == typelist[i] then
+                      material1 = v
+                      if toolSound2 == nil then toolSound2 = k end
+                      fromGround1 = true
+                      grabTime1 = ISWorldObjectContextMenu.grabItemTime(oPlayer, material1:getWorldItem())
+                      break
+                    end
+                  end
+                  if material1 then break end
+                end
+              end
+            elseif material2 == nil then
+              local typelist = split(split(k, ':')[2], '/')
+              for i=1, #typelist do
+                material2 = oInv:getFirstTypeRecurse(typelist[i])
+                if material2 then
+                  if toolSound1 == nil then toolSound1 = k end
+                  break
+                end
+              end
+              if material2 == nil then
+                for i=1, #typelist do
+                  local groundItems = buildUtil.getMaterialOnGround(square)
+                  for k,v in ipairs(groundItems) do
+                    if k == typelist[i] then
+                      material2 = v
+                      if toolSound1 == nil then toolSound1 = k end
+                      fromGround2 = true
+                      grabTime2 = ISWorldObjectContextMenu.grabItemTime(oPlayer, material2:getWorldItem())
+                      break
+                    end
+                  end
+                  if material2 then break end
+                end
               end
             end
           end
@@ -406,12 +431,19 @@ function ISExtBuildingObject:tryBuild(x, y, z)
     else
       if not ISBuildMenu.cheat then
         if wearable then ISInventoryPaneContextMenu.wearItem(wearable, self.player) end
-        if tool1 then ISInventoryPaneContextMenu.equipWeapon(tool1, true, false, self.player) end
+        if tool1 then
+          ISInventoryPaneContextMenu.equipWeapon(tool1, true, false, self.player)
+        elseif material2 then
+          if fromGround2 then
+            ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, material2:getWorldItem(), grabTime2))
+          end
+          luautils.equipItems(oPlayer, material2, false)
+        end
         if tool2 then
           ISInventoryPaneContextMenu.equipWeapon(tool2, false, false, self.player)
         elseif material1 then
-          if fromGround then
-            ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, material1:getWorldItem(), grabTime))
+          if fromGround1 then
+            ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, material1:getWorldItem(), grabTime1))
           end
           luautils.equipItems(oPlayer, false, material1)
         end
