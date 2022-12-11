@@ -512,7 +512,6 @@ ContextMenu_EN = {
   /** ExtBuilding **/
   ContextMenu_ExtBuilding_Cat__Architecture = "_Architecture",
   ContextMenu_ExtBuilding_Cat__Walls = "Walls",
-  ContextMenu_ExtBuilding_Obj__WoodenWall = "Wooden wall",
   ContextMenu_ExtBuilding_Obj__WoodenPillar = "Wooden pillar",
   ContextMenu_ExtBuilding_Cat__Doors = "Doors",
   ContextMenu_ExtBuilding_Cat__Flooring = "Flooring",

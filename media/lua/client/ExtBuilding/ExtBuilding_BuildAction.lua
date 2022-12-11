@@ -95,9 +95,13 @@ function ISExtBuildAction:new(character, item, x, y, z, north, spriteName, time,
   self.__index = self
   if type(tool1) == 'string' and string.find(tool1, '.') then tool1 = luautils.split(tool1, '.')[2] end
   if type(tool2) == 'string' and string.find(tool2, '.') then tool2 = luautils.split(tool2, '.')[2] end
-  o.tool1 = tool1
-  o.tool2 = tool2
+  tool1 = tool1 or tool2
+  tool2 = tool2 or tool1
   if self.soundMap == nil then init() end
+  o.toolSound1 = self.soundMap[tool1] or false
+  o.toolSound2 = self.soundMap[tool2] or o.tool1
+  o.shallPlay1 = true
+  o.shallPlay2 = false
   return o
 end
 
@@ -105,37 +109,65 @@ end
 
 ---
 --- Executed in every action process quantum
---- Alternates sounds
+--- Alternates sounds tool1 and tool2 and additionally
+--- overlays soundBank, if given. Also forces to face the
+--- object and fixes the metabolic target.
 ---
 function ISExtBuildAction:update()
-  local worldSoundRadius = 0
-  if self.soundTime + ISBuildAction.soundDelay < getTimestamp() then
-    self.soundTime = getTimestamp()
-    local playingSaw = self.sawSound ~= 0 and self.character:getEmitter():isPlaying(self.sawSound)
-    local playingHammer = self.hammerSound ~= 0 and self.character:getEmitter():isPlaying(self.hammerSound)
-    if not playingSaw and not playingHammer then
-      if self.doSaw == true and self.tool1 ~= nil and ISExtBuildAction.soundMap[self.tool1] ~= nil then
-        self.sawSound = self.character:getEmitter():playSound(ISExtBuildAction.soundMap[self.tool1])
-        worldSoundRadius = 15
-        self.doSaw = false
-      elseif self.tool2 ~= nil and ISExtBuildAction.soundMap[self.tool2] ~= nil then
-        self.hammerSound = self.character:getEmitter():playSound(ISExtBuildAction.soundMap[self.tool2])
+  if self.toolSound1 then
+    local worldSoundRadius = 0
+    if self.soundTime + ISBuildAction.soundDelay < getTimestamp() then
+      self.soundTime = getTimestamp()
+      local isPlaying1 = self.character:getEmitter():isPlaying(self.toolSound1)
+      local isPlaying2 = self.character:getEmitter():isPlaying(self.toolSound2)
+      if not isPlaying1 and not isPlaying2 then
         worldSoundRadius = math.ceil(20 * self.character:getHammerSoundMod())
-        self.doSaw = true
+        if self.shallPlay1 then
+          self.toolSound1Pointer = self.character:getEmitter():playSound(self.toolSound1)
+          self.shallPlay1 = false
+          self.shallPlay2 = true
+        else
+          self.toolSound2Pointer = self.character:getEmitter():playSound(self.toolSound2)
+          self.shallPlay1 = true
+          self.shallPlay2 = false
+        end
+      end
+      if self.craftingBank then
+        local playingCrafting = self.craftingSound ~= 0 and self.character:getEmitter():isPlaying(self.craftingSound)
+        if not playingCrafting then self.craftingSound = self.character:getEmitter():playSound(self.craftingBank) end
       end
     end
-    if self.craftingBank then
-      local playingCrafting = self.craftingSound ~= 0 and self.character:getEmitter():isPlaying(self.craftingSound)
-      if not playingCrafting then self.craftingSound = self.character:getEmitter():playSound(self.craftingBank) end
-      worldSoundRadius = 15
+    if worldSoundRadius > 0 then
+      ISBuildAction.worldSoundTime = getTimestamp()
+      addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), worldSoundRadius, worldSoundRadius)
     end
-  end
-  if worldSoundRadius > 0 then
-    ISBuildAction.worldSoundTime = getTimestamp()
-    addSound(self.character, self.character:getX(), self.character:getY(), self.character:getZ(), worldSoundRadius, worldSoundRadius)
   end
   self.character:setMetabolicTarget(Metabolics.HeavyWork)
   self:faceLocation()
+end
+
+
+
+---
+--- Executed once if the action ends anyhow.
+--- Will stop any action sound which might currently playing.
+--- Further resets the ghost sprite and executes the stop callback
+--- of the building, if any. Finally the action queue will be reset,
+--- since this will always be the last action in queue.
+---
+function ISExtBuildAction:stop()
+  self.item:onTimedActionStop(self)
+  self.item.ghostSprite = nil
+  if self.toolSound1 and self.toolSound1Pointer ~= nil and self.character:getEmitter():isPlaying(self.toolSound1) then
+    self.character:getEmitter():stopSound(self.toolSound1Pointer)
+  end
+  if self.toolSound2 and self.toolSound2Pointer ~= nil and self.character:getEmitter():isPlaying(self.toolSound2) then
+    self.character:getEmitter():stopSound(self.toolSound2Pointer)
+  end
+  if self.craftingSound and self.character:getEmitter():isPlaying(self.craftingSound) then
+    self.character:stopOrTriggerSound(self.craftingSound)
+  end
+  ISBaseTimedAction.stop(self)
 end
 
 

@@ -17,6 +17,19 @@ TODO [TBD] forceEquip
 --]]
 
 
+--[[
+TODO: Fehlende Funktionen f¸r ExtBuilding
+  - forceEquip            siehe oben
+  - overwriteHandModel    Callback-Funktionen, wenn mˆglich dynamisch von genutzten Tools ableiten
+  - height                "low"/"medium"/"high" -> Anpassung der LootHeight oder wie das hieﬂ (Bauposition)
+  - material2             in tryBuild, damit zwei Materialien in Hand genommen werden, wenn kein Tool
+--]]
+
+
+
+
+
+
 -- SUBMENU ENTRIES:
 --[[
 SubcategoryTranslationStringIdentifier = {
@@ -36,13 +49,15 @@ SubcategoryTranslationStringIdentifier = {
 -- General defaults will be overwritten by class level defaults which will be overwritten by recipe level values.
 {
   targetClass = 'ISWoodenContainer',    -- will use 'ISBuildingObject' if not set
+  requiresRecipe = 'Make Metal Containers',    -- if a recipe script must be learned first to unlock this structure
   displayName = 'ContextMenu_ReinforcedBox',    -- name which will be used in context menus, toolTips, etc.
   buildTime = 500,    -- base value for calculating the duration of the build action
   baseHealth = 1000,    -- base value for calculating the max health value
-  mainMaterial = 'wood',    -- decides which skill lvl determines the extra health (allowed is "wood", "metal", "stone" or "glass")
+  mainMaterial = 'wood',    -- decides which skill lvl determines the extra health (allowed is 'wood', 'metal', 'stone' or 'glass')
   breakSound = 'BreakObject',    -- will be played once, if the construction gets destroyed
+  thumpSound = 'ZombieThumpGeneric',    -- will be played whenever the object is hit by any character (zombie, player, npc)
   hasSpecialTooltip = false,    -- Set to true for hover tooltips. This requires a mounted DoSpecialTooltip listener within the given targetClass TODO: Allow dynamic listener mount
-  craftingBank = 'BuildingGeneric',    -- used sound file while performing the build action (it will alternate with tool sounds of the first two tool requirements defined as modData "keep:" entry. It can be used for regular construction sounds as well as "real" crafting bank sounds.
+  craftingBank = 'BuildingGeneric',    -- used sound script while performing the build action (it will alternate with tool sounds of the first two tool requirements defined as modData "keep:" entry. It can be used for regular construction sounds as well as "real" crafting bank sounds.
   completionSound = 'BuildWoodenStructureMedium',    -- will be played once if the construction is completed
   isoData = {
     isoName = 'reinforcedbox',    -- defines the internal name, but also the name of the global map object, if targetClass defines any. If a global object has several subtypes (like in "watercollector"), this might be used to differ between those subtypes (like "waterwell", "rainbarrel"). If there are no subtypes, then it can simply use the same value as its systemName (name of the associated global object system, which must be unique and is usually defined on class level)
@@ -59,11 +74,12 @@ SubcategoryTranslationStringIdentifier = {
     damaged = 'carpentry_05_17',    -- Sprite which will be used if the object gets damaged (e.g. by a car)
     },
   },
-  -- can be used to define such properties like canBePlastered, isHoppable, etc. but also for custom properties
-  -- Within the properties table, callback functions might be defined as long as they return a valid value for
-  -- the given property. Such functions will always receive the class object as argument.
+  -- can be used to define properties like canBePlastered, isHoppable, etc. but also for custom properties.
+  -- Each property will the added to the iso object instance on top level.
+  -- Within this properties table, callback functions might be defined as long as they return a valid value for
+  -- the given property. Such functions will always receive the class object instance as argument.
   properties = {
-    canBeLockedByPadlock = true    --- one of the vanilla properties - will influence the behaviour
+    canBeLockedByPadlock = true    --- one of the vanilla properties as an example - will influence the behaviour/functionality
     myCustomField = myValue    -- of course this makes only sense if the target class will make any use of it as well
   },
   -- allows additional checks for the isValid function of the given targetClass. Will receive the square object as argument.
@@ -105,6 +121,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       {
         displayName = 'ContextMenu_Wooden_Wall_Frame',
         targetClass = 'ISWall',
+        buildTime = 2000,
         tooltipDesc = 'Tooltip_ExtBuilding__WoodenWallFrame',
         sprites = {
           sprite = 'carpentry_02_100',
@@ -126,9 +143,11 @@ ExtBuildingContextMenu.BuildingRecipes = {
         }
       },
       {
-        displayName = 'ContextMenu_Metal_Wall_Frame',
+        displayName = 'ContextMenu_MetalWallFrame',
         targetClass = 'ISWall',
+        requiresRecipe = 'Make Metal Walls',
         tooltipDesc = 'Tooltip_ExtBuilding__MetalWallFrame',
+        thumpSound = 'ZombieThumpMetal',
         sprites = {
           sprite = 'constructedobjects_01_68',
           northSprite = 'constructedobjects_01_69',
@@ -141,9 +160,9 @@ ExtBuildingContextMenu.BuildingRecipes = {
         modData = {
           ['keep:' .. utils.concatItemTypes({'WeldingMask'})] = 'Base.WeldingMask',
           ['use:Base.BlowTorch'] = 8,
-          ['use:Base.WeldingRods'] = 4,
           ['need:Base.MetalBar']= 3,
-          ['requires:Welding'] = 3,
+          ['use:Base.WeldingRods'] = 4,
+          ['requires:MetalWelding'] = 3,
           ['xp:MetalWelding'] = 20,
         }
       },
@@ -245,7 +264,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       targetClass = 'ISWaterCollector',
       displayName = 'ContextMenu_ExtBuilding_Obj__WaterWell',
       tooltipDesc = 'Tooltip_ExtBuilding__WaterWell',
-      buildTime = 700,
+      buildTime = 2000,
       baseHealth = 600,
       mainMaterial = 'stone',
       completionSound = 'BuildFenceCairn',

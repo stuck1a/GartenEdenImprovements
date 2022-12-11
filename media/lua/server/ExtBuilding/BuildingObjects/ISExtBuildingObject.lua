@@ -15,7 +15,8 @@ ISExtBuildingObject.defaults = {
   mainMaterial = 'wood',
   hasSpecialTooltip = false,
   breakSound = 'BreakObject',
-  craftingBank = 'BuildingGeneric',
+  thumpSound = 'ZombieThumpGeneric',
+  craftingBank = nil,
   sprites = { sprite = 'invisible_01_0' },
   isoData = {
     isoName = 'unnamed',
@@ -146,6 +147,7 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   self.baseHealth = settings.baseHealth
   self.mainMaterial = settings.mainMaterial
   self.hasSpecialTooltip = settings.hasSpecialTooltip
+  self.thumpSound = settings.thumpSound
   self.breakSound = settings.breakSound
   self.craftingBank = settings.craftingBank
   self.isValidAddition = settings.isValidAddition
@@ -196,6 +198,7 @@ function ISExtBuildingObject:create(x, y, z, north, sprite)
   self.javaObject:setMaxHealth(self:getHealth(self.mainMaterial, self.baseHealth))
   self.javaObject:setHealth(self.javaObject:getMaxHealth())
   self.javaObject:setBreakSound(self.breakSound)
+  self.javaObject:setThumpSound(self.thumpSound)
   self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
   local objIndex = self:getObjectIndex()
   if objIndex ~= nil then
@@ -299,7 +302,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local oPlayer = getSpecificPlayer(self.player)
   local oInv = oPlayer:getInventory()
   local grabTime, fromGround = 50, false
-  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material, sqConstructionSite
+  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material1, sqConstructionSite
   if self.isWallLike then
     sqConstructionSite = getAdjustedSquareForConstructionSite(oPlayer, x, y, z, square, self.west)
     else
@@ -331,48 +334,69 @@ function ISExtBuildingObject:tryBuild(x, y, z)
           elseif stringStarts(k, 'keep:') then
             if tool1 == nil then
               local typelist = split(split(k, ':')[2], '/')
-              toolSound1 = v
               for i=1, #typelist do
-                tool1 = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
-                if tool1 then break end
+                local oItem = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
+                if oItem then
+                  if instanceof(oItem, 'Clothing') then break end
+                  tool1 = oItem
+                  toolSound1 = v
+                  break
+                end
               end
             elseif tool2 == nil then
               local typelist = split(split(k, ':')[2], '/')
-              toolSound2 = v
               for i=1, #typelist do
-                tool2 = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
-                if tool2 then break end
+                local oItem = oInv:getFirstTypeEvalRecurse(typelist[i], predicateNotBroken)
+                if oItem then
+                  if instanceof(oItem, 'Clothing') then break end
+                  tool2 = oItem
+                  toolSound2 = v
+                  break
+                end
               end
             end
             if wearable == nil then
               local typelist = split(split(k, ':')[2], '/')
               for i=1, #typelist do
-                local item = oInv:getFirstTypeRecurse(typelist[i])
-                if item and instanceof(item, 'Clothing') then wearable = item; break end
-              end
-            end
-          elseif material == nil and (stringStarts(k, 'need:') or stringStarts(k, 'use:')) then
-            local typelist = split(split(k, ':')[2], '/')
-            for i=1, #typelist do
-              local material = oInv:getFirstTypeRecurse(typelist[i])
-              if material then break end
-            end
-            for i=1, #typelist do
-              local groundItems = buildUtil.getMaterialOnGround(square)
-              for k,v in ipairs(groundItems) do
-                if k == typelist[i] then
-                  material = v
-                  fromGround = true
-                  grabTime = ISWorldObjectContextMenu.grabItemTime(oPlayer, material:getWorldItem())
+                local oItem = oInv:getFirstTypeRecurse(typelist[i])
+                if oItem and instanceof(oItem, 'Clothing') then
+                  wearable = oItem
                   break
                 end
               end
-              if material then break end
+            end
+          elseif material1 == nil and (stringStarts(k, 'need:') or stringStarts(k, 'use:')) then
+            local typelist = split(split(k, ':')[2], '/')
+            for i=1, #typelist do
+              print(tostring(typelist[i]))
+              material1 = oInv:getFirstTypeRecurse(typelist[i])
+              if material1 then
+                if toolSound2 == nil then toolSound2 = k end
+                break
+              end
+            end
+            if material1 == nil then
+              for i=1, #typelist do
+                local groundItems = buildUtil.getMaterialOnGround(square)
+                for k,v in ipairs(groundItems) do
+                  if k == typelist[i] then
+                    material1 = v
+                    if toolSound2 == nil then toolSound2 = k end
+                    fromGround = true
+                    grabTime = ISWorldObjectContextMenu.grabItemTime(oPlayer, material1:getWorldItem())
+                    break
+                  end
+                end
+                if material1 then break end
+              end
             end
           end
         end
-        if counter == 0 then counter = 1 end
-        maxTime = math.floor(buildTime - 5 * sumOfReqSkills / counter)
+        if counter > 0 then
+          maxTime = math.floor(buildTime - 5 * sumOfReqSkills / counter)
+        else
+          maxTime = buildTime
+        end
       else
         maxTime = math.floor(buildTime - 5 * oPlayer:getPerkLevel(Perks.Woodwork))
       end
@@ -385,12 +409,11 @@ function ISExtBuildingObject:tryBuild(x, y, z)
         if tool1 then ISInventoryPaneContextMenu.equipWeapon(tool1, true, false, self.player) end
         if tool2 then
           ISInventoryPaneContextMenu.equipWeapon(tool2, false, false, self.player)
-        elseif material then
+        elseif material1 then
           if fromGround then
-            ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, material:getWorldItem(), grabTime))
+            ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, material1:getWorldItem(), grabTime))
           end
-          -- TODO: Test whether one of this works as excepted
-          ISTimedActionQueue.add(ISEquipWeaponAction:new(oPlayer, material, 25, false))
+          luautils.equipItems(oPlayer, false, material1)
         end
       end
       local selfCopy = copyTable(self)
@@ -409,19 +432,18 @@ end
 
 ---
 --- Creates the custom tooltip for the building menu entry
---- @param player number Target player ID
+--- @param oPlayer IsoPlayer Target player object
 --- @param option ISContextMenu Build menu entry
 --- @param recipe table Definition table
 --- @param targetClass ISExtBuildingObject Type class
 --- @return ISToolTip Tooltip panel for the build menu entry
 ---
-function ISExtBuildingObject.makeTooltip(player, option, recipe, targetClass)
+function ISExtBuildingObject.makeTooltip(oPlayer, option, recipe, targetClass)
   local toolTip = ISToolTip:new()
   local canBuild, headlineSet = true, false
   local sRed,sGreen,sWhite = '<RGB:.9,0,0>', '<RGB:0,0.7,0>', '<RGB:1,1,1>'
   local sPen = sWhite
   local getText,split,getItemName,stringStarts,format,merge = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format,ISExtBuildingObject.merge
-  local oPlayer = getSpecificPlayer(player)
   local oInv = oPlayer:getInventory()
   local settings = merge(merge(ISExtBuildingObject.defaults, targetClass.defaults), recipe)
   toolTip:initialise()

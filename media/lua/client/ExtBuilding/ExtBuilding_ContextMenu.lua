@@ -15,7 +15,7 @@ ExtBuildingContextMenu.doMenu = function(player, context)
     --context:removeOptionByName(getText('ContextMenu_Build')) --TODO: Uncomment again after debugging vanilla all implementations
     local oSubMenu = ISContextMenu:getNew(context)
     context:addSubMenu(oBuildOption, oSubMenu)
-    ExtBuildingContextMenu.doMenuRecursive(oSubMenu, ExtBuildingContextMenu.BuildingRecipes, player)
+    ExtBuildingContextMenu.doMenuRecursive(oSubMenu, ExtBuildingContextMenu.BuildingRecipes, player, getSpecificPlayer(player))
   end
 end
 
@@ -23,13 +23,13 @@ end
 ---
 --- Handler which will be called when clicked on
 --- a building recipe within the context menu
---- @param player IsoPlayer Target player object
---- @param classObj ISBuildingObject Target building object
+--- @param oPlayer IsoPlayer Target player object
+--- @param oClass ISBuildingObject Target building object
 --- @param recipe table Selected building definition
 ---
-ExtBuildingContextMenu.onClickEntry = function(player, classObj, recipe)
-  local obj = classObj:new(player, recipe)
-  getCell():setDrag(obj, player)
+ExtBuildingContextMenu.onClickEntry = function(oPlayer, oClass, recipe)
+  local obj = oClass:new(oPlayer, recipe)
+  getCell():setDrag(obj, oPlayer)
 end
 
 
@@ -38,27 +38,31 @@ end
 --- all necessary menu items from it
 --- @param menu ISContextMenu First level menu to which the entries will be added to
 --- @param defTable table Build menu entries
---- @param player number Target player id
+--- @param player int Target player id
+--- @param oPlayer IsoPlayer Target player object
 ---
-ExtBuildingContextMenu.doMenuRecursive = function(menu, defTable, player)
+ExtBuildingContextMenu.doMenuRecursive = function(menu, defTable, player, oPlayer)
   for name, recipe in pairs(defTable) do
     if type(name) == 'string' then
       -- submenus
       local subMenu = ISContextMenu:getNew(menu)
       local subMenuOption = menu:addOption(getText(name))
       menu:addSubMenu(subMenuOption, subMenu)
-      ExtBuildingContextMenu.doMenuRecursive(subMenu, recipe, player)
+      ExtBuildingContextMenu.doMenuRecursive(subMenu, recipe, player, oPlayer)
     else
       -- building recipes
-      local targetClass = _G[recipe.targetClass] or ISExtBuildingObject
-      if targetClass ~= nil then
-        local recipeName
-        if recipe.displayName ~= nil then recipeName = recipe.displayName elseif targetClass.defaults.displayName ~= nil then recipeName = targetClass.defaults.displayName else recipeName = ISExtBuildingObject.defaults.displayName end
-        local option = menu:addOption(getText(recipeName), player, ExtBuildingContextMenu.onClickEntry, targetClass, recipe)
-        option.toolTip = targetClass.makeTooltip(player, option, recipe, targetClass)
+      local oClass = _G[recipe.targetClass] or ISExtBuildingObject
+      if oClass ~= nil then
+        local requiresRecipe = recipe.requiresRecipe or oClass.defaults.requiresRecipe or ISExtBuildingObject.defaults.requiresRecipe or false
+        if requiresRecipe == false or oPlayer:isRecipeKnown(requiresRecipe) or ISBuildMenu.cheat then
+          local displayName = recipe.displayName or oClass.defaults.displayName or ISExtBuildingObject.defaults.displayName or 'RECIPE ERROR'
+          local option = menu:addOption(getText(displayName), player, ExtBuildingContextMenu.onClickEntry, oClass, recipe)
+          option.toolTip = oClass.makeTooltip(oPlayer, option, recipe, oClass)
+        end
       else
         print(string.format('[ExtBuilding] Entry contains invalid building object class "%s" - SKIPPED', recipe.targetClass or 'nil'))
       end
+
     end
   end
 end

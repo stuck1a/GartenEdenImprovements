@@ -6,7 +6,6 @@ ISWall = ISExtBuildingObject:derive('ISWall')
 
 ISWall.defaults = {
   displayName = 'Wall',
-  craftingBank = 'Hammering',
   properties = { isWallLike = true },
   isoData = { isoName = 'wall' },
   modData = { ['wallType'] = 'wall' }

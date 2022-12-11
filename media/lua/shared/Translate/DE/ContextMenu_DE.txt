@@ -508,7 +508,6 @@ ContextMenu_DE = {
   /** ExtBuilding **/
   ContextMenu_ExtBuilding_Cat__Architecture = "Architektur",
   ContextMenu_ExtBuilding_Cat__Walls = "Wände",
-  ContextMenu_ExtBuilding_Obj__WoodenWall = "Holzwand",
   ContextMenu_ExtBuilding_Obj__WoodenPillar = "Holzsäule",
   ContextMenu_ExtBuilding_Cat__Doors = "Türen",
   ContextMenu_ExtBuilding_Cat__Flooring = "Böden",
