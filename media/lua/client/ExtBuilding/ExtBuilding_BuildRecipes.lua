@@ -1,43 +1,73 @@
-if not ExtBuildingContextMenu then ExtBuildingContextMenu = {} end
-if not ExtBuildingContextMenu.call then
-  ExtBuildingContextMenu.call = function(callback, ...) return callback(...) end
-  setmetatable(ExtBuildingContextMenu, {__call = ExtBuildingContextMenu.call})
-end
+--[[
+TODO [TBD] forceEquip
+  Introduce something like "forceEquip" to differentiate contentMenu order from autoEquip order
+  for required tools/material/wearables? This might be useful especially for welding stuff and such.
+  If will work as it is, too, but to get the usual welding equipment, those use entries must be set before
+  any use entry so the autoEquip algo will equip those instead of the use entries instead.
+  Also, this method would be a bit faster than the autoEquip algo (minor relevance, since it occurs only once when
+  placing the construction).
+  -- If decided to implement this additional feature, then lets use this format:
+  forceEquip = { primary: iIndex|false, secondary: iIndex|false, wearables: [ iIndex, iIndex, ... ] }
+  Where all entries are optional and index means the position in the recipes modData table.
+  If one of them is omitted (or invalid), nothing will be equipped for that location instead.
+  Then we check in tryBuild if we have forceEquip values and use them if so instead of
+  the autoEquip algorithm we currently use.
+  Only if no forceEquip table is given, the autoEquip algo should be used.
+  Also not additionally to fill any gaps, since it might be possible that those gaps are wanted.
+--]]
 
 
 -- SUBMENU ENTRIES:
 --[[
-DisplayNameTranslationString = {
+SubcategoryTranslationStringIdentifier = {
   { ... },
   { ... },
   ...
 }
 --]]
 
--- RECIPE ENTRIES (Basically only targetClass ist mandatory. But there might be another mandatory fields if targetClass is only a generic class for different recipes)
+
+-- RECIPE ENTRIES
 --[[
+-- Basically no value is mandatory. But depending on the targetClass used, there will be some.
+-- The following shows ALL existing fields. Most classes will use only a couple of them and there are also default values
+-- gathered from the targetClass as well as general defaults gathered from the base class ISExtBuildingObject.
+-- If a value does not differ from the default value, it can be omitted.
+-- General defaults will be overwritten by class level defaults which will be overwritten by recipe level values.
 {
-  targetClass = 'ISWoodenContainer',  -- will use 'ISBuildingObject' if not set
-  displayName = 'ContextMenu_ReinforcedBox',
-  buildTime = 500,
-  baseHealth = 1000,
-  mainMaterial = 'wood',
-  breakSound = 'BreakObject',
-  completionSound = 'BuildWoodenStructureMedium',
+  targetClass = 'ISWoodenContainer',    -- will use 'ISBuildingObject' if not set
+  displayName = 'ContextMenu_ReinforcedBox',    -- name which will be used in context menus, toolTips, etc.
+  buildTime = 500,    -- base value for calculating the duration of the build action
+  baseHealth = 1000,    -- base value for calculating the max health value
+  mainMaterial = 'wood',    -- decides which skill lvl determines the extra health (allowed is "wood", "metal", "stone" or "glass")
+  breakSound = 'BreakObject',    -- will be played once, if the construction gets destroyed
+  hasSpecialTooltip = false,    -- Set to true for hover tooltips. This requires a mounted DoSpecialTooltip listener within the given targetClass TODO: Allow dynamic listener mount
+  craftingBank = 'BuildingGeneric',    -- used sound file while performing the build action (it will alternate with tool sounds of the first two tool requirements defined as modData "keep:" entry. It can be used for regular construction sounds as well as "real" crafting bank sounds.
+  completionSound = 'BuildWoodenStructureMedium',    -- will be played once if the construction is completed
+  isoData = {
+    isoName = 'reinforcedbox',    -- defines the internal name, but also the name of the global map object, if targetClass defines any. If a global object has several subtypes (like in "watercollector"), this might be used to differ between those subtypes (like "waterwell", "rainbarrel"). If there are no subtypes, then it can simply use the same value as its systemName (name of the associated global object system, which must be unique and is usually defined on class level)
+    isoType = 'IsoThumpable',    -- The iso object type used for this recipe - influences which Java constructor will be used on object creation
+    objectModDataKeys = { 'waterAmount', 'waterMax', 'addWaterPerAction' },    -- names of the properties which shall be stored for the global map objects
+  },
   sprites = {
-    sprite = 'carpentry_02_17',
-    north = 'carpentry_02_18',
-    south = 'carpentry_02_19',
-    east = 'carpentry_02_20',
-    open = 'carpentry_02_22,
-    corner = 'carpentry_02_21',
-    damaged = 'carpentry_05_17',
+    sprite = 'carpentry_02_17',    -- the base sprite (usually its the west sprite)
+    north = 'carpentry_02_18',    -- if layout differs when placed in north direction. Otherwise the base sprite will be used as well.
+    south = 'carpentry_02_19',     -- if layout differs when placed in south direction. Otherwise the north/base sprite will be used as well.
+    east = 'carpentry_02_20',     -- if layout differs when placed in south direction. Otherwise the base sprite will be used as well.
+    open = 'carpentry_02_22,    -- sprite in "opened" state for things like traps, doors, etc
+    corner = 'carpentry_02_21',    -- edge sprites for wallLike objects
+    damaged = 'carpentry_05_17',    -- Sprite which will be used if the object gets damaged (e.g. by a car)
     },
   },
+  -- can be used to define such properties like canBePlastered, isHoppable, etc. but also for custom properties
+  -- Within the properties table, callback functions might be defined as long as they return a valid value for
+  -- the given property. Such functions will always receive the class object as argument.
   properties = {
-    canBeLockedByPadlock = true
-    myCustomField = myValue  -- of course this makes only sense if the target class will make any use of it as well
+    canBeLockedByPadlock = true    --- one of the vanilla properties - will influence the behaviour
+    myCustomField = myValue    -- of course this makes only sense if the target class will make any use of it as well
   },
+  -- allows additional checks for the isValid function of the given targetClass. Will receive the square object as argument.
+  isValidAddition = function(sq) return sq ~= nil end
   modData = {
     -- any item with tag 'Hammer' will work, but tooltip will display translated name of 'Base.Hammer' only
     ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
@@ -45,10 +75,12 @@ DisplayNameTranslationString = {
     ['need:Base.Plank'] = 8,
     ['need:Base.Nails'] = 12,
     ['need:Base.IronPlate'] = 4,
-    -- any drainable item must use the 'use:" prefix. Value is then the number of uses, not the item count
+    -- any drainable item must use the 'use:" prefix. The value then represents the number of uses, not the item count
     ['use:Base.WeldingStab/MyMod.WeldingStab2'] = 4,
+    -- the skill levels (perks) this recipe requires
     ['requires:Woodwork'] = 2,
     ['requires:MetalWelding'] = 1,
+    -- the gained experience - note that this value will be gained a couple of times while the build action processes.
     ['xp:Woodwork'] = 5,
     ['xp:MetalWelding'] = 5
   }
@@ -56,7 +88,11 @@ DisplayNameTranslationString = {
 --]]
 
 
-
+if not ExtBuildingContextMenu then ExtBuildingContextMenu = {} end
+if not ExtBuildingContextMenu.call then
+  ExtBuildingContextMenu.call = function(callback, ...) return callback(...) end
+  setmetatable(ExtBuildingContextMenu, {__call = ExtBuildingContextMenu.call})
+end
 
 
 ---
@@ -64,77 +100,78 @@ DisplayNameTranslationString = {
 --- to create all submenus and their recipes of the new build menu
 ---
 ExtBuildingContextMenu.BuildingRecipes = {
-
   ContextMenu_ExtBuilding_Cat__Architecture = {
     ContextMenu_ExtBuilding_Cat__Walls = {
-      ContextMenu_ExtBuilding_Cat__WoodenWalls = {
-        {
-          displayName = 'ContextMenu_Wooden_Wall_Frame',
-          targetClass = 'ISWall',
-          tooltipDesc = 'Tooltip_craft_woodenWallFrameDesc',
-          sprites = {
-            sprite = 'carpentry_02_100',
-            northSprite = 'carpentry_02_101',
-            corner = 'walls_exterior_wooden_01_27'
-          },
-          isoData = { isoName = 'WoodenWallFrame' },
-          properties = {
-            canBePlastered = function(o) return getSpecificPlayer(o.player):getPerkLevel(Perks.Woodwork) > 7 end,
-            completionSound = 'BuildWoodenStructureLarge'
-          },
-          modData = {
-            ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
-            ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
-            ['need:Base.Plank'] = 3,
-            ['need:Base.Nails'] = 3,
-            ['requires:Woodwork'] = 2,
-            ['xp:Woodwork'] = 5
-          }
+      {
+        displayName = 'ContextMenu_Wooden_Wall_Frame',
+        targetClass = 'ISWall',
+        tooltipDesc = 'Tooltip_ExtBuilding__WoodenWallFrame',
+        sprites = {
+          sprite = 'carpentry_02_100',
+          northSprite = 'carpentry_02_101',
+          corner = 'walls_exterior_wooden_01_27'
         },
-        -- Holzsäule
-        -- Holztürrahmen
-        -- Baumstammwall
+        isoData = { isoName = 'WoodenWallFrame' },
+        properties = {
+          canBePlastered = function(o) return getSpecificPlayer(o.player):getPerkLevel(Perks.Woodwork) > 7 end,
+          completionSound = 'BuildWoodenStructureLarge'
+        },
+        modData = {
+          ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
+          ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+          ['need:Base.Plank'] = 3,
+          ['need:Base.Nails'] = 3,
+          ['requires:Woodwork'] = 2,
+          ['xp:Woodwork'] = 5
+        }
       },
-      ContextMenu_ExtBuilding_Cat__MetalWalls = {
-        -- Metallwandrahmen
-        -- Metallsäule
-        -- Metalltürrahmen
+      {
+        displayName = 'ContextMenu_Metal_Wall_Frame',
+        targetClass = 'ISWall',
+        tooltipDesc = 'Tooltip_ExtBuilding__MetalWallFrame',
+        sprites = {
+          sprite = 'constructedobjects_01_68',
+          northSprite = 'constructedobjects_01_69',
+          corner = 'constructedobjects_01_51'
+        },
+        isoData = { isoName = 'MetalWallFrame' },
+        properties = {
+          completionSound = 'BuildMetalStructureWallFrame'
+        },
+        modData = {
+          ['keep:' .. utils.concatItemTypes({'WeldingMask'})] = 'Base.WeldingMask',
+          ['use:Base.BlowTorch'] = 8,
+          ['use:Base.WeldingRods'] = 4,
+          ['need:Base.MetalBar']= 3,
+          ['requires:Welding'] = 3,
+          ['xp:MetalWelding'] = 20,
+        }
       },
-      ContextMenu_ExtBuilding_Cat__StoneWalls = {
-        -- Steinwand
-        -- Steinsäule
-        -- Steintürrahmen
-      },
-      ContextMenu_ExtBuilding_Cat__GlasWalls = {
-        -- Vollglaswand
-        -- Panoramaglaswand
-        -- Schaufenster
-      },
+      -- Steinwand
+      -- Vollglaswand
+      -- Panoramaglaswand
+      -- Baumstammwall
+      -- Holzsäule
+      -- Metallsäule
+      -- Steinsäule
+      -- Holztürrahmen
+      -- Metalltürrahmen
+      -- Steintürrahmen
     },
     ContextMenu_ExtBuilding_Cat__Doors = {
-      ContextMenu_ExtBuilding_Cat__WoodenDoors = {
-        -- Holztür
-        -- Holztor
-        -- Baumstammtor
+      -- Holztür
+      -- Metalltür
+      -- Eisenstangentür
+      -- Holztor
+      -- Baumstammtor
+      -- Eisenstangen-Tor
+      -- Maschendrahtzaun-Tor
+      -- Sicherheitstür
       },
-      ContextMenu_ExtBuilding_Cat__MetalDoors = {
-        -- Metalltür
-        -- Sicherheitstür
-        -- Eisenstangentür
-        -- Eisenstangen-Tor
-        -- Maschendrahtzaun-Tor
-      },
-    },
     ContextMenu_ExtBuilding_Cat__Flooring = {
-      ContextMenu_ExtBuilding_Cat__WoodenFlooring = {
-        -- Holzboden
-      },
-      ContextMenu_ExtBuilding_Cat__MetalFlooring = {
-        -- Metallboden
-      },
-      ContextMenu_ExtBuilding_Cat__StoneFlooring = {
-        -- Steinboden
-      },
+      -- Holzboden
+      -- Metallboden
+      -- Steinboden
     },
     ContextMenu_ExtBuilding_Cat__Roofing = {
       -- Dachschindeln
@@ -172,38 +209,26 @@ ExtBuildingContextMenu.BuildingRecipes = {
       -- Lowboard
     },
     ContextMenu_ExtBuilding_Cat__Bars = {
-      ContextMenu_ExtBuilding_Cat__WoodenBars = {
         -- Holztheke
         -- Holzecktheke
-      },
-      ContextMenu_ExtBuilding_Cat__MetalBars = {
         -- Metalltheke
         -- Metallecktheke
-      },
     },
     ContextMenu_ExtBuilding_Cat__Dressers = {
       -- Holzkommode
     },
     ContextMenu_ExtBuilding_Cat__Shelves = {
-      ContextMenu_ExtBuilding_Cat__WoodenShelves = {
-        -- Einfaches Holzregal
-        -- Doppeltes Holzregal
-        -- Kleines Bücherregal
-        -- Großes Bücherregal
-      },
-      ContextMenu_ExtBuilding_Cat__MetalShelves = {
-        -- Metallregal
-      },
+      -- Einfaches Holzregal
+      -- Doppeltes Holzregal
+      -- Kleines Bücherregal
+      -- Großes Bücherregal
+      -- Metallregal
     },
     ContextMenu_ExtBuilding_Cat__Cabinets = {
-      ContextMenu_ExtBuilding_Cat__WoodenCabinets = {
-        -- Wohnzimmerschrank
-        -- Kleiderschrank
-      },
-      ContextMenu_ExtBuilding_Cat__MetalCabinets = {
-        -- Spind
-        -- Werkzeugschrank
-      },
+      -- Wohnzimmerschrank
+      -- Kleiderschrank
+      -- Spind
+      -- Werkzeugschrank
     },
     ContextMenu_ExtBuilding_Cat__Beds = {
       -- Einzelbett

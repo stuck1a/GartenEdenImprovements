@@ -8,8 +8,8 @@ ISWaterCollector = ISExtBuildingObject:derive('ISWaterCollector')
 ISWaterCollector.defaults = {
   hasSpecialTooltip = true,
   isoData = {
-    isoName = 'watercollector',    -- used as fallback name for the iso object
-    systemName = 'watercollector',    -- used as name for the map object system
+    isoName = 'watercollector',
+    systemName = 'watercollector',
     objectModDataKeys = { 'waterAmount', 'waterMax', 'addWaterPerAction' },
   },
   properties = {

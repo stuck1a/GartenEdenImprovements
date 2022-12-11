@@ -12,13 +12,13 @@ ISExtBuildingObject.defaults = {
   displayName = 'Unnamed',
   buildTime = 200,
   baseHealth = 200,
-  mainMaterial = 'wood',    -- decides which skill lvl determines the extra health (allowed is "wood", "metal", "stone" or "glass")
+  mainMaterial = 'wood',
   hasSpecialTooltip = false,
   breakSound = 'BreakObject',
-  craftingBank = 'BuildingGeneric',    -- used sound file while performing the build action (it will alternate with tool sounds of the first two tool requirements defined as modData "keep:" entry. It can be used for regular construction sounds as well as "real" crafting bank sounds.
+  craftingBank = 'BuildingGeneric',
   sprites = { sprite = 'invisible_01_0' },
   isoData = {
-    isoName = 'unnamed',    -- defines the name of the global map object instance, if any. If a global object has several subtypes (like in "watercollector"), this might be used to differ between those subtypes (like "waterwell", "rainbarrel"). If there are no subtypes, then it can simply use the same value as its systemName (name of the associated global object system, which must be unique)
+    isoName = 'unnamed',
     isoType = 'IsoThumpable',
     mapObjectPriority = 7
   },
@@ -299,8 +299,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local oPlayer = getSpecificPlayer(self.player)
   local oInv = oPlayer:getInventory()
   local grabTime, fromGround = 50, false
-  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material
-  local sqConstructionSite
+  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material, sqConstructionSite
   if self.isWallLike then
     sqConstructionSite = getAdjustedSquareForConstructionSite(oPlayer, x, y, z, square, self.west)
     else
@@ -390,8 +389,8 @@ function ISExtBuildingObject:tryBuild(x, y, z)
           if fromGround then
             ISTimedActionQueue.add(ISGrabItemAction:new(oPlayer, material:getWorldItem(), grabTime))
           end
-          -- FIXME: Does not work yet
-          ISInventoryPaneContextMenu.equipWeapon(material, false, false, self.player)
+          -- TODO: Test whether one of this works as excepted
+          ISTimedActionQueue.add(ISEquipWeaponAction:new(oPlayer, material, 25, false))
         end
       end
       local selfCopy = copyTable(self)
