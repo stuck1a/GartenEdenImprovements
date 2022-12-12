@@ -196,6 +196,9 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   self.actionAnim = settings.actionAnim
   self.craftingBank = settings.craftingBank
   self.isValidAddition = settings.isValidAddition
+  if type(settings.sprites) == 'function' then
+    self.sprites = settings.sprites(getSpecificPlayer(self.player))
+  end
   if settings.overwriteTool1Model then self.overwriteTool1Model = settings.overwriteTool1Model end
   if settings.overwriteTool2Model then self.overwriteTool2Model = settings.overwriteTool2Model end
   self:setSprite(settings.sprites.sprite)
@@ -575,6 +578,7 @@ function ISExtBuildingObject.makeTooltip(oPlayer, option, recipe, targetClass)
   local getText,split,getItemName,stringStarts,format,merge = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format,ISExtBuildingObject.merge
   local oInv = oPlayer:getInventory()
   local settings = merge(merge(ISExtBuildingObject.defaults, targetClass.defaults), recipe)
+  if type(settings.sprites) == 'function' then self.sprites = settings.sprites(oPlayer) end
   toolTip:initialise()
   toolTip:setName(option.name)
   toolTip:setTexture(settings.sprites.sprite)

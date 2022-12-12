@@ -50,10 +50,7 @@ end
 --- @return boolean True, if building can be placed on current target square
 ---
 function ISWall:isValid(square)
-  -- check additional isValid callbacks, if any
-  if self.isValidAddition ~= nil then
-    if not self.isValidAddition(square) then return false end
-  end
+  if self.isValidAddition ~= nil then if not self.isValidAddition(square) then return false end end
   if not self:haveMaterial(square) then return false end
   if isClient() and SafeHouse.isSafeHouse(square, getSpecificPlayer(self.player):getUsername(), true) then return false end
   if square:isVehicleIntersecting() then return false end

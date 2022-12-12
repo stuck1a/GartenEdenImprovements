@@ -5,6 +5,7 @@ ISStair = ISExtBuildingObject:derive('ISStair')
 
 
 ISStair.defaults = {
+  buildTime = 1000,
   baseHealth = 500,
   displayName = 'Stair',
   isoData = { isoName = 'stair' },

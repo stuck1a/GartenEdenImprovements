@@ -182,7 +182,32 @@ ExtBuildingContextMenu.BuildingRecipes = {
       -- Sicherheitstür
       },
     ContextMenu_ExtBuilding_Cat__Flooring = {
-      -- Holzboden
+      {
+        displayName = 'ContextMenu_Wooden_Floor',
+        targetClass = 'ISFloor',
+        tooltipDesc = 'Tooltip_craft_woodenFloorDesc',
+        sprites = function(oPlayer)
+          local lvl = oPlayer:getPerkLevel(Perks.Woodwork)
+            if lvl > 3 then
+              return { sprite = 'carpentry_02_57', northSprite = 'carpentry_02_57' }
+            elseif lvl > 5 then
+              return { sprite = 'carpentry_02_58', northSprite = 'carpentry_02_58' }
+            else
+              return { sprite = 'carpentry_02_56', northSprite = 'carpentry_02_56' }
+            end
+          end,
+        isoData = { isoName = 'woodenfloor' },
+        properties = {
+          completionSound = 'BuildWoodenStructureMedium'
+        },
+        modData = {
+          ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
+          ['need:Base.Plank'] = 1,
+          ['need:Base.Nails'] = 1,
+          ['requires:Woodwork'] = 2,
+          ['xp:Woodwork'] = 5
+        }
+      },
       -- Metallboden
       -- Steinboden
     },
@@ -207,9 +232,9 @@ ExtBuildingContextMenu.BuildingRecipes = {
     },
     ContextMenu_ExtBuilding_Cat__Stairs = {
       {
-        displayName = 'ContextMenu_Stairs',
+        displayName = 'ContextMenu_ExtBuilding_Obj__WoodenStair',
         targetClass = 'ISStair',
-        tooltipDesc = 'Tooltip_craft_stairsDesc',
+        tooltipDesc = 'Tooltip_ExtBuilding__WoodenStair',
         completionSound = 'BuildWoodenStructureLarge',
         sprites = {
           sprite = 'carpentry_02_88',

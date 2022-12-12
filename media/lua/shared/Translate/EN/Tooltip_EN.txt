@@ -206,4 +206,7 @@ Tooltip_EN = {
   Tooltip_ExtBuilding__WoodenWallFrame = "Basis for a robust wall. <LINE> Must be upgraded to a solid wall before it offers protection, but can be reinforced with plaster and painted if the frame is boarded with wood and fully developed.",
   Tooltip_ExtBuilding__MetalWallFrame = "Basis for a very robust wall. <LINE> Has the same advantages and disadvantages like a wooden wall frame, but is even more stable.",
   Tooltip_ExtBuilding__WaterWell = "An almost inexhaustible source of water. <LINE> Provides potable groundwater which is so pure that even contaminated rain won't taint it. <LINE> <SETX:10> - "be water my friend"",
+  Tooltip_ExtBuilding__WoodenStair = "A wooden stair.",
+  Tooltip_ExtBuilding__StoneStair = "A fireproof staircase made of plastered bricks.",
+  Tooltip_ExtBuilding__StoneStair = "A metal stair. Relatively fireproof, but over time the metal will soften and succumb to the fire."
 }
