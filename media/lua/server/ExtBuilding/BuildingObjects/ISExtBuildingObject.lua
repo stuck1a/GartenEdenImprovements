@@ -225,34 +225,41 @@ end
 ---
 --- Java ISO object constructor - called after completed build action
 --- @param x number Target cell X coordinate (goes from north to south)
---- @param y number Target cell Y coordinate (goes from west to east)
+--- @param y number Target cell Y coordinate (goes from east to west)
 --- @param z number Target cell level (0 = surface, 7 = highest possible layer)
 --- @param north boolean Whether a north sprite was chosen
 --- @param sprite string Name of the chosen sprite
+--- @param skipConstructor boolean If true, no object is created yet so it's up to the child class
 ---
-function ISExtBuildingObject:create(x, y, z, north, sprite)
+function ISExtBuildingObject:create(x, y, z, north, sprite, skipConstructor)
   local cell = getWorld():getCell()
   self.sq = cell:getGridSquare(x, y, z)
   -- buildings objects which can be opened/closed will use an overloaded constructor
   if self.openSprite ~= nil then
     local openSprite = self.openSprite
     if north then openSprite = self.openNorthSprite end
-    self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, openSprite, north, self)
+    if skipConstructor == nil then
+      self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, openSprite, north, self)
+    end
   else
-    self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, north, self)
+    if skipConstructor == nil then
+      self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, north, self)
+    end
   end
-  buildUtil.setInfo(self.javaObject, self)
   buildUtil.consumeMaterial(self)
+  if skipConstructor == nil then
+  buildUtil.setInfo(self.javaObject, self)
   self.javaObject:setMaxHealth(self:getHealth(self.mainMaterial, self.baseHealth))
   self.javaObject:setHealth(self.javaObject:getMaxHealth())
   self.javaObject:setBreakSound(self.breakSound)
   self.javaObject:setThumpSound(self.thumpSound)
   self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
-  local objIndex = self:getObjectIndex()
-  if objIndex ~= nil then
-    self.sq:AddSpecialObject(self.javaObject, objIndex)
-  else
-    self.sq:AddSpecialObject(self.javaObject)
+    local objIndex = self:getObjectIndex()
+    if objIndex ~= nil then
+      self.sq:AddSpecialObject(self.javaObject, objIndex)
+    else
+      self.sq:AddSpecialObject(self.javaObject)
+    end
   end
 end
 
@@ -324,7 +331,7 @@ function ISExtBuildingObject:isValid(square)
   end
   -- check additional isValid callbacks, if any
   if self.isValidAddition ~= nil then
-    if not self.isValidAddition(square) then return false end
+    if not self.isValidAddition(self, square) then return false end
   end
   -- not occupied by a solid structure
   if square:isSolid() or square:isSolidTrans() then return false end

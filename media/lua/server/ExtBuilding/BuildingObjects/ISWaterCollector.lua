@@ -24,7 +24,7 @@ ISWaterCollector.registeredRecipes = {}
 ---
 --- Java object constructor - initializes and places a completed water collector
 --- @param x number Target cell X coordinate (goes from north to south)
---- @param y number Target cell Y coordinate (goes from west to east)
+--- @param y number Target cell Y coordinate (goes from east to west)
 --- @param z number Target cell level (0 = surface, 7 = highest possible layer)
 --- @param north boolean Whether the north sprite was chosen
 --- @param sprite string Name of the chosen sprite

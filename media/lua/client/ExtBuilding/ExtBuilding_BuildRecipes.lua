@@ -55,8 +55,8 @@ SubcategoryTranslationStringIdentifier = {
     canBeLockedByPadlock = true    --- one of the vanilla properties as an example - will influence the behaviour/functionality
     myCustomField = myValue    -- of course this makes only sense if the target class will make any use of it as well
   },
-  -- Allows additional checks for the isValid function of the given targetClass. Will receive the square object as argument.
-  isValidAddition = function(sq) return sq ~= nil end
+  -- Allows additional checks for the isValid function of the given targetClass. Will receive the class object (self) and the square object as argument.
+  isValidAddition = function(this, sq) return sq ~= nil end
   -- forceEquip can be used, to specify, which tools/wearables/materials should be equipped (will also influence toolSound1 and toolSound2)
   -- The values must match the keys of the target modData entries.
   -- If forceEquip is used, no automatic selection will be done, so if one is omitted or invalid, this slot will be ignored.
@@ -206,7 +206,33 @@ ExtBuildingContextMenu.BuildingRecipes = {
       -- Stacheldrahtzaun
     },
     ContextMenu_ExtBuilding_Cat__Stairs = {
-      -- Holztreppe
+      {
+        displayName = 'ContextMenu_Stairs',
+        targetClass = 'ISStair',
+        tooltipDesc = 'Tooltip_craft_stairsDesc',
+        completionSound = 'BuildWoodenStructureLarge',
+        sprites = {
+          sprite = 'carpentry_02_88',
+          northSprite = 'carpentry_02_96'
+        },
+        isoData = { isoName = 'WoodenStair' },
+        properties = {
+          sprite2 = 'carpentry_02_89',
+          sprite3 = 'carpentry_02_90',
+          northSprite2 = 'carpentry_02_97',
+          northSprite3 = 'carpentry_02_98',
+          pillar = 'carpentry_02_94',
+          pillarNorth = 'carpentry_02_95'
+        },
+        modData = {
+          ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
+          ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+          ['need:Base.Plank'] = 15,
+          ['need:Base.Nails'] = 30,
+          ['requires:Woodwork'] = 6,
+          ['xp:Woodwork'] = 5
+        }
+      },
       -- Steintreppe
       -- Metalltreppe
     },
@@ -263,7 +289,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       mainMaterial = 'stone',
       completionSound = 'BuildFenceCairn',
       isoData = { isoName = 'waterwell' },
-      isValidAddition = function(sq)
+      isValidAddition = function(_, sq)
         if sq:getZ() ~= 0 then return false end
         -- tile must have any exterior, natural ground (except water) - shovelled or not
         local props = sq:getProperties()
