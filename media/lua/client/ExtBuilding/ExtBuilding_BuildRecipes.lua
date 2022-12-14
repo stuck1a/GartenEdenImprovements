@@ -199,12 +199,12 @@ ExtBuildingContextMenu.BuildingRecipes = {
         completionSound = 'BuildWoodenStructureMedium',
         sprites = function(oPlayer)
           local lvl = oPlayer:getPerkLevel(Perks.Woodwork)
-            if lvl > 3 then
-              return { sprite = 'carpentry_02_57' }
-            elseif lvl > 5 then
-              return { sprite = 'carpentry_02_58' }
-            else
+            if lvl > 5 then
               return { sprite = 'carpentry_02_56' }
+            elseif lvl > 3 then
+              return { sprite = 'carpentry_02_57' }
+            else
+              return { sprite = 'carpentry_02_58' }
             end
           end,
         isoData = { isoName = 'woodenfloor' },

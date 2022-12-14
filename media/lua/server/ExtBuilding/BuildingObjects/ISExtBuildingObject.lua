@@ -196,19 +196,24 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   self.actionAnim = settings.actionAnim
   self.craftingBank = settings.craftingBank
   self.isValidAddition = settings.isValidAddition
+
+  local sprites
   if type(settings.sprites) == 'function' then
-    self.sprites = settings.sprites(getSpecificPlayer(self.player))
+    sprites = settings.sprites(getSpecificPlayer(self.player))
+  else
+    sprites = settings.sprites
   end
+
   if settings.overwriteTool1Model then self.overwriteTool1Model = settings.overwriteTool1Model end
   if settings.overwriteTool2Model then self.overwriteTool2Model = settings.overwriteTool2Model end
-  self:setSprite(settings.sprites.sprite)
-  self:setNorthSprite(settings.sprites.northSprite or settings.sprites.sprite)
-  if settings.sprites.east then self:setEastSprite(settings.sprites.east) end
-  if settings.sprites.south then self:setSouthSprite(settings.sprites.south) end
-  if settings.sprites.corner then self.corner = settings.sprites.corner end
-  if settings.sprites.openSprite or settings.sprites.openNorthSprite then
-    self.openSprite = settings.sprites.openSprite or settings.sprites.openNorthSprite
-    self.openNorthSprite = settings.sprites.openNorthSprite or settings.sprites.openSprite
+  self:setSprite(sprites.sprite)
+  self:setNorthSprite(sprites.northSprite or sprites.sprite)
+  if sprites.east then self:setEastSprite(sprites.east) end
+  if sprites.south then self:setSouthSprite(sprites.south) end
+  if sprites.corner then self.corner = sprites.corner end
+  if sprites.openSprite or sprites.openNorthSprite then
+    self.openSprite = sprites.openSprite or sprites.openNorthSprite
+    self.openNorthSprite = sprites.openNorthSprite or sprites.openSprite
   end
   if settings.properties then
     for k,v in pairs(settings.properties) do
@@ -381,14 +386,6 @@ function ISExtBuildingObject:tryBuild(x, y, z)
       if sqConstructionSite then
         sqConstructionSite:AddSpecialTileObject(isoTile)
         isoTile:transmitCompleteItemToServer()
-
-
-
-
-
-
-
-
         ISExtBuildingObject.constructionSites[oPlayer] = isoTile
       end
     end
@@ -578,10 +575,15 @@ function ISExtBuildingObject.makeTooltip(oPlayer, option, recipe, targetClass)
   local getText,split,getItemName,stringStarts,format,merge = getText,luautils.split,getItemNameFromFullType,luautils.stringStarts,string.format,ISExtBuildingObject.merge
   local oInv = oPlayer:getInventory()
   local settings = merge(merge(ISExtBuildingObject.defaults, targetClass.defaults), recipe)
-  if type(settings.sprites) == 'function' then self.sprites = settings.sprites(oPlayer) end
+  local sprite
+  if type(settings.sprites) == 'function' then
+    sprite = (settings.sprites(oPlayer)).sprite
+  else
+    sprite = settings.sprites.sprite
+  end
   toolTip:initialise()
   toolTip:setName(option.name)
-  toolTip:setTexture(settings.sprites.sprite)
+  toolTip:setTexture(sprite)
   local desc = ' <LEFT> ' .. getText(settings.tooltipDesc or '') .. ' <BR> '
   if settings.modData ~= nil then
     -- required skills
