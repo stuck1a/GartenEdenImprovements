@@ -76,7 +76,7 @@ local function getAdjustedSquareForConstructionSite(plr, x, y, z, square, west)
 end
 
 
-
+-- TODO: Check, whether this makes problems when more than one player is building sth at the same time or not
 ---
 --- Listener for player update event - removes construction site if necessary
 --- @param oPlayer IsoPlayer Target player object
@@ -675,7 +675,3 @@ function ISExtBuildingObject.makeTooltip(oPlayer, option, recipe, targetClass)
   end
   return toolTip
 end
-
-
-
-LuaEventManager.AddEvent('ExtBuildEvent')

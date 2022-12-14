@@ -99,6 +99,18 @@ end
 
 
 
+-- Some precalculated, often used values to increase performance
+local luautils = luautils
+local IsoFlagType = IsoFlagType
+local weldingRodUses = ISBlacksmithMenu.weldingRodUses
+local utils = utils
+local Perks = Perks
+local sHammerTag = utils.concatItemTypes({'Hammer'})
+local sSawTag = utils.concatItemTypes({'Saw'})
+local sWeldingMaskTag = utils.concatItemTypes({'WeldingMask'})
+
+
+
 ---
 --- This table will be used in ExtBuilding_ContextMenu.lua
 --- to create all submenus and their recipes of the new build menu
@@ -122,8 +134,8 @@ ExtBuildingContextMenu.BuildingRecipes = {
           completionSound = 'BuildWoodenStructureLarge'
         },
         modData = {
-          ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
-          ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+          ['keep:' .. sHammerTag] = 'Base.Hammer',
+          ['keep:' .. sSawTag] = 'Base.Saw',
           ['need:Base.Plank'] = 3,
           ['need:Base.Nails'] = 3,
           ['requires:Woodwork'] = 2,
@@ -137,27 +149,25 @@ ExtBuildingContextMenu.BuildingRecipes = {
         tooltipDesc = 'Tooltip_ExtBuilding__MetalWallFrame',
         actionAnim = 'BlowTorchMid',
         thumpSound = 'ZombieThumpMetal',
+        completionSound = 'BuildMetalStructureWallFrame',
         sprites = {
           sprite = 'constructedobjects_01_68',
           northSprite = 'constructedobjects_01_69',
           corner = 'constructedobjects_01_51'
         },
         isoData = { isoName = 'MetalWallFrame' },
-        properties = {
-          completionSound = 'BuildMetalStructureWallFrame'
-        },
         modData = {
-          ['keep:' .. utils.concatItemTypes({'WeldingMask'})] = 'Base.WeldingMask',
+          ['keep:' .. sWeldingMaskTag] = 'Base.WeldingMask',
           ['need:Base.MetalBar']= 3,
           ['use:Base.BlowTorch'] = 8,
-          ['use:Base.WeldingRods'] = 4,
+          ['use:Base.WeldingRods'] = weldingRodUses(8),
           ['requires:MetalWelding'] = 3,
           ['xp:MetalWelding'] = 20,
         },
         forceEquip = {
           ['tool1'] = 'use:Base.BlowTorch',
           ['tool2'] = 'use:Base.WeldingRods',
-          ['wearable'] = 'keep:' .. utils.concatItemTypes({'WeldingMask'})
+          ['wearable'] = 'keep:' .. sWeldingMaskTag
         }
       },
       -- Steinwand
@@ -186,30 +196,57 @@ ExtBuildingContextMenu.BuildingRecipes = {
         displayName = 'ContextMenu_Wooden_Floor',
         targetClass = 'ISFloor',
         tooltipDesc = 'Tooltip_craft_woodenFloorDesc',
+        completionSound = 'BuildWoodenStructureMedium',
         sprites = function(oPlayer)
           local lvl = oPlayer:getPerkLevel(Perks.Woodwork)
             if lvl > 3 then
-              return { sprite = 'carpentry_02_57', northSprite = 'carpentry_02_57' }
+              return { sprite = 'carpentry_02_57' }
             elseif lvl > 5 then
-              return { sprite = 'carpentry_02_58', northSprite = 'carpentry_02_58' }
+              return { sprite = 'carpentry_02_58' }
             else
-              return { sprite = 'carpentry_02_56', northSprite = 'carpentry_02_56' }
+              return { sprite = 'carpentry_02_56' }
             end
           end,
         isoData = { isoName = 'woodenfloor' },
-        properties = {
-          completionSound = 'BuildWoodenStructureMedium'
-        },
         modData = {
-          ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
+          ['keep:' .. sHammerTag] = 'Base.Hammer',
           ['need:Base.Plank'] = 1,
           ['need:Base.Nails'] = 1,
           ['requires:Woodwork'] = 2,
           ['xp:Woodwork'] = 5
         }
       },
-      -- Metallboden
-      -- Steinboden
+      {
+        displayName = 'ContextMenu_Metal_Floor',
+        targetClass = 'ISFloor',
+        mainMaterial = 'metal',
+        completionSound = 'BuildMetalStructureSmallScrap',
+        tooltipDesc = 'Tooltip_ExtBuilding__Metal_Floor',
+        sprites = { sprite = 'constructedobjects_01_86' },
+        isoData = { isoName = 'metalfloor' },
+        modData = {
+          ['need:Base.SmallSheetMetal'] = 1,
+          ['need:Base.ScrapMetal'] = 1,
+          ['use:Base.BlowTorch'] = 2,
+          ['use:Base.WeldingRods'] = weldingRodUses(2),
+          ['xp:MetalWelding'] = 5
+        },
+      },
+      {
+        displayName = 'ContextMenu_Stone_Floor',
+        targetClass = 'ISFloor',
+        mainMaterial = 'stone',
+        craftingBank = 'StoneHammerBreak',
+        completionSound = 'StoneHammerSwing',
+        tooltipDesc = 'Tooltip_ExtBuilding__Stone_Floor',
+        sprites = { sprite = 'floors_exterior_tilesandstone_01_05' },
+        isoData = { isoName = 'stonefloor' },
+        modData = {
+          ['keep:' .. sHammerTag] = 'Base.Hammer',
+          ['need:Base.Stone'] = 2,
+          --['xp:Masonry'] = 5
+        },
+      },
     },
     ContextMenu_ExtBuilding_Cat__Roofing = {
       -- Dachschindeln
@@ -250,8 +287,8 @@ ExtBuildingContextMenu.BuildingRecipes = {
           pillarNorth = 'carpentry_02_95'
         },
         modData = {
-          ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
-          ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+          ['keep:' .. sHammerTag] = 'Base.Hammer',
+          ['keep:' .. sSawTag] = 'Base.Saw',
           ['need:Base.Plank'] = 15,
           ['need:Base.Nails'] = 30,
           ['requires:Woodwork'] = 6,
@@ -313,6 +350,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       baseHealth = 600,
       mainMaterial = 'stone',
       completionSound = 'BuildFenceCairn',
+      craftingBank = 'Shoveling',
       isoData = { isoName = 'waterwell' },
       isValidAddition = function(_, sq)
         if sq:getZ() ~= 0 then return false end
@@ -339,11 +377,11 @@ ExtBuildingContextMenu.BuildingRecipes = {
         end
         return true
       end,
-      properties = { waterAmount = 50, waterMax = 5000, addWaterPerAction = 5, craftingBank = 'Shoveling' },
+      properties = { waterAmount = 50, waterMax = 5000, addWaterPerAction = 5 },
       sprites = { sprite = 'garteneden_tech_01_0', northSprite = 'garteneden_tech_01_1' },
       modData = {
-        ['keep:' .. utils.concatItemTypes({'Hammer'})] = 'Base.Hammer',
-        ['keep:' .. utils.concatItemTypes({'Saw'})] = 'Base.Saw',
+        ['keep:' .. sHammerTag] = 'Base.Hammer',
+        ['keep:' .. sSawTag] = 'Base.Saw',
         ['keep:' .. utils.concatItemTypes({'DigGrave'})] = 'Base.Shovel',
         ['need:Base.Rope'] = 5,
         ['need:Base.Plank'] = 4,
