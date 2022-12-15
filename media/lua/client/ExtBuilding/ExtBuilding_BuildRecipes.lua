@@ -37,6 +37,9 @@ SubcategoryTranslationStringIdentifier = {
     isoType = 'IsoThumpable',    -- The iso object type used for this recipe - influences which Java constructor will be used on object creation
     objectModDataKeys = { 'waterAmount', 'waterMax', 'addWaterPerAction' },    -- names of the properties which shall be stored for the global map objects
   },
+  -- sprites also support callbacks (e.g. for skill level dependencies.
+  -- If sprites is a callback function, it will receive the player object as argument and the result
+  -- must be a table which at least contains the entry sprite = 'mySpritesheet_XX_X'
   sprites = {
     sprite = 'carpentry_02_17',    -- the base sprite (usually its the west sprite)
     north = 'carpentry_02_18',    -- if layout differs when placed in north direction. Otherwise the base sprite will be used as well.
@@ -102,7 +105,7 @@ end
 -- Some precalculated, often used values to increase performance
 local luautils = luautils
 local IsoFlagType = IsoFlagType
-local weldingRodUses = ISBlacksmithMenu.weldingRodUses
+local weldingRodUses = function(torchUses) return math.floor((torchUses + 0.1) / 2) end
 local utils = utils
 local Perks = Perks
 local sHammerTag = utils.concatItemTypes({'Hammer'})

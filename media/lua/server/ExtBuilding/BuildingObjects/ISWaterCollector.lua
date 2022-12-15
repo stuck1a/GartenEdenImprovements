@@ -102,10 +102,10 @@ Events.DoSpecialTooltip.Add(DoSpecialTooltip)
 
 
 
-if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
+
+if not isServer() then
   require 'Map/CGlobalObjectSystem'
   require 'Map/CGlobalObject'
-
 
   --- @class CWaterCollectorSystem : CGlobalObjectSystem
   CWaterCollectorSystem = CGlobalObjectSystem:derive('CWaterCollectorSystem')
@@ -485,7 +485,7 @@ local function registerWaterCollectors(recipes)
       if v.targetClass == nil and type(v) == 'table' then
         registerWaterCollectors(v)
       elseif v.targetClass == 'ISWaterCollector' then
-        if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
+        if not isClient() then
           local sprite = v.sprites.sprite or ISWaterCollector.defaults.sprites.sprite or ISExtBuildingObject.defaults.sprites.sprite
           local priority = v.isoData.mapObjectPriority or ISWaterCollector.defaults.isoData.mapObjectPriority or ISExtBuildingObject.defaults.isoData.mapObjectPriority
           MapObjects.OnLoadWithSprite(sprite, loadGlobalObject, priority)
