@@ -108,7 +108,7 @@ local Perks = Perks
 local sHammerTag = utils.concatItemTypes({'Hammer'})
 local sSawTag = utils.concatItemTypes({'Saw'})
 local sWeldingMaskTag = utils.concatItemTypes({'WeldingMask'})
-
+local tWeldEquipment = { ['tool1'] = 'use:Base.BlowTorch', ['tool2'] = 'use:Base.WeldingRods', ['wearable'] = 'keep:' .. sWeldingMaskTag }
 
 
 ---
@@ -123,6 +123,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
         targetClass = 'ISWall',
         overwriteTool2Model = 'Plank',
         tooltipDesc = 'Tooltip_ExtBuilding__WoodenWallFrame',
+        completionSound = 'BuildWoodenStructureLarge',
         sprites = {
           sprite = 'carpentry_02_100',
           northSprite = 'carpentry_02_101',
@@ -130,8 +131,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
         },
         isoData = { isoName = 'WoodenWallFrame' },
         properties = {
-          canBePlastered = function(o) return getSpecificPlayer(o.player):getPerkLevel(Perks.Woodwork) > 7 end,
-          completionSound = 'BuildWoodenStructureLarge'
+          canBePlastered = function(o) return getSpecificPlayer(o.player):getPerkLevel(Perks.Woodwork) > 7 end
         },
         modData = {
           ['keep:' .. sHammerTag] = 'Base.Hammer',
@@ -164,11 +164,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
           ['requires:MetalWelding'] = 3,
           ['xp:MetalWelding'] = 20,
         },
-        forceEquip = {
-          ['tool1'] = 'use:Base.BlowTorch',
-          ['tool2'] = 'use:Base.WeldingRods',
-          ['wearable'] = 'keep:' .. sWeldingMaskTag
-        }
+        forceEquip = tWeldEquipment
       },
       -- Steinwand
       -- Vollglaswand
@@ -222,15 +218,19 @@ ExtBuildingContextMenu.BuildingRecipes = {
         mainMaterial = 'metal',
         completionSound = 'BuildMetalStructureSmallScrap',
         tooltipDesc = 'Tooltip_ExtBuilding__Metal_Floor',
+        requiresRecipe = 'Make Metal Roof',
+        actionAnim = 'BlowTorchFloor',
         sprites = { sprite = 'constructedobjects_01_86' },
         isoData = { isoName = 'metalfloor' },
         modData = {
+          ['keep:' .. sWeldingMaskTag] = 'Base.WeldingMask',
           ['need:Base.SmallSheetMetal'] = 1,
           ['need:Base.ScrapMetal'] = 1,
           ['use:Base.BlowTorch'] = 2,
           ['use:Base.WeldingRods'] = weldingRodUses(2),
           ['xp:MetalWelding'] = 5
         },
+        forceEquip = tWeldEquipment
       },
       {
         displayName = 'ContextMenu_Stone_Floor',
@@ -338,7 +338,26 @@ ExtBuildingContextMenu.BuildingRecipes = {
     },
   },
   ContextMenu_ExtBuilding_Cat__Container = {
-    -- Holzkiste
+    {
+      displayName = 'ContextMenu_Wooden_Crate',
+      targetClass = 'ISCrate',
+      overwriteTool2Model = 'Plank',
+      completionSound = 'BuildWoodenStructureMedium',
+      tooltipDesc = 'Tooltip_craft_woodenCrateDesc',
+      sprites = function(oPlayer)
+        local lvl = oPlayer:getPerkLevel(Perks.Woodwork)
+        if lvl > 5 then return { sprite = 'carpentry_01_19' } else return { sprite = 'carpentry_01_16' } end
+      end,
+      isoData = { isoName = 'Wooden Crate' },
+      modData = {
+        ['keep:' .. sHammerTag] = 'Base.Hammer',
+        ['keep:' .. sSawTag] = 'Base.Saw',
+        ['need:Base.Plank'] = 3,
+        ['need:Base.Nails'] = 3,
+        ['requires:Woodwork'] = 3,
+        ['xp:Woodwork'] = 3
+      }
+    },
     -- Metallkiste
   },
   ContextMenu_ExtBuilding_Cat__Technology = {
@@ -392,7 +411,8 @@ ExtBuildingContextMenu.BuildingRecipes = {
         ['requires:Woodwork'] = 7,
         ['requires:Fitness'] = 5,
         ['xp:Woodwork'] = 5,
-        ['xp:Fitness'] = 5
+        ['xp:Fitness'] = 5,
+        --['xp:Masonry'] = 15
       }
     },
     -- Generator

@@ -237,31 +237,29 @@ end
 --- @param z number Target cell level (0 = surface, 7 = highest possible layer)
 --- @param north boolean Whether a north sprite was chosen
 --- @param sprite string Name of the chosen sprite
---- @param skipConstructor boolean If true, no object is created yet so it's up to the child class
+--- @param skipConstructor boolean|nil If true, no object is created yet so it's up to the child class
 ---
 function ISExtBuildingObject:create(x, y, z, north, sprite, skipConstructor)
   local cell = getWorld():getCell()
   self.sq = cell:getGridSquare(x, y, z)
-  -- buildings objects which can be opened/closed will use an overloaded constructor
-  if self.openSprite ~= nil then
-    local openSprite = self.openSprite
-    if north then openSprite = self.openNorthSprite end
-    if skipConstructor == nil then
+  if skipConstructor ~= true then
+    -- buildings objects which can be opened/closed will use an overloaded constructor
+    if self.openSprite ~= nil then
+      local openSprite = self.openSprite
+      if north then openSprite = self.openNorthSprite end
       self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, openSprite, north, self)
-    end
-  else
-    if skipConstructor == nil then
+    else
       self.javaObject = _G[self.isoData.isoType].new(cell, self.sq, sprite, north, self)
     end
   end
   buildUtil.consumeMaterial(self)
-  if skipConstructor == nil then
-  buildUtil.setInfo(self.javaObject, self)
-  self.javaObject:setMaxHealth(self:getHealth(self.mainMaterial, self.baseHealth))
-  self.javaObject:setHealth(self.javaObject:getMaxHealth())
-  self.javaObject:setBreakSound(self.breakSound)
-  self.javaObject:setThumpSound(self.thumpSound)
-  self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
+  if skipConstructor ~= true then
+    buildUtil.setInfo(self.javaObject, self)
+    self.javaObject:setMaxHealth(self:getHealth(self.mainMaterial, self.baseHealth))
+    self.javaObject:setHealth(self.javaObject:getMaxHealth())
+    self.javaObject:setBreakSound(self.breakSound)
+    self.javaObject:setThumpSound(self.thumpSound)
+    self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
     local objIndex = self:getObjectIndex()
     if objIndex ~= nil then
       self.sq:AddSpecialObject(self.javaObject, objIndex)
@@ -576,11 +574,7 @@ function ISExtBuildingObject.makeTooltip(oPlayer, option, recipe, targetClass)
   local oInv = oPlayer:getInventory()
   local settings = merge(merge(ISExtBuildingObject.defaults, targetClass.defaults), recipe)
   local sprite
-  if type(settings.sprites) == 'function' then
-    sprite = (settings.sprites(oPlayer)).sprite
-  else
-    sprite = settings.sprites.sprite
-  end
+  if type(settings.sprites) == 'function' then sprite = (settings.sprites(oPlayer)).sprite else sprite = settings.sprites.sprite end
   toolTip:initialise()
   toolTip:setName(option.name)
   toolTip:setTexture(sprite)
