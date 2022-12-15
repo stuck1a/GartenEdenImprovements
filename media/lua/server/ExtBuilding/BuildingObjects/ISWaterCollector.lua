@@ -1,6 +1,5 @@
 if not ISExtBuildingObject then require 'ExtBuilding/BuildingObjects/ISExtBuildingObject' end
 
-
 --- @class ISWaterCollector : ISExtBuildingObject
 ISWaterCollector = ISExtBuildingObject:derive('ISWaterCollector')
 
@@ -104,15 +103,15 @@ Events.DoSpecialTooltip.Add(DoSpecialTooltip)
 
 
 if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
-
   require 'Map/CGlobalObjectSystem'
+  require 'Map/CGlobalObject'
+
 
   --- @class CWaterCollectorSystem : CGlobalObjectSystem
   CWaterCollectorSystem = CGlobalObjectSystem:derive('CWaterCollectorSystem')
 
-
   ---
-  --- Creates a new JS global object system on client-side
+  --- Creates a new java global object system on client-side
   --- @return  CGlobalObjectSystem New controller instance of this global object system type
   ---
   function CWaterCollectorSystem:new()
@@ -120,10 +119,9 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Checks, if a given IsoObject is a water collector or not (client-side)
-  --- @param isoObject userdata Target buildings JS object
+  --- @param isoObject userdata Target buildings java object
   --- @return boolean True, if the object is linked to this system
   ---
   function CWaterCollectorSystem:isValidIsoObject(isoObject)
@@ -132,7 +130,6 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
     end
     return false
   end
-
 
 
   ---
@@ -145,16 +142,9 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-  CGlobalObjectSystem.RegisterSystemClass(CWaterCollectorSystem)
-
-
-
-
-  require 'Map/CGlobalObject'
 
   --- @class CWaterCollectorGlobalObject : CGlobalObject
   CWaterCollectorGlobalObject = CGlobalObject:derive('CWaterCollectorGlobalObject')
-
 
   ---
   --- Creates a new global object on client-side
@@ -168,10 +158,8 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
 
 
 
-
   --- @class ISWaterCollectorMenu
   ISWaterCollectorMenu = {}
-
 
   ---
   --- Checks whether any right click hit a watercollector global object and if so,
@@ -255,7 +243,6 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Removes all the water from the water collector
   --- @param obj CGlobalObject Target global object instance
@@ -266,7 +253,6 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
       ISTimedActionQueue.add(ISEmptyRainBarrelAction:new(oPlayer, obj))
     end
   end
-
 
 
   ---
@@ -289,7 +275,6 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Debug option which opens a UI to adjust the water amount of the water collector.
   --- Execution after confirmation is outsourced to a local function for performance
@@ -304,7 +289,6 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Debug option to set the water amount of the water collector to zero
   --- @param obj CWaterCollectorGlobalObject Target global object instance
@@ -315,28 +299,25 @@ if isClient() or getCore():getGameMode() ~= 'Multiplayer' then
     sendClientCommand(oPlayer, 'object', 'setWaterAmount', args)
   end
 
-
+  CGlobalObjectSystem.RegisterSystemClass(CWaterCollectorSystem)
   Events.OnFillWorldObjectContextMenu.Add(ISWaterCollectorMenu.OnFillWorldObjectContextMenu)
-
 end
 
 
 
-
-if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
+if not isClient() then
   require 'Map/SGlobalObjectSystem'
+  require 'Map/SGlobalObject'
 
   --- @class SWaterCollectorSystem : SGlobalObjectSystem
   SWaterCollectorSystem = SGlobalObjectSystem:derive('SWaterCollectorSystem')
 
-
   ---
-  --- Creates a new JS global object system on server-side
+  --- Creates a new java global object system on server-side
   ---
   function SWaterCollectorSystem:new()
     return SGlobalObjectSystem.new(self, ISWaterCollector.defaults.isoData.isoName or ISExtBuilding.isoData.isoName)
   end
-
 
 
   ---
@@ -351,7 +332,6 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Creates a new global object controller (server-side)
   --- @param globalObject SWaterCollectorGlobalObject Target global object type
@@ -361,10 +341,9 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Checks, if a given IsoObject is a water collector or not (server-side)
-  --- @param isoObject userdata Target buildings JS object
+  --- @param isoObject userdata Target buildings java object
   --- @return boolean True, if the object is linked to this system
   ---
   function SWaterCollectorSystem:isValidIsoObject(isoObject)
@@ -377,7 +356,6 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   -- TODO: Checken, ob es auch ohne die geht, immerhin wird es hierfür keine oldModData geben
   ---
   --- For backwards compatibility
@@ -388,9 +366,8 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
-  --- Increases the water amount of the buildings JS objects
+  --- Increases the water amount of the buildings java objects
   ---
   function SWaterCollectorSystem:refill()
     for i=1, self:getLuaObjectCount() do
@@ -407,7 +384,6 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Listener-Wrapper to invoke the refill method of each water collector instance
   ---
@@ -416,10 +392,9 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
   --- Writes the new water amount from global object to this lua object
-  --- @param object IsoObject Target buildings JS object instance
+  --- @param object IsoObject Target buildings java object instance
   --- @param _ int Previous water amount
   ---
   local function OnWaterAmountChange(object, _)
@@ -429,18 +404,9 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-  SGlobalObjectSystem.RegisterSystemClass(SWaterCollectorSystem)
-  Events.EveryTenMinutes.Add(EveryTenMinutes)
-  Events.OnWaterAmountChange.Add(OnWaterAmountChange)
-
-
-
-
-  require 'Map/SGlobalObject'
 
   --- @class SWaterCollectorGlobalObject : SGlobalObject
   SWaterCollectorGlobalObject = SGlobalObject:derive('SWaterCollectorGlobalObject')
-
 
   ---
   --- Creates a new global object (server-side)
@@ -450,7 +416,6 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   function SWaterCollectorGlobalObject:new(luaSystem, globalObject)
     return SGlobalObject.new(self, luaSystem, globalObject)
   end
-
 
 
   ---
@@ -463,10 +428,9 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
-  --- Transfers the current vales from the buildings JS object to the global object
-  --- @param isoObject IsoObject Target buildings JS object instance
+  --- Transfers the current vales from the buildings java object to the global object
+  --- @param isoObject IsoObject Target buildings java object instance
   ---
   function SWaterCollectorGlobalObject:stateFromIsoObject(isoObject)
     self.waterAmount = isoObject:getWaterAmount()
@@ -478,10 +442,9 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
   end
 
 
-
   ---
-  --- Transfers the current values from the global object to the buildings JS object
-  --- @param isoObject IsoObject Target buildings JS object instance
+  --- Transfers the current values from the global object to the buildings java object
+  --- @param isoObject IsoObject Target buildings java object instance
   ---
   function SWaterCollectorGlobalObject:stateToIsoObject(isoObject)
     if not self.waterAmount then self.waterAmount = ISWaterCollector.defaults.properties.waterAmount end
@@ -493,13 +456,16 @@ if isServer() or getCore():getGameMode() ~= 'Multiplayer' then
     isoObject:transmitModData()
   end
 
+  SGlobalObjectSystem.RegisterSystemClass(SWaterCollectorSystem)
+  Events.EveryTenMinutes.Add(EveryTenMinutes)
+  Events.OnWaterAmountChange.Add(OnWaterAmountChange)
 end
 
 
 
 ---
---- Initialises the global objects of all existing building JS objects while loading the map
---- @param isoObject IsoObject Target building object JS object instance
+--- Initialises the global objects of all existing building java objects while loading the map
+--- @param isoObject IsoObject Target building object java object instance
 ---
 local function loadGlobalObject(isoObject)
   if not instanceof(isoObject, ISWaterCollector.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end

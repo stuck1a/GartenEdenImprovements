@@ -211,4 +211,5 @@ Tooltip_EN = {
   Tooltip_ExtBuilding__WoodenStair = "A wooden stair.",
   Tooltip_ExtBuilding__StoneStair = "A fireproof staircase made of plastered bricks.",
   Tooltip_ExtBuilding__StoneStair = "A metal stair. Relatively fireproof, but over time the metal will soften and succumb to the fire."
+  Tooltip_ExtBuilding__Metal_Crate = "A solid metal crate. Offers maximum storage space in a minimum of space.",
 }

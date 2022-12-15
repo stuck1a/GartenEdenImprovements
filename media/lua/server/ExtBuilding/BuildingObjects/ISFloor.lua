@@ -1,4 +1,4 @@
-if not 'ISExtBuildingObject' then require 'ExtBuilding/BuildingObjects/ISExtBuildingObject' end
+if not ISExtBuildingObject then require 'ExtBuilding/BuildingObjects/ISExtBuildingObject' end
 
 --- @class ISFloor : ISExtBuildingObject
 ISFloor = ISExtBuildingObject:derive('ISFloor')

@@ -1,0 +1,3 @@
+MultiStageBuild_EN = {
+	MultiStageBuild_UpgradeWell = "Build Canopy",
+}

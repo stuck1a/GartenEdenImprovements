@@ -129,7 +129,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
           northSprite = 'carpentry_02_101',
           corner = 'walls_exterior_wooden_01_27'
         },
-        isoData = { isoName = 'WoodenWallFrame' },
+        isoData = { isoName = 'Wooden Wall Frame' },
         properties = {
           canBePlastered = function(o) return getSpecificPlayer(o.player):getPerkLevel(Perks.Woodwork) > 7 end
         },
@@ -155,7 +155,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
           northSprite = 'constructedobjects_01_69',
           corner = 'constructedobjects_01_51'
         },
-        isoData = { isoName = 'MetalWallFrame' },
+        isoData = { isoName = 'Metal Wall Frame' },
         modData = {
           ['keep:' .. sWeldingMaskTag] = 'Base.WeldingMask',
           ['need:Base.MetalBar']= 3,
@@ -203,7 +203,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
               return { sprite = 'carpentry_02_58' }
             end
           end,
-        isoData = { isoName = 'woodenfloor' },
+        isoData = { isoName = 'Wooden Floor' },
         modData = {
           ['keep:' .. sHammerTag] = 'Base.Hammer',
           ['need:Base.Plank'] = 1,
@@ -221,7 +221,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
         requiresRecipe = 'Make Metal Roof',
         actionAnim = 'BlowTorchFloor',
         sprites = { sprite = 'constructedobjects_01_86' },
-        isoData = { isoName = 'metalfloor' },
+        isoData = { isoName = 'Metal Floor' },
         modData = {
           ['keep:' .. sWeldingMaskTag] = 'Base.WeldingMask',
           ['need:Base.SmallSheetMetal'] = 1,
@@ -240,7 +240,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
         completionSound = 'StoneHammerSwing',
         tooltipDesc = 'Tooltip_ExtBuilding__Stone_Floor',
         sprites = { sprite = 'floors_exterior_tilesandstone_01_05' },
-        isoData = { isoName = 'stonefloor' },
+        isoData = { isoName = 'Stone Floor' },
         modData = {
           ['keep:' .. sHammerTag] = 'Base.Hammer',
           ['need:Base.Stone'] = 2,
@@ -277,7 +277,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
           sprite = 'carpentry_02_88',
           northSprite = 'carpentry_02_96'
         },
-        isoData = { isoName = 'WoodenStair' },
+        isoData = { isoName = 'Wooden Stairs' },
         properties = {
           sprite2 = 'carpentry_02_89',
           sprite3 = 'carpentry_02_90',
@@ -358,7 +358,34 @@ ExtBuildingContextMenu.BuildingRecipes = {
         ['xp:Woodwork'] = 3
       }
     },
-    -- Metallkiste
+    {
+      displayName = 'ContextMenu_MetalCrate',
+      targetClass = 'ISCrate',
+      completionSound = 'BuildMetalStructureMedium',
+      mainMaterial = 'metal',
+      requiresRecipe = 'Make Metal Containers',
+      tooltipDesc = 'Tooltip_ExtBuilding__Metal_Crate',
+      actionAnim = 'BlowTorchMid',
+      sprites = {
+        sprite = 'constructedobjects_01_45',
+        northSprite = 'constructedobjects_01_44',
+        eastSprite = 'constructedobjects_01_47',
+        southSprite = 'constructedobjects_01_45'
+      },
+      isoData = { isoName = 'Metal Crate' },
+      modData = {
+        ['keep:' .. sWeldingMaskTag] = 'Base.WeldingMask',
+        ['need:Base.MetalPipe'] = 2,
+        ['need:Base.SmallSheetMetal'] = 2,
+        ['need:Base.SheetMetal'] = 2,
+        ['need:Base.ScrapMetal'] = 1,
+        ['use:Base.BlowTorch'] = 7,
+        ['use:Base.WeldingRods'] = weldingRodUses(7),
+        ['requires:MetalWelding'] = 4,
+        ['xp:MetalWelding'] = 20
+      },
+      forceEquip = tWeldEquipment
+    },
   },
   ContextMenu_ExtBuilding_Cat__Technology = {
     {
@@ -370,7 +397,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       mainMaterial = 'stone',
       completionSound = 'BuildFenceCairn',
       craftingBank = 'Shoveling',
-      isoData = { isoName = 'waterwell' },
+      isoData = { isoName = 'Water Well' },
       isValidAddition = function(_, sq)
         if sq:getZ() ~= 0 then return false end
         -- tile must have any exterior, natural ground (except water) - shovelled or not
@@ -382,11 +409,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
           if objModData ~= nil then
             local shovelledSprites = objModData.shovelledSprites
             if shovelledSprites ~= nil then
-              for j=1, #shovelledSprites do
-                if luautils.stringStarts(shovelledSprites[j], 'blends_natur') then
-                  return true
-                end
-              end
+              for j=1, #shovelledSprites do if luautils.stringStarts(shovelledSprites[j], 'blends_natur') then return true end end
               return false
             else
               local textureName = obj:getTextureName() or 'occupied'
@@ -408,8 +431,9 @@ ExtBuildingContextMenu.BuildingRecipes = {
         ['need:Base.Stone'] = 20,
         ['use:Base.Gravelbag'] = 8,
         ['need:Base.BucketEmpty'] = 1,
-        ['requires:Woodwork'] = 7,
+        ['requires:Woodwork'] = 5,
         ['requires:Fitness'] = 5,
+        --['requires:Masonry'] = 5,
         ['xp:Woodwork'] = 5,
         ['xp:Fitness'] = 5,
         --['xp:Masonry'] = 15

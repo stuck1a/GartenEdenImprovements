@@ -1,0 +1,3 @@
+MultiStageBuild_DE = {
+	MultiStageBuild_UpgradeWell = "Überdachung anbauen",
+}

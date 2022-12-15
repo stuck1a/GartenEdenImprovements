@@ -1,0 +1,18 @@
+module Base {
+
+  multistagebuild UpgradeWell {
+    PreviousStage: Water Well,
+    Name: CoveredWell,
+    TimeNeeded: 600,
+    BonusHealth: 300,
+    SkillRequired: Woodwork=6,
+    ItemsRequired: Base.Plank=6;Base.Nails=10,
+    ItemsToKeep: [Recipe.GetItemTypes.Hammer],[Recipe.GetItemTypes.Saw]
+    Sprite: garteneden_tech_01_0,
+    NorthSprite: garteneden_tech_01_1,
+    CraftingSound: Hammering,
+    ID: Create Covered Well,
+    XP: Woodwork=10,
+  }
+
+}
