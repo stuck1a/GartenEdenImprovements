@@ -1,5 +1,20 @@
 Tooltip_DE = {
 
+  /** ExtBuilding **/
+  Tooltip_BookTitle_Masonry = "Steinarbeiten",
+  Tooltip_ExtBuilding__RequiredSkills = "Benötigte Fähigkeiten",
+  Tooltip_ExtBuilding__RequiredTools = "Benötigtes Werkzeug",
+  Tooltip_ExtBuilding__RequiredMaterials = "Benötigtes Baumaterial",
+  Tooltip_ExtBuilding__WaterWell = "Eine nahezu unerschöpfliche Wasserquelle. <LINE> Liefert trinkbares Grundwasser, so rein, dass selbst kontaminierter Regen es nicht verseuchen kann. <LINE> <SETX:10> - "be water my friend"",
+  Tooltip_ExtBuilding__WoodenWallFrame = "Grundlage für eine robuste Wand. <LINE> Muss erst ausgebaut werden, bevor sie Schutz bietet, kann dafür mit Gips verstärkt und gestrichen werden, sofern der Rahmen mit Holz verschalt wird.",
+  Tooltip_ExtBuilding__MetalWallFrame = "Grundlage für eine sehr robuste Wand. <LINE> Hat die gleichen Vor- und Nachteile wie ein Holzwandrahmen, ist jedoch noch stabiler.",
+  Tooltip_ExtBuilding__Stone_Floor = "Ein gepflasterter Steinboden aus zurecht gemeißelten Steinen.",
+  Tooltip_ExtBuilding__Metal_Floor = "Eine kleine Metallplatte, die mit dem Schweißgerät in Form gebracht wurde, sodass sie als Bodenplatte fungiert.",
+  Tooltip_ExtBuilding__WoodenStair = "Eine Treppe aus Holz.",
+  Tooltip_ExtBuilding__StoneStair = "Eine feuerfeste Treppe aus vergipsten Steinen.",
+  Tooltip_ExtBuilding__StoneStair = "Eine Treppe aus Metall. Relativ feuerfest, aber nach eienr gewissen Zeit wird auch das Metall erweichen und damit dem Feuer erliegen.",
+  Tooltip_ExtBuilding__Metal_Crate = "Eine solide Kiste aus Metall. Bietet maximalen Stauraum auf minimaler Fläche.",
+
   /** More Builds **/
   Tooltip_Half_Crate = "Eine Kiste in halber Groesse, die noch die volle Menge fasst. Kann sogar auf zwei gestapelt werden, wenn gewuenscht.",
   Tooltip_Grocery_Box = "Von den meisten gepluenderten Laeden sind nur noch diese leeren Behaelter uebrig geblieben, in denen man Essen aufbewahren kann.",
@@ -199,17 +214,4 @@ Tooltip_DE = {
   Tooltip_MoreTraits_GordaniteDefault = "Brecheisen",
   Tooltip_MoreTraits_Terminator = "Geboren, um zu töten...",
 
-  /** ExtBuilding **/
-  Tooltip_ExtBuilding__RequiredSkills = "Benötigte Fähigkeiten",
-  Tooltip_ExtBuilding__RequiredTools = "Benötigtes Werkzeug",
-  Tooltip_ExtBuilding__RequiredMaterials = "Benötigtes Baumaterial",
-  Tooltip_ExtBuilding__WaterWell = "Eine nahezu unerschöpfliche Wasserquelle. <LINE> Liefert trinkbares Grundwasser, so rein, dass selbst kontaminierter Regen es nicht verseuchen kann. <LINE> <SETX:10> - "be water my friend"",
-  Tooltip_ExtBuilding__WoodenWallFrame = "Grundlage für eine robuste Wand. <LINE> Muss erst ausgebaut werden, bevor sie Schutz bietet, kann dafür mit Gips verstärkt und gestrichen werden, sofern der Rahmen mit Holz verschalt wird.",
-  Tooltip_ExtBuilding__MetalWallFrame = "Grundlage für eine sehr robuste Wand. <LINE> Hat die gleichen Vor- und Nachteile wie ein Holzwandrahmen, ist jedoch noch stabiler.",
-  Tooltip_ExtBuilding__Stone_Floor = "Ein gepflasterter Steinboden aus zurecht gemeißelten Steinen.",
-  Tooltip_ExtBuilding__Metal_Floor = "Eine kleine Metallplatte, die mit dem Schweißgerät in Form gebracht wurde, sodass sie als Bodenplatte fungiert.",
-  Tooltip_ExtBuilding__WoodenStair = "Eine Treppe aus Holz.",
-  Tooltip_ExtBuilding__StoneStair = "Eine feuerfeste Treppe aus vergipsten Steinen.",
-  Tooltip_ExtBuilding__StoneStair = "Eine Treppe aus Metall. Relativ feuerfest, aber nach eienr gewissen Zeit wird auch das Metall erweichen und damit dem Feuer erliegen.",
-  Tooltip_ExtBuilding__Metal_Crate = "Eine solide Kiste aus Metall. Bietet maximalen Stauraum auf minimaler Fläche.",
 }

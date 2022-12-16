@@ -1,3 +1,6 @@
 MultiStageBuild_EN = {
+
+  /** ExtBuilding **/
 	MultiStageBuild_UpgradeWell = "Build Canopy",
+
 }

@@ -1,4 +1,5 @@
 UI_EN = {
+
   /** SprayPaint **/
 	UI_SprayCan	= "Spray Can",
 	UI_Miscellaneous = "Miscellaneous",
@@ -281,4 +282,5 @@ UI_EN = {
   /** Traps **/
   UI_Traps_TrapPlaced = "Placed trap",
   UI_Traps_AlreadyPlaced = "Here is an already placed trap",
+
 }

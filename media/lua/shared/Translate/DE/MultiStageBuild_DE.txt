@@ -1,3 +1,6 @@
 MultiStageBuild_DE = {
+
+  /** ExtBuilding **/
 	MultiStageBuild_UpgradeWell = "Überdachung anbauen",
+
 }

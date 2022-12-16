@@ -1,21 +1,28 @@
 ItemName_DE = {
 
+  /** ExtBuilding **/
+  ItemName_Base.BookMasonry1 = "Steinarbeiten Band 1",
+  ItemName_Base.BookMasonry2 = "Steinarbeiten Band 2",
+  ItemName_Base.BookMasonry3 = "Steinarbeiten Band 3",
+  ItemName_Base.BookMasonry4 = "Steinarbeiten Band 4",
+  ItemName_Base.BookMasonry5 = "Steinarbeiten Band 5",
+
   /** Ladders **/
-  Base.MetalLadder = "Metalleiter",
-  Base.WoodenLadder = "Holzleiter",
-  Base.LaddersMagazine = "Marke Eigenbau - Leitern",
+  ItemName_Base.MetalLadder = "Metalleiter",
+  ItemName_Base.WoodenLadder = "Holzleiter",
+  ItemName_Base.LaddersMagazine = "Marke Eigenbau - Leitern",
   
   /** SprayPaint **/
-  Base.SpraycanWhite = "Sprühdose (Weiß)",
-  Base.SpraycanRed = "Sprühdose (Rot)",
-  Base.SpraycanBlue = "Sprühdose (Blau)",
-  Base.SpraycanGreen = "Sprühdose (Grün)",
-  Base.SpraycanOrange = "Sprühdose (Orange)",
-  Base.SpraycanYellow = "Sprühdose (Gelb)",
-  Base.SpraycanViolet = "Sprühdose (Violett)",
-  Base.SpraycanBlack = "Sprühdose (Schwarz)",
-  Base.SpraycanCyan = "Sprühdose (Cyan)",
+  ItemName_Base.SpraycanWhite = "Sprühdose (Weiß)",
+  ItemName_Base.SpraycanRed = "Sprühdose (Rot)",
+  ItemName_Base.SpraycanBlue = "Sprühdose (Blau)",
+  ItemName_Base.SpraycanGreen = "Sprühdose (Grün)",
+  ItemName_Base.SpraycanOrange = "Sprühdose (Orange)",
+  ItemName_Base.SpraycanYellow = "Sprühdose (Gelb)",
+  ItemName_Base.SpraycanViolet = "Sprühdose (Violett)",
+  ItemName_Base.SpraycanBlack = "Sprühdose (Schwarz)",
+  ItemName_Base.SpraycanCyan = "Sprühdose (Cyan)",
   
   /** Gate **/
-  Gate.GateKey = "Torschlüssel",
+  ItemName_Gate.GateKey = "Torschlüssel",
 }

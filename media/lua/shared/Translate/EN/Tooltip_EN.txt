@@ -1,5 +1,20 @@
 Tooltip_EN = {
 
+  /** ExtBuilding **/
+  Tooltip_BookTitle_Masonry = "Masonry",
+  Tooltip_ExtBuilding__RequiredSkills = "Required skills",
+  Tooltip_ExtBuilding__RequiredTools = "Required tools",
+  Tooltip_ExtBuilding__RequiredMaterials = "Required material",
+  Tooltip_ExtBuilding__WoodenWallFrame = "Basis for a robust wall. <LINE> Must be upgraded to a solid wall before it offers protection, but can be reinforced with plaster and painted if the frame is boarded with wood and fully developed.",
+  Tooltip_ExtBuilding__MetalWallFrame = "Basis for a very robust wall. <LINE> Has the same advantages and disadvantages like a wooden wall frame, but is even more stable.",
+  Tooltip_ExtBuilding__Stone_Floor = "A paved stone floor made from shaped stones.",
+  Tooltip_ExtBuilding__Metal_Floor = "A small metal plate that has been shaped with the welder to act as a flooring.",
+  Tooltip_ExtBuilding__WaterWell = "An almost inexhaustible source of water. <LINE> Provides potable groundwater which is so pure that even contaminated rain won't taint it. <LINE> <SETX:10> - "be water my friend"",
+  Tooltip_ExtBuilding__WoodenStair = "A wooden stair.",
+  Tooltip_ExtBuilding__StoneStair = "A fireproof staircase made of plastered bricks.",
+  Tooltip_ExtBuilding__StoneStair = "A metal stair. Relatively fireproof, but over time the metal will soften and succumb to the fire."
+  Tooltip_ExtBuilding__Metal_Crate = "A solid metal crate. Offers maximum storage space in a minimum of space.",
+
   /** More Builds **/
   Tooltip_Half_Crate = "A half-sized crate that still holds the full amount. Can even be stacked two high if you want. ",
   Tooltip_Grocery_Box = "After you empty out the grocery store, you end up with all these empty boxes to store your stuff in. ",
@@ -199,17 +214,4 @@ Tooltip_EN = {
   Tooltip_MoreTraits_GordaniteDefault = "Crowbar",
   Tooltip_MoreTraits_Terminator = "You are like a killer machine",
 
-  /** ExtBuilding **/
-  Tooltip_ExtBuilding__RequiredSkills = "Required skills",
-  Tooltip_ExtBuilding__RequiredTools = "Required tools",
-  Tooltip_ExtBuilding__RequiredMaterials = "Required material",
-  Tooltip_ExtBuilding__WoodenWallFrame = "Basis for a robust wall. <LINE> Must be upgraded to a solid wall before it offers protection, but can be reinforced with plaster and painted if the frame is boarded with wood and fully developed.",
-  Tooltip_ExtBuilding__MetalWallFrame = "Basis for a very robust wall. <LINE> Has the same advantages and disadvantages like a wooden wall frame, but is even more stable.",
-  Tooltip_ExtBuilding__Stone_Floor = "A paved stone floor made from shaped stones.",
-  Tooltip_ExtBuilding__Metal_Floor = "A small metal plate that has been shaped with the welder to act as a flooring.",
-  Tooltip_ExtBuilding__WaterWell = "An almost inexhaustible source of water. <LINE> Provides potable groundwater which is so pure that even contaminated rain won't taint it. <LINE> <SETX:10> - "be water my friend"",
-  Tooltip_ExtBuilding__WoodenStair = "A wooden stair.",
-  Tooltip_ExtBuilding__StoneStair = "A fireproof staircase made of plastered bricks.",
-  Tooltip_ExtBuilding__StoneStair = "A metal stair. Relatively fireproof, but over time the metal will soften and succumb to the fire."
-  Tooltip_ExtBuilding__Metal_Crate = "A solid metal crate. Offers maximum storage space in a minimum of space.",
 }

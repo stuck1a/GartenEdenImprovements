@@ -1,0 +1,73 @@
+module Base {
+
+  item BookMasonry1 {
+    NumberOfPages = 220,
+    Weight = 0.8,
+    Type = Literature,
+    DisplayName = Masonry for Beginners,
+    Icon = Icons/Icon_BookMasonry.png,
+    SkillTrained = Masonry,
+    LvlSkillTrained = 1,
+    NumLevelsTrained = 2,
+    ReplaceOnUse = BookMasonry1,
+    StaticModel = Book,
+    WorldStaticModel = BookBrown_Ground,
+  }
+
+  item BookMasonry2 {
+    NumberOfPages = 260,
+    Weight = 0.8,
+    Type = Literature,
+    DisplayName = Masonry for Intermediates,
+    Icon = Icons/Icon_BookMasonry.png,
+    SkillTrained = Masonry,
+    LvlSkillTrained = 3,
+    NumLevelsTrained = 2,
+    ReplaceOnUse = BookMasonry2,
+    StaticModel = Book,
+    WorldStaticModel = BookBrown_Ground,
+  }
+
+  item BookMasonry3 {
+    NumberOfPages = 300,
+    Weight = 0.8,
+    Type = Literature,
+    DisplayName = Advanced Masonry,
+    Icon = Icons/Icon_BookMasonry.png,
+    SkillTrained = Masonry,
+    LvlSkillTrained = 5,
+    NumLevelsTrained = 2,
+    ReplaceOnUse = BookMasonry3,
+    StaticModel = Book,
+    WorldStaticModel = BookBrown_Ground,
+  }
+
+  item BookMasonry4 {
+    NumberOfPages = 340,
+    Weight = 0.8,
+    Type = Literature,
+    DisplayName = Expert Masonry,
+    Icon = Icons/Icon_BookMasonry.png,
+    SkillTrained = Masonry,
+    LvlSkillTrained = 7,
+    NumLevelsTrained = 2,
+    ReplaceOnUse = BookMasonry4,
+    StaticModel = Book,
+    WorldStaticModel = BookClosedBrown_Ground,
+  }
+
+  item BookMasonry5 {
+    NumberOfPages = 380,
+    Weight = 0.8,
+    Type = Literature,
+    DisplayName = Master Masonry,
+    Icon = Icons/Icon_BookMasonry.png,
+    SkillTrained = Masonry,
+    LvlSkillTrained = 9,
+    NumLevelsTrained = 2,
+    ReplaceOnUse = BookMasonry5,
+    StaticModel = Book,
+    WorldStaticModel = BookClosedBrown_Ground,
+  }
+
+}

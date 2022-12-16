@@ -3,6 +3,5 @@ Recipes_DE = {
   /** Ladders  **/
   Recipe_Make_Steel_Ladder = "Metallleiter herstellen",
   Recipe_Make_Wooden_Ladder = "Holzleiter herstellen",
-  
-  
+
 }

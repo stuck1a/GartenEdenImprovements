@@ -1,0 +1,6 @@
+IG_UI_DE = {
+
+  /** ExtBuilding **/
+	IGUI_perks_Masonry = "Steinbearbeitung",
+
+}

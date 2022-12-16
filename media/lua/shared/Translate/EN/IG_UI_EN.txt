@@ -1,0 +1,6 @@
+IG_UI_EN = {
+
+  /** ExtBuilding **/
+	IGUI_perks_Masonry = "Masonry",
+
+}

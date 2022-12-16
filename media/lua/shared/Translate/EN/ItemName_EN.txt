@@ -1,21 +1,28 @@
 ItemName_EN = {
 
+  /** ExtBuilding **/
+  ItemName_Base.BookMasonry1 = "Masonry Vol. 1",
+  ItemName_Base.BookMasonry2 = "Masonry Vol. 2",
+  ItemName_Base.BookMasonry3 = "Masonry Vol. 3",
+  ItemName_Base.BookMasonry4 = "Masonry Vol. 4",
+  ItemName_Base.BookMasonry5 = "Masonry Vol. 5",
+
   /** Ladders **/
-  Base.MetalLadder = "Metal Ladder",
-  Base.WoodenLadder = "Wooden Ladder",
-  Base.LaddersMagazine = "Homemade Ladders",
+  ItemName_Base.MetalLadder = "Metal Ladder",
+  ItemName_Base.WoodenLadder = "Wooden Ladder",
+  ItemName_Base.LaddersMagazine = "Homemade Ladders",
   
   /** SprayPaint **/
-  Base.SpraycanWhite = "Spraycan (White)",
-  Base.SpraycanRed = "Spraycan (Red)",
-  Base.SpraycanBlue = "Spraycan (Blue)",
-  Base.SpraycanGreen = "Spraycan (Green)",
-  Base.SpraycanOrange = "Spraycan (Orange)",
-  Base.SpraycanYellow = "Spraycan (Yellow)",
-  Base.SpraycanViolet = "Spraycan (Violet)",
-  Base.SpraycanBlack = "Spraycan (Black)",
-  Base.SpraycanCyan = "Spraycan (Cyan)",
+  ItemName_Base.SpraycanWhite = "Spraycan (White)",
+  ItemName_Base.SpraycanRed = "Spraycan (Red)",
+  ItemName_Base.SpraycanBlue = "Spraycan (Blue)",
+  ItemName_Base.SpraycanGreen = "Spraycan (Green)",
+  ItemName_Base.SpraycanOrange = "Spraycan (Orange)",
+  ItemName_Base.SpraycanYellow = "Spraycan (Yellow)",
+  ItemName_Base.SpraycanViolet = "Spraycan (Violet)",
+  ItemName_Base.SpraycanBlack = "Spraycan (Black)",
+  ItemName_Base.SpraycanCyan = "Spraycan (Cyan)",
   
   /** Gate **/
-  Gate.GateKey = "Gate Key",
+  ItemName_Gate.GateKey = "Gate Key",
 }

@@ -64,6 +64,5 @@ Sandbox_DE = {
   Sandbox_MoreTraits_MartialScaling_tooltip = "Ein Prozentwert, der angibt, wie stark die Schadensskalierung für Kampfkünstler ist.<br>Ein Wert von 50% würde den gesamten Schaden halbieren.",
   Sandbox_MoreTraits_ButterfingersChance = "Schwitzige Hände Chance in X",
   Sandbox_MoreTraits_ButterfingersChance_tooltip = "Die Wahrscheinlichkeit in X, wie oft ein Spieler mit schwitzigen Händen einen Gegenstand fallen lässt.<br>Die Basischance beträgt 5, daher wäre dieser Wert standardmäßig eine 5/2000-Chance, die jede Spielminute berechnet wird.<br>Zu hohe Werte können dazu führen, dass Spieler ihre Gegenstände ständig fallen lassen.",
-  
-  
+
 }
