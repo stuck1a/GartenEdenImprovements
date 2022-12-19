@@ -163,7 +163,7 @@ local function preDistributionMerge()
 end
 
 
-for sSkillName,oPerk in aNewSkills do
+for sSkillName,oPerk in pairs(aNewSkills) do
   if SkillBook ~= nil then
     SkillBook[sSkillName] = {
       perk = oPerk,

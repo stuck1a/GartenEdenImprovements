@@ -247,7 +247,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
         modData = {
           ['keep:' .. sHammerTag] = 'Base.Hammer',
           ['need:Base.Stone'] = 2,
-          --['xp:Masonry'] = 5
+          ['xp:Masonry'] = 5
         },
       },
     },
@@ -436,10 +436,10 @@ ExtBuildingContextMenu.BuildingRecipes = {
         ['need:Base.BucketEmpty'] = 1,
         ['requires:Woodwork'] = 5,
         ['requires:Fitness'] = 5,
-        --['requires:Masonry'] = 5,
+        ['requires:Masonry'] = 5,
         ['xp:Woodwork'] = 5,
         ['xp:Fitness'] = 5,
-        --['xp:Masonry'] = 15
+        ['xp:Masonry'] = 15
       }
     },
     -- Generator
