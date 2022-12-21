@@ -1,71 +1,71 @@
 module Base {
 
   item BookMasonry1 {
+    DisplayCategory = SkillBook
     NumberOfPages = 220,
     Weight = 0.8,
     Type = Literature,
-    DisplayName = Masonry for Beginners,
-    Icon = Icons/Icon_BookMasonry.png,
+    DisplayName = Masonry Vol. 1,
+    Icon = Book11,
     SkillTrained = Masonry,
     LvlSkillTrained = 1,
     NumLevelsTrained = 2,
-    ReplaceOnUse = BookMasonry1,
     StaticModel = Book,
     WorldStaticModel = BookBrown_Ground,
   }
 
   item BookMasonry2 {
+    DisplayCategory = SkillBook
     NumberOfPages = 260,
     Weight = 0.8,
     Type = Literature,
-    DisplayName = Masonry for Intermediates,
-    Icon = Icons/Icon_BookMasonry.png,
+    DisplayName = Masonry Vol. 2,
+    Icon = Book11,
     SkillTrained = Masonry,
     LvlSkillTrained = 3,
     NumLevelsTrained = 2,
-    ReplaceOnUse = BookMasonry2,
     StaticModel = Book,
     WorldStaticModel = BookBrown_Ground,
   }
 
   item BookMasonry3 {
+    DisplayCategory = SkillBook
     NumberOfPages = 300,
     Weight = 0.8,
     Type = Literature,
-    DisplayName = Advanced Masonry,
-    Icon = Icons/Icon_BookMasonry.png,
+    DisplayName = Masonry Vol. 3,
+    Icon = Book11,
     SkillTrained = Masonry,
     LvlSkillTrained = 5,
     NumLevelsTrained = 2,
-    ReplaceOnUse = BookMasonry3,
     StaticModel = Book,
     WorldStaticModel = BookBrown_Ground,
   }
 
   item BookMasonry4 {
+    DisplayCategory = SkillBook
     NumberOfPages = 340,
     Weight = 0.8,
     Type = Literature,
-    DisplayName = Expert Masonry,
-    Icon = Icons/Icon_BookMasonry.png,
+    DisplayName = Masonry Vol. 4,
+    Icon = Book11,
     SkillTrained = Masonry,
     LvlSkillTrained = 7,
     NumLevelsTrained = 2,
-    ReplaceOnUse = BookMasonry4,
     StaticModel = Book,
     WorldStaticModel = BookClosedBrown_Ground,
   }
 
   item BookMasonry5 {
+    DisplayCategory = SkillBook
     NumberOfPages = 380,
     Weight = 0.8,
     Type = Literature,
-    DisplayName = Master Masonry,
-    Icon = Icons/Icon_BookMasonry.png,
+    DisplayName = Masonry Vol. 5,
+    Icon = Book11,
     SkillTrained = Masonry,
     LvlSkillTrained = 9,
     NumLevelsTrained = 2,
-    ReplaceOnUse = BookMasonry5,
     StaticModel = Book,
     WorldStaticModel = BookClosedBrown_Ground,
   }
