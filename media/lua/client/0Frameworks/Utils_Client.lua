@@ -16,25 +16,6 @@ end
 
 
 ---
---- Adds a button to the games main menu to reload all lua files client-side
----
-utils.initMainMenu = function()
-  utils.forceReloadLuaButton = ISButton:new(MainScreen.instance.width-150, 50, 150, 25, 'Reload Lua (Client)', nil, utils.reloadLua)
-  utils.forceReloadLuaButton.borderColor = {r=1, g=1, b=1, a=0.1}
-  utils.forceReloadLuaButton:ignoreWidthChange()
-  utils.forceReloadLuaButton:ignoreHeightChange()
-  utils.forceReloadLuaButton:setAnchorLeft(false)
-  utils.forceReloadLuaButton:setAnchorRight(true)
-  utils.forceReloadLuaButton:setAnchorTop(true)
-  utils.forceReloadLuaButton:setAnchorBottom(false)
-  MainScreen.instance:addChild(utils.forceReloadLuaButton)
-end
-
-Events.OnMainMenuEnter.Add(utils.initMainMenu)
-
-
-
----
 --- Polyfill for table.pack
 ---
 if table.pack == nil then

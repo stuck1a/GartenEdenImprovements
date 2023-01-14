@@ -250,7 +250,7 @@ end
 spraypaintMenu.addToolbarButton = function()
   if spraypaintMenu.toolbarButton then return end
   local movableBtn = ISEquippedItem.instance.movableBtn
-  spraypaintMenu.toolbarButton = ISButton:new(-5, movableBtn:getY() + movableBtn:getHeight() + 320, 64, 64, getText('UI_Spray'), nil, spraypaintMenu.showWindowToolbar)
+  spraypaintMenu.toolbarButton = ISButton:new(-5, movableBtn:getY() + movableBtn:getHeight() + 256, 64, 64, nil, nil, spraypaintMenu.showWindowToolbar)
   spraypaintMenu.toolbarButton:setImage(spraypaintMenu.textureOff)
   spraypaintMenu.toolbarButton:setDisplayBackground(false)
   spraypaintMenu.toolbarButton.borderColor = {r=1, g=1, b=1, a=0.1}

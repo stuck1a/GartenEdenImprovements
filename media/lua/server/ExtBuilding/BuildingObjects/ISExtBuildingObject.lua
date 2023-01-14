@@ -122,8 +122,8 @@ local function setConstructionSite(_, key, value)
       local specialTiles = square:getSpecialObjects()
       for i=0, specialTiles:size()-1 do
         if specialTiles:get(i) == isoTile then
-          square:transmitRemoveItemFromSquare(isoTile)
           square:RemoveTileObject(isoTile)
+          square:transmitRemoveItemFromSquare(isoTile)
           isoTile = nil
           break
         end
@@ -141,8 +141,8 @@ local function getConstructionSite(_, key)
   return ISExtBuildingObject.constructionSitesShadow[key] or nil
 end
 setmetatable(ISExtBuildingObject.constructionSites, {
- __newindex = setConstructionSite,
- __index = getConstructionSite
+  __newindex = setConstructionSite,
+  __index = getConstructionSite
 })
 
 
@@ -268,7 +268,6 @@ function ISExtBuildingObject:create(x, y, z, north, sprite, skipConstructor)
     end
   end
 end
-
 
 
 ---

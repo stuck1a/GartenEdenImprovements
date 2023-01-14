@@ -132,7 +132,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
           northSprite = 'carpentry_02_101',
           corner = 'walls_exterior_wooden_01_27'
         },
-        isoData = { isoName = 'Wooden Wall Frame' },
+        isoData = { isoName = 'WoodenWallFrame' },
         properties = {
           canBePlastered = function(o) return getSpecificPlayer(o.player):getPerkLevel(Perks.Woodwork) > 7 end
         },
@@ -158,7 +158,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
           northSprite = 'constructedobjects_01_69',
           corner = 'constructedobjects_01_51'
         },
-        isoData = { isoName = 'Metal Wall Frame' },
+        isoData = { isoName = 'MetalWallFrame' },
         modData = {
           ['keep:' .. sWeldingMaskTag] = 'Base.WeldingMask',
           ['need:Base.MetalBar']= 3,
@@ -242,7 +242,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
         craftingBank = 'StoneHammerBreak',
         completionSound = 'StoneHammerSwing',
         tooltipDesc = 'Tooltip_ExtBuilding__Stone_Floor',
-        sprites = { sprite = 'floors_exterior_tilesandstone_01_05' },
+        sprites = { sprite = 'floors_exterior_tilesandstone_01_5' },
         isoData = { isoName = 'Stone Floor' },
         modData = {
           ['keep:' .. sHammerTag] = 'Base.Hammer',
@@ -349,8 +349,7 @@ ExtBuildingContextMenu.BuildingRecipes = {
       tooltipDesc = 'Tooltip_craft_woodenCrateDesc',
       sprites = function(oPlayer)
         local lvl = oPlayer:getPerkLevel(Perks.Woodwork)
-        if lvl > 5 then return { sprite = 'carpentry_01_19' } else return { sprite = 'carpentry_01_16' } end
-      end,
+        if lvl > 5 then return { sprite = 'carpentry_01_16' } else return { sprite = 'carpentry_01_19' } end end,
       isoData = { isoName = 'Wooden Crate' },
       modData = {
         ['keep:' .. sHammerTag] = 'Base.Hammer',

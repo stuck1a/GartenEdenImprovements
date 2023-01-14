@@ -36,6 +36,7 @@ function ISCrate:create(x, y, z, north, sprite)
   self.javaObject:setThumpSound(self.thumpSound)
   self.javaObject:setSpecialTooltip(self.hasSpecialTooltip)
   self.sq:AddSpecialObject(self.javaObject)
+  self.javaObject:transmitCompleteItemToServer()
 end
 
 
