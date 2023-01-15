@@ -52,27 +52,28 @@ end
 --- Only if this square has no flooring, the other side will be used to place the construction site.
 --- @param plr IsoPlayer Target player object
 --- @param x int Target square x coordinate
---- @param y int Target square x coordinate
---- @param z int Target square x coordinate
---- @param square IsoGridSquare The base target square object
+--- @param y int Target square y coordinate
+--- @param z int Target square z coordinate
+--- @param square IsoGridSquare The anker square object
 --- @param west boolean Whether the wall is shall be placed on either the west or east edge of the target square
---- @return IsoGridSquare Resulting square object for the construction site tile
+--- @return table<IsoGridSquare> Resulting square objects for the construction site tiles
 ---
-local function getAdjustedSquareForConstructionSite(plr, x, y, z, square, west)
+local function getAdjustedSquaresForConstructionSite(plr, x, y, z, square, west)
+  -- TODO: Include self:getAttachedTileSquares() and make the mirroring calculation for each square returned
   if west then
     if z == 0 then
-      if plr:getX() < x then return square:getW() or square else return square or square:getW() end
+      if plr:getX() < x then return {square:getW() or square} else return {square or square:getW()} end
     else
-      return square:getW() or square
+      return {square:getW() or square}
     end
   else
     if z == 0 then
-      if plr:getY() < y then return square:getN() or square else return square or square:getN() end
+      if plr:getY() < y then return {square:getN() or square} else return {square or square:getN()} end
     else
-      return square:getN() or square
+      return {square:getN() or square}
     end
   end
-  return square
+  return {square}
 end
 
 
@@ -84,22 +85,25 @@ end
 local function onPlayerUpdate(oPlayer)
   local actionlist = oPlayer:getCharacterActions()
   if actionlist:size() ~= 0 then return end
-  local isoTile = ISExtBuildingObject.constructionSites[oPlayer]
-  if isoTile == nil then return end
+  local isoTiles = ISExtBuildingObject.constructionSites[oPlayer]
+  if isoTiles == nil then return end
   Events.OnPlayerUpdate.Remove(onPlayerUpdate)
-  local square = isoTile:getSquare()
-  -- there might be several construction sites on the square (multiplayer), so remove only the assigned one
-  if square then
-    local specialTiles = square:getSpecialObjects()
-    for i=0, specialTiles:size()-1 do
-      if specialTiles:get(i) == isoTile then
-        square:transmitRemoveItemFromSquare(isoTile)
-        square:RemoveTileObject(isoTile)
-        isoTile = nil
-        return
+  for n=1, #isoTiles do
+    local isoTile = isoTiles[n]
+    local square = isoTile:getSquare()
+    -- there might be several construction sites on the square (multiplayer), so remove only the assigned one
+    if square then
+      local specialTiles = square:getSpecialObjects()
+      for i=0, specialTiles:size()-1 do
+        if specialTiles:get(i) == isoTile then
+          square:RemoveTileObject(isoTile)
+          square:transmitRemoveItemFromSquare(isoTile)
+          break
+        end
       end
     end
   end
+  isoTiles = nil
 end
 
 
@@ -109,36 +113,42 @@ end
 --- with the new one
 --- @param _ table The proxy table
 --- @param key IsoPlayer The target player instance
---- @param value IsoObject The construction site tile object
+--- @param value table<IsoObject> The construction site tile object or objects
 ---
 local function setConstructionSite(_, key, value)
   if ISExtBuildingObject.constructionSitesShadow[key] ~= nil then
-    local isoTile = ISExtBuildingObject.constructionSitesShadow[key]
-    if isoTile == nil then return end
+    local isoTiles = ISExtBuildingObject.constructionSitesShadow[key]
+    if isoTiles == {} then return end
     Events.OnPlayerUpdate.Remove(onPlayerUpdate)
-    local square = isoTile:getSquare()
-    -- there might be several construction sites on the square (multiplayer), so remove only the assigned one
-    if square then
-      local specialTiles = square:getSpecialObjects()
-      for i=0, specialTiles:size()-1 do
-        if specialTiles:get(i) == isoTile then
-          square:RemoveTileObject(isoTile)
-          square:transmitRemoveItemFromSquare(isoTile)
-          isoTile = nil
-          break
+    for n=1, #isoTiles do
+      local isoTile = isoTiles[n]
+      local square = isoTile:getSquare()
+      -- there might be several construction sites on the square (multiplayer), so remove only the assigned one
+      if square then
+        local specialTiles = square:getSpecialObjects()
+        for i=0, specialTiles:size()-1 do
+          if specialTiles:get(i) == isoTile then
+            square:RemoveTileObject(isoTile)
+            square:transmitRemoveItemFromSquare(isoTile)
+            break
+          end
         end
       end
     end
   end
-  ISExtBuildingObject.constructionSitesShadow[key] = value
+  ISExtBuildingObject.constructionSitesShadow[key] = {}
+  for n=1, #value do
+    table.insert(ISExtBuildingObject.constructionSitesShadow[key], value[n])
+  end
 end
 ---
---- Returns the isoTile from the shadowed table
+--- Returns the isoTile array from the shadowed table
 --- @param _ table The proxy table
 --- @param key IsoPlayer The target player instance
+--- @return table<IsoObject> Tiles linked with the construction site
 ---
 local function getConstructionSite(_, key)
-  return ISExtBuildingObject.constructionSitesShadow[key] or nil
+  return ISExtBuildingObject.constructionSitesShadow[key] or {}
 end
 setmetatable(ISExtBuildingObject.constructionSites, {
   __newindex = setConstructionSite,
@@ -288,23 +298,31 @@ end
 
 
 
----
 --- Hook for descendants which implements this function
 --- to interact anyhow with existing objects on the square.
 --- @return nil|int Index of the object of interest or nil if not implemented
----
 function ISExtBuildingObject:getObjectIndex()
   return nil
 end
 
 
 
----
+--- Can be overloaded by descendants which represent MultiTile-Structures to
+--- notify about additional tiles used. - tryBuild will then render and
+--- register additional construction sites tiles on them as well.
+--- @param square IsoGridSquare The anker square (south-eastern edge)
+--- @param north boolean Whether the structures direction is rotated to north or not
+--- @return table<IsoGridSquare> List of all occupied square objects
+function ISExtBuildingObject:getAttachedTileSquares(square, north)
+  return {square}
+end
+
+
+
 --- Defines and returns the total health of the target building
 --- @param mainMaterial string The defined main material
 --- @param baseHealth int The defined base health
 --- @return int Max health of the building
----
 function ISExtBuildingObject:getHealth(mainMaterial, baseHealth)
   local oPlayer, perk = getSpecificPlayer(self.player)
   if     mainMaterial == 'wood'  then perk = Perks.Woodwork
@@ -362,7 +380,7 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   local oPlayer = getSpecificPlayer(self.player)
   local oInv = oPlayer:getInventory()
   local grabTime1, grabTime2, fromGround1, fromGround2 = 50, 50, false, false
-  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material1, material2, sqConstructionSite
+  local maxTime, tool1, tool2, toolSound1, toolSound2, wearable, material1, material2, constructionSiteSquares
   local forceTool1, forceTool2, forceWearable
 
   if self.forceEquip then
@@ -372,19 +390,23 @@ function ISExtBuildingObject:tryBuild(x, y, z)
   end
 
   if self.isWallLike then
-    sqConstructionSite = getAdjustedSquareForConstructionSite(oPlayer, x, y, z, square, self.west)
-    else
-    sqConstructionSite = square
+    constructionSiteSquares = getAdjustedSquaresForConstructionSite(oPlayer, x, y, z, square, self.west)
+  else
+    constructionSiteSquares = self:getAttachedTileSquares(square, self.north)
   end
-  local isoTile = IsoObject.new(sqConstructionSite, 'garteneden_tech_01_2', 'ConstructionSite')
+  local isoTiles = {}
+  for i=1, #constructionSiteSquares do
+    isoTiles[i] = IsoObject.new(constructionSiteSquares[i], 'garteneden_tech_01_2', 'ConstructionSite')
+  end
+
   -- TODO: Replace self.Type == 'fishingNet' with something like self.Type == 'waterConstruction'
   if ISBuildMenu.cheat or self:walkTo(x, y, z) or (self.Type == 'fishingNet' and self:isValid(square)) then
     if not self.skipBuildAction then
-      if sqConstructionSite then
-        sqConstructionSite:AddSpecialTileObject(isoTile)
-        isoTile:transmitCompleteItemToServer()
-        ISExtBuildingObject.constructionSites[oPlayer] = isoTile
+      for i=1, #constructionSiteSquares do
+        constructionSiteSquares[i]:AddSpecialTileObject(isoTiles[i])
+        isoTiles[i]:transmitCompleteItemToServer()
       end
+      ISExtBuildingObject.constructionSites[oPlayer] = isoTiles
     end
     if self.dragNilAfterPlace then getCell():setDrag(nil, self.player) end
     if oPlayer:isTimedActionInstant() then

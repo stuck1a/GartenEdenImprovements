@@ -1,7 +1,7 @@
 module Base {
 
   item BookMasonry1 {
-    DisplayCategory = SkillBook
+    DisplayCategory = SkillBook,
     NumberOfPages = 220,
     Weight = 0.8,
     Type = Literature,
@@ -15,7 +15,7 @@ module Base {
   }
 
   item BookMasonry2 {
-    DisplayCategory = SkillBook
+    DisplayCategory = SkillBook,
     NumberOfPages = 260,
     Weight = 0.8,
     Type = Literature,
@@ -29,7 +29,7 @@ module Base {
   }
 
   item BookMasonry3 {
-    DisplayCategory = SkillBook
+    DisplayCategory = SkillBook,
     NumberOfPages = 300,
     Weight = 0.8,
     Type = Literature,
@@ -43,7 +43,7 @@ module Base {
   }
 
   item BookMasonry4 {
-    DisplayCategory = SkillBook
+    DisplayCategory = SkillBook,
     NumberOfPages = 340,
     Weight = 0.8,
     Type = Literature,
@@ -57,7 +57,7 @@ module Base {
   }
 
   item BookMasonry5 {
-    DisplayCategory = SkillBook
+    DisplayCategory = SkillBook,
     NumberOfPages = 380,
     Weight = 0.8,
     Type = Literature,

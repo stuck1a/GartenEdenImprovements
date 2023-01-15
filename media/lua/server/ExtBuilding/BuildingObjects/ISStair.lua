@@ -113,3 +113,15 @@ function ISStair:getSquareTopPos(square, north)
   if north then y = y - 3 else x = x - 3 end
   return x, y, z + 1
 end
+
+
+
+function ISStair:getAttachedTileSquares(square, north)
+  if north then
+    local second = square:getN()
+    return { square, second, second:getN() }
+  else
+    local second = square:getW()
+    return { square, second, second:getW() }
+  end
+end
