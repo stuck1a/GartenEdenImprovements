@@ -86,7 +86,6 @@ end
 
 
 function ISStair:render(x, y, z, square)
-  -- TOOPTIMIZE: fixed buggy vanilla renderer (only renders tile1 and tile2)
   ISWoodenStairs.render(self, x, y, z, square)
 end
 
@@ -117,11 +116,12 @@ end
 
 
 function ISStair:getAttachedTileSquares(square, north)
-  if north then
-    local second = square:getN()
-    return { square, second, second:getN() }
-  else
-    local second = square:getW()
-    return { square, second, second:getW() }
+  local IsoDirections, b, c = IsoDirections
+  if square then
+    b = square:getAdjacentSquare(north and IsoDirections.N or IsoDirections.W)
+    if b then
+      c = b:getAdjacentSquare(north and IsoDirections.N or IsoDirections.W)
+    end
   end
+  return { square, b, c }
 end
