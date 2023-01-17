@@ -1,5 +1,14 @@
 Recipes_DE = {
 
+  /** ExtBuild **/
+  Recipe_Make_Metal_Walls = "Metallwand herstellen",
+  Recipe_Make_Metal_Roof = "Metalldach herstellen",
+  Recipe_Make_Metal_Containers = "Metallkiste herstellen",
+  Recipe_Make_Metal_Fences = "Metallzaun herstellen",
+  Recipe_Make_Metal_Sheet = "Metallplatte herstellen",
+  Recipe_Make_Small_Metal Sheet = "Keine Metallplatten herstellen",
+
+
   /** Ladders  **/
   Recipe_Make_Steel_Ladder = "Metallleiter herstellen",
   Recipe_Make_Wooden_Ladder = "Holzleiter herstellen",

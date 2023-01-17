@@ -14,6 +14,27 @@ Tooltip_EN = {
   Tooltip_ExtBuilding__StoneStair = "A fireproof staircase made of plastered bricks.",
   Tooltip_ExtBuilding__StoneStair = "A metal stair. Relatively fireproof, but over time the metal will soften and succumb to the fire."
   Tooltip_ExtBuilding__Metal_Crate = "A solid metal crate. Offers maximum storage space in a minimum of space.",
+  Tooltip_ExtBuilding__UpgradeWoodenDoorFrame_1To2 = "Fixes construction flaws in the door frame, making it both handsomer and sturdier.",
+  Tooltip_ExtBuilding__UpgradeWoodenDoorFrame_2To3 = "Brings the door frame into perfect condition, giving it a professional look and the best possible stability.",
+  Tooltip_ExtBuilding__CreateWoodenWall_1 = "An amateurishly constructed wooden wall. Not particularly pretty or sturdy, but still better than nothing.",
+  Tooltip_ExtBuilding__UpgradeWoodenWall_1To2 = "Mends gaps in this amateur built wall. Requires advanced carpentry skills to cut matching bezels. Improves wall appearance and stability.",
+  Tooltip_ExtBuilding__CreateWoodenWall_2 = "A wooden wall of acceptable quality. The boards are not quite flush here and there, which is why the stability is not quite ideal yet.",
+  Tooltip_ExtBuilding__UpgradeWoodenWall_1To3 = "Upgrades this amateurish construction to the quality of a professionally made wooden wall. Can be plastered.",
+  Tooltip_ExtBuilding__UpgradeWoodenWall_2To3 = "Replaces any boards that aren't quite flush yet, making this wall as good as a professionally made wooden wall. Can be plastered.",
+  Tooltip_ExtBuilding__CreateWoodenWall_3 = "A professionell wooden wall, both in appearance and stability, this wall resembles the work of a master carpenter. Can be plastered.",
+  Tooltip_ExtBuilding__CreateWoodenWindow_1 = "An amateurishly constructed wooden wall with a recess into which a window can be inserted. Not particularly pretty or sturdy, but better than nothing.",
+  Tooltip_ExtBuilding__UpgradeWoodenWindow_1To2 = "Patches gaps in this amateurish construction to the quality of a professionally made wooden wall with recess.",
+  Tooltip_ExtBuilding__CreateWoodenWindow_2 = "A wooden wall of acceptable quality with a recess into which a window can be inserted.",
+  Tooltip_ExtBuilding__UpgradeWoodenWindow_1To3 = "Upgrades this lay construction to the quality of a professionally made timber wall with a recess for a window. Can be plastered.",
+  Tooltip_ExtBuilding__UpgradeWoodenWindow_2To3 = "Replaces any boards that aren't quite flush yet, making this wall as good as a professionally made wooden wall with recess. Can be plastered.",
+  Tooltip_ExtBuilding__CreateWoodenWindow_3 = "A masterfully constructed wooden wall with a recess into which a window can be inserted. Can be plastered.",
+  Tooltip_ExtBuilding__CreateMetalWall_1 = "Randomly welds metal plates together until it becomes something like a wall. After all, more stable than a cobbled-together wooden wall.",
+  Tooltip_ExtBuilding__UpgradeMetalWall_1To2 = "Corrects cold welds and patches to create a filigree metal wall.",
+  Tooltip_ExtBuilding__CreateMetalWall_2 = "Cuts and welds metal plates until a filigree metal wall is created. Offers the best possible stability next to plastered walls.",
+  Tooltip_ExtBuilding__CreateMetalWindow_1 = "Randomly Welds metal plates together until it becomes something like a wall. But keeps a recess into which a window can be inserted.",
+  Tooltip_ExtBuilding__UpgradeMetalWindow_1To2 = "Corrects cold welds and patches to create a filigree metal wall with recess.",
+  Tooltip_ExtBuilding__CreateMetalWindow_2 = "Cuts and welds metal plates until a filigree metal wall with a recess is created, into which a window can be inserted. Offers the best possible stability next to plastered walls.",
+
 
   /** More Builds **/
   Tooltip_Half_Crate = "A half-sized crate that still holds the full amount. Can even be stacked two high if you want. ",
