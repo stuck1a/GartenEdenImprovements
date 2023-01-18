@@ -20,14 +20,12 @@ ISWaterCollector.defaults = {
 ISWaterCollector.registeredRecipes = {}
 
 
----
 --- Java object constructor - initializes and places a completed water collector
 --- @param x number Target cell X coordinate (goes from north to south)
 --- @param y number Target cell Y coordinate (goes from east to west)
 --- @param z number Target cell level (0 = surface, 7 = highest possible layer)
 --- @param north boolean Whether the north sprite was chosen
 --- @param sprite string Name of the chosen sprite
----
 function ISWaterCollector:create(x, y, z, north, sprite)
   ISExtBuildingObject.create(self, x, y, z, north, sprite)
   self.javaObject:getModData()['waterMax'] = self.waterMax
@@ -39,12 +37,10 @@ end
 
 
 
----
 --- Lua object constructor - generates a new water collector object
 --- @param player number Target player ID
 --- @param recipe table The building definition - used to add/alter class fields/properties/modData
 --- @return ISWaterCollector BuildingObject instance
----
 function ISWaterCollector:new(player, recipe)
   local o = ISExtBuildingObject.new(self, player, recipe)
   setmetatable(o, self)
@@ -54,11 +50,9 @@ end
 
 
 
----
 --- Extension of the ghost tile placement validation
 --- @param square IsoGridSquare Clicked square object
 --- @return boolean True, if building can be placed on current target square
----
 function ISWaterCollector:isValid(square)
   if not ISExtBuildingObject.isValid(self, square) then return false end
   return true
@@ -66,11 +60,9 @@ end
 
 
 
----
 --- Creates an on hover tooltip for water collectors with an amount bar if near enough
 --- @param tooltipUI UIElement Tooltip factory
 --- @param square IsoGridSquare Clicked square
----
 local function DoSpecialTooltip(tooltipUI, square)
   local oPlayer = getSpecificPlayer(0)
   if not oPlayer or oPlayer:getZ() ~= square:getZ() or oPlayer:DistToSquared(square:getX() + 0.5, square:getY() + 0.5) > 4 then return end
@@ -110,20 +102,17 @@ if not isServer() then
   --- @class CWaterCollectorSystem : CGlobalObjectSystem
   CWaterCollectorSystem = CGlobalObjectSystem:derive('CWaterCollectorSystem')
 
-  ---
+
   --- Creates a new java global object system on client-side
   --- @return  CGlobalObjectSystem New controller instance of this global object system type
-  ---
   function CWaterCollectorSystem:new()
     return CGlobalObjectSystem.new(self, ISWaterCollector.defaults.isoData.isoName or ISExtBuildingObject.isoData.isoName)
   end
 
 
-  ---
   --- Checks, if a given IsoObject is a water collector or not (client-side)
   --- @param isoObject userdata Target buildings java object
   --- @return boolean True, if the object is linked to this system
-  ---
   function CWaterCollectorSystem:isValidIsoObject(isoObject)
     if instanceof(isoObject, ISWaterCollector.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and #(ISWaterCollector.registeredRecipes) > 0 then
       for i=1, #(ISWaterCollector.registeredRecipes) do if ISWaterCollector.registeredRecipes[i] == isoObject:getName() then return true end end
@@ -132,11 +121,9 @@ if not isServer() then
   end
 
 
-  ---
   --- Creates a new global object controller on client-side
   --- @param globalObject CGlobalObject Target global object type
   --- @return CGlobalObject New instance of the target object type
-  ---
   function CWaterCollectorSystem:newLuaObject(globalObject)
     return CWaterCollectorGlobalObject:new(self, globalObject)
   end
@@ -146,12 +133,11 @@ if not isServer() then
   --- @class CWaterCollectorGlobalObject : CGlobalObject
   CWaterCollectorGlobalObject = CGlobalObject:derive('CWaterCollectorGlobalObject')
 
-  ---
+
   --- Creates a new global object on client-side
   --- @param luaSystem CGlobalObjectSystem Global object controller
   --- @param globalObject CGlobalObject Target global object
   --- @return CGlobalObject New instance of the target global object
-  ---
   function CWaterCollectorGlobalObject:new(luaSystem, globalObject)
     return CGlobalObject.new(self, luaSystem, globalObject)
   end
@@ -161,14 +147,13 @@ if not isServer() then
   --- @class ISWaterCollectorMenu
   ISWaterCollectorMenu = {}
 
-  ---
+
   --- Checks whether any right click hit a watercollector global object and if so,
   --- adds its context menu items (including debug options in debug mode)
   --- @param player int ID of the player who did the right click
   --- @param context ISContextMenu The current context menu object
   --- @param worldobjects table Global objects found on the clicked point
   --- @param test boolean Whether this call is a fetch only call for controller support
-  ---
   function ISWaterCollectorMenu.OnFillWorldObjectContextMenu(player, context, worldobjects, test)
     if test and ISWorldObjectContextMenu.Test then return true end
     local found, isoObject = false
@@ -243,11 +228,9 @@ if not isServer() then
   end
 
 
-  ---
   --- Removes all the water from the water collector
   --- @param obj CGlobalObject Target global object instance
   --- @param oPlayer IsoPlayer Acting player object instance
-  ---
   function ISWaterCollectorMenu.emptyWaterCollector(obj, oPlayer)
     if luautils.walkAdj(oPlayer, obj:getSquare()) then
       ISTimedActionQueue.add(ISEmptyRainBarrelAction:new(oPlayer, obj))
@@ -255,12 +238,10 @@ if not isServer() then
   end
 
 
-  ---
   --- Outsourced part of OnWaterCollectorSetWater - executes the action
   --- @param _ any Target object (nil)
   --- @param button ISButton The clicked button
   --- @param obj CWaterCollectorGlobalObject The global object instance of interest
-  ---
   local function OnWaterCollectorConfirm(_, button, obj)
     if button.internal == 'OK' then
       local playerObj = getSpecificPlayer(0)
@@ -275,11 +256,9 @@ if not isServer() then
   end
 
 
-  ---
   --- Debug option which opens a UI to adjust the water amount of the water collector.
   --- Execution after confirmation is outsourced to a local function for performance
   --- @param obj CWaterCollectorGlobalObject Target global object instance
-  ---
   function ISWaterCollectorMenu.OnWaterCollectorSetWater(obj)
     local luaObject = CWaterCollectorSystem.instance:getLuaObjectOnSquare(obj:getSquare())
     if not luaObject then return end
@@ -289,15 +268,14 @@ if not isServer() then
   end
 
 
-  ---
   --- Debug option to set the water amount of the water collector to zero
   --- @param obj CWaterCollectorGlobalObject Target global object instance
   --- @param oPlayer IsoPlayer Acting player object instance
-  ---
   function ISWaterCollectorMenu.OnWaterCollectorZeroWater(obj, oPlayer)
     local args = { x = obj:getX(), y = obj:getY(), z = obj:getZ(), index = obj:getObjectIndex(), amount = 0 }
     sendClientCommand(oPlayer, 'object', 'setWaterAmount', args)
   end
+
 
   CGlobalObjectSystem.RegisterSystemClass(CWaterCollectorSystem)
   Events.OnFillWorldObjectContextMenu.Add(ISWaterCollectorMenu.OnFillWorldObjectContextMenu)
@@ -312,18 +290,14 @@ if not isClient() then
   --- @class SWaterCollectorSystem : SGlobalObjectSystem
   SWaterCollectorSystem = SGlobalObjectSystem:derive('SWaterCollectorSystem')
 
-  ---
   --- Creates a new java global object system on server-side
-  ---
   function SWaterCollectorSystem:new()
     return SGlobalObjectSystem.new(self, ISWaterCollector.defaults.isoData.isoName or ISExtBuilding.isoData.isoName)
   end
 
 
-  ---
   --- Initialises the controller by defining which fields
   --- of the building object are relevant for the controller
-  ---
   function SWaterCollectorSystem:initSystem()
     SGlobalObjectSystem.initSystem(self)
     self.system:setModDataKeys(ISWaterCollector.defaults.isoData.modDataKeys or ISExtBuildingObject.defaults.isoData.modDataKeys or {})
@@ -332,20 +306,16 @@ if not isClient() then
   end
 
 
-  ---
   --- Creates a new global object controller (server-side)
   --- @param globalObject SWaterCollectorGlobalObject Target global object type
-  ---
   function SWaterCollectorSystem:newLuaObject(globalObject)
     return SWaterCollectorGlobalObject:new(self, globalObject)
   end
 
 
-  ---
   --- Checks, if a given IsoObject is a water collector or not (server-side)
   --- @param isoObject userdata Target buildings java object
   --- @return boolean True, if the object is linked to this system
-  ---
   function SWaterCollectorSystem:isValidIsoObject(isoObject)
     if instanceof(isoObject, ISWaterCollector.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) and #(ISWaterCollector.registeredRecipes) > 0 then
       for i=1, #(ISWaterCollector.registeredRecipes) do
@@ -356,8 +326,7 @@ if not isClient() then
   end
 
 
-  -- TODO: Checken, ob es auch ohne die geht, immerhin wird es hierfür keine oldModData geben
-  ---
+  --TODO: Necessary?
   --- For backwards compatibility
   --- If the gos_xxx.bin file existed, don't touch GameTime modData in case mods are using it
   ---
@@ -366,9 +335,7 @@ if not isClient() then
   end
 
 
-  ---
   --- Increases the water amount of the buildings java objects
-  ---
   function SWaterCollectorSystem:refill()
     for i=1, self:getLuaObjectCount() do
       local luaObject = self:getLuaObjectByIndex(i)
@@ -384,19 +351,15 @@ if not isClient() then
   end
 
 
-  ---
   --- Listener-Wrapper to invoke the refill method of each water collector instance
-  ---
   local function EveryTenMinutes()
     SWaterCollectorSystem.instance:refill()
   end
 
 
-  ---
   --- Writes the new water amount from global object to this lua object
   --- @param object IsoObject Target buildings java object instance
   --- @param _ int Previous water amount
-  ---
   local function OnWaterAmountChange(object, _)
     if not object then return end
     local luaObject = SWaterCollectorSystem.instance:getLuaObjectAt(object:getX(), object:getY(), object:getZ())
@@ -408,19 +371,15 @@ if not isClient() then
   --- @class SWaterCollectorGlobalObject : SGlobalObject
   SWaterCollectorGlobalObject = SGlobalObject:derive('SWaterCollectorGlobalObject')
 
-  ---
   --- Creates a new global object (server-side)
   --- @param luaSystem SGlobalObjectSystem Global object controller
   --- @param globalObject SGlobalObject Target global object
-  ---
   function SWaterCollectorGlobalObject:new(luaSystem, globalObject)
     return SGlobalObject.new(self, luaSystem, globalObject)
   end
 
 
-  ---
   --- Initialises a new global object
-  ---
   function SWaterCollectorGlobalObject:initNew()
     self.waterAmount = ISWaterCollector.defaults.properties.waterAmount
     self.waterMax = ISWaterCollector.defaults.properties.waterMax
@@ -428,10 +387,8 @@ if not isClient() then
   end
 
 
-  ---
   --- Transfers the current vales from the buildings java object to the global object
   --- @param isoObject IsoObject Target buildings java object instance
-  ---
   function SWaterCollectorGlobalObject:stateFromIsoObject(isoObject)
     self.waterAmount = isoObject:getWaterAmount()
     self.waterMax = isoObject:getModData().waterMax
@@ -442,10 +399,8 @@ if not isClient() then
   end
 
 
-  ---
   --- Transfers the current values from the global object to the buildings java object
   --- @param isoObject IsoObject Target buildings java object instance
-  ---
   function SWaterCollectorGlobalObject:stateToIsoObject(isoObject)
     if not self.waterAmount then self.waterAmount = ISWaterCollector.defaults.properties.waterAmount end
     if not self.waterMax then self.waterMax = ISWaterCollector.defaults.properties.waterMax end
@@ -463,22 +418,18 @@ end
 
 
 
----
 --- Initialises the global objects of all existing building java objects while loading the map
 --- @param isoObject IsoObject Target building object java object instance
----
 local function loadGlobalObject(isoObject)
   if not instanceof(isoObject, ISWaterCollector.defaults.isoData.isoType or ISExtBuildingObject.defaults.isoData.isoType) then return end
   SWaterCollectorSystem.instance:loadIsoObject(isoObject)
 end
 
 
-
----
 --- Checks the recipe definitions for any recipe which uses ISWaterCollector as targetClass
 --- and adds it to the registry, so we can differ between those recipes in the system classes
 --- and gather the overloaded sprite and name.
----
+--- @param recipes table Recipe definitions
 local function registerWaterCollectors(recipes)
   for _,v in pairs(recipes) do
     if v ~= nil then

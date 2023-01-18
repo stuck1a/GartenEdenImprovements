@@ -13,7 +13,7 @@ ISWall.defaults = {
 
 
 ---
---- Java object constructor - initializes and places a completed water well
+--- Java object constructor - initializes and places a completed wall object
 --- @param x number Target cell X coordinate (goes from north to south)
 --- @param y number Target cell Y coordinate (goes from east to west)
 --- @param z number Target cell level (0 = surface, 7 = highest possible layer)

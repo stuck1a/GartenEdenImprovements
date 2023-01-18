@@ -207,24 +207,20 @@ function ISExtBuildingObject:initialise(recipe, classDefaults)
   self.craftingBank = settings.craftingBank
   self.isValidAddition = settings.isValidAddition
 
-  local sprites
+  local sprites = {}
   if type(settings.sprites) == 'function' then
     sprites = settings.sprites(getSpecificPlayer(self.player))
   else
     sprites = settings.sprites
   end
 
+  for k,v in pairs(sprites) do
+    self[k] = v
+  end
+  self.choosenSprite = sprites.sprite
+  if not self.northSprite then self.northSprite = sprites.sprite end
   if settings.overwriteTool1Model then self.overwriteTool1Model = settings.overwriteTool1Model end
   if settings.overwriteTool2Model then self.overwriteTool2Model = settings.overwriteTool2Model end
-  self:setSprite(sprites.sprite)
-  self:setNorthSprite(sprites.northSprite or sprites.sprite)
-  if sprites.east then self:setEastSprite(sprites.east) end
-  if sprites.south then self:setSouthSprite(sprites.south) end
-  if sprites.corner then self.corner = sprites.corner end
-  if sprites.openSprite or sprites.openNorthSprite then
-    self.openSprite = sprites.openSprite or sprites.openNorthSprite
-    self.openNorthSprite = sprites.openNorthSprite or sprites.openSprite
-  end
   if settings.properties then
     for k,v in pairs(settings.properties) do
       if k ~= nil then

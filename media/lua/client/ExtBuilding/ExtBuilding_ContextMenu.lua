@@ -15,7 +15,7 @@ end
 --- @param worldobjects table List of world objects at cursor position
 ---
 ExtBuildingContextMenu.doMenu = function(player, context, worldobjects)
-  context:removeOptionByName(getText('ContextMenu_MetalWelding'))
+  --context:removeOptionByName(getText('ContextMenu_MetalWelding'))
   if ISBuildMenu.haveSomethingtoBuild(player) then  -- TODO: Simply check whether the vanilla entry exist might be faster
     local oBuildOption = context:insertOptionAfter(getText('ContextMenu_Build'), getText('ContextMenu_Build'))
     --context:removeOptionByName(getText('ContextMenu_Build')) --TODO: Uncomment again after debugging vanilla all implementations
